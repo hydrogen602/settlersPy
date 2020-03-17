@@ -1,4 +1,6 @@
 
+from .interfaceCheck import signatureChecker
+
 class InterfaceSuperType:
     '''
     A super class for interfaces. It is not required for the
@@ -29,12 +31,29 @@ def interface(interfaceCls: type):
         '''
         methods = dir(interfaceCls) # [i for i in dir(interfaceCls) if not i.startswith('__')]
         success = True
-        crashReport = ["Missing methods:"]
+        crashReport = ["Incorrect methods:"]
         for m in methods:
-            if not hasattr(cls, m):
+            if m in [
+                '__class__', '__delattr__', 
+                '__dir__', '__doc__', 
+                '__eq__', '__format__',
+                '__getattribute__', '__hash__',
+                '__ne__', '__new__', 
+                '__reduce__', '__reduce_ex__', 
+                '__repr__', '__setattr__', 
+                '__sizeof__', '__str__', 
+                '__subclasshook__'
+                ]:
+                continue
+            try:
+                signatureChecker(cls, interfaceCls, m)
+            except AttributeError as e:
                 success = False
-                crashReport.append(f"Class '{cls.__name__}' is missing attribute '{m}'")
-        
+                crashReport.append(e.args[0])
+            except TypeError as e:
+                success = False
+                crashReport.append(e.args[0])
+
         if not success:
             raise AttributeError('\n'.join(crashReport))
         return cls
@@ -55,7 +74,6 @@ class ConcreteClass:
     '''
     Example implementation of an interface
     '''
-    pass
-    foo = 0
-    bar = 0
-    baz = 0
+    def foo(self): pass
+    def bar(self): pass
+    def baz(self): pass
