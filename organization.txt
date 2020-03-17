@@ -1,0 +1,26 @@
+
+organization?
+
+Habitation -> abstract
+ - pos: (int row, int col)
+ - diceValue: int
+ - neighboringTiles: List[Tile], len == 3
+ - dieRolled(int) -> check if diceValue matches, then give resource
+ - getPos()
+    |
+Settlement
+    |
+  City
+
+Player
+
+Robber
+ - tile loc: (int row, int col)
+
+Tile
+ - pos: (int row, int col)
+ - resource: (ResourceType)
+ - isBlockedByRobber: (bool)
+
+ResourceType extends enum
+
