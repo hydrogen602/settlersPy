@@ -1,3 +1,6 @@
+'''
+Core features of the interface system
+'''
 
 from .interfaceCheck import signatureChecker
 
