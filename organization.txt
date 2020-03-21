@@ -2,7 +2,7 @@
 organization?
 
 Habitation -> abstract
- - pos: (int row, int col)
+ - pos: HexPoint
  - diceValue: int
  - neighboringTiles: List[Tile], len == 3
  - dieRolled(int) -> check if diceValue matches, then give resource
@@ -15,12 +15,33 @@ Settlement
 Player
 
 Robber
- - tile loc: (int row, int col)
+ - tile loc: HexPoint
 
 Tile
- - pos: (int row, int col)
+ - pos: HexPoint
  - resource: (ResourceType)
  - isBlockedByRobber: (bool)
 
 ResourceType extends enum
+
+Point -> abstract
+ - getHexPoint
+ - getRelPoint
+ - getAbsPoint
+ // if no conversion is needed, return copy of self
+
+HexPoint implements Point
+ - row
+ - col
+ - required methods of Point
+
+RelPoint
+ - x
+ - y
+ - required methods of Point
+
+AbsPoint
+ - x
+ - y
+ - required methods of Point
 
