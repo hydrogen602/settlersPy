@@ -1,4 +1,5 @@
 
+from biome import PrimaryResource
 from point import HexPoint
 from typing import List
 # from outpost import Outpost
@@ -6,9 +7,9 @@ from tools import interface
 
 from tile import Tile
 
-
 class Player:
-    pass
+    def giveResource(self, resource: PrimaryResource):
+        NotImplemented
 
 # @interface(Outpost)
 class Habitation:
@@ -30,3 +31,9 @@ class Habitation:
 
     def getPos(self) -> HexPoint:
         return self.__pos
+
+
+class Settlement(Habitation):
+
+    def __init__(self, pos: HexPoint, owner: Player):
+        super().__init__(pos, owner)
