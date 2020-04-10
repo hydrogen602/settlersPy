@@ -1,29 +1,39 @@
 
-import points
+from biome import PrimaryResource
+from point import HexPoint
 from typing import List
-from outpost import Outpost
+# from outpost import Outpost
 from tools import interface
 
-HexPoint = points.HexPoint
-
-class Tile:
-    pass
+from tile import Tile
 
 class Player:
-    pass
+    def giveResource(self, resource: PrimaryResource):
+        NotImplemented
 
-@interface(Outpost)
+# @interface(Outpost)
 class Habitation:
-    
-    def __init__(self):
-        self.pos: HexPoint = None
-        self.diceValue: int = None
-        self.neighboringTiles: List[Tile] = None
-        self.owner: Player = None
-    
-    def dieRolled(self, d: int) -> None:
-        # check if diceValue matches, then give resource
-        pass
+    '''
+    Super class for Settlements and Cities
+
+    Needs a method to be implemented:
+        def harvestTile(self, b: Biome) -> None:
+            # give the owner the appropriate resources
+            # i.e. one resource for settlement, two for cities 
+    '''
+
+    def __init__(self, pos: HexPoint, owner: Player):
+        self.__pos: HexPoint = pos
+        self.owner: Player = owner
+
+    def __init_subclass__(subCls):
+        assert hasattr(subCls, "harvestTile")
 
     def getPos(self) -> HexPoint:
-        pass
+        return self.__pos
+
+
+class Settlement(Habitation):
+
+    def __init__(self, pos: HexPoint, owner: Player):
+        super().__init__(pos, owner)
