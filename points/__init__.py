@@ -5,4 +5,4 @@ RelPoint is relative to the screen, while AbsPoints are
 cartesian coords over the hexagonal grid.
 '''
 
-from .point import HexPoint, RelPoint, AbsPoint
+from .point import HexPoint
