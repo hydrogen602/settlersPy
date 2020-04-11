@@ -12,6 +12,7 @@ class PrimaryResource(Resource):
 
 class Biome:
     primaryRes: PrimaryResource = None
+    color: str = None
 
     biomeList: list = []
     '''
@@ -29,21 +30,28 @@ class Biome:
         assert hasattr(cls, 'primaryRes')
         assert isinstance(getattr(cls, 'primaryRes'), PrimaryResource)
 
-        Biome.biomeList.append(cls) # add new biome to list of biomes
+        assert hasattr(cls, 'color')
+        assert isinstance(getattr(cls, 'color'), str)
 
+        Biome.biomeList.append(cls) # add new biome to list of biomes
 
 
 class WheatField(Biome):
     primaryRes: PrimaryResource = PrimaryResource.Wheat
+    color = 'goldenrod'
 
 class Grassland(Biome):
     primaryRes: PrimaryResource = PrimaryResource.Sheepie
+    color = 'limegreen'
 
 class Forest(Biome):
     primaryRes: PrimaryResource = PrimaryResource.Lumber
+    color = 'forestgreen'
 
 class Mountains(Biome):
     primaryRes: PrimaryResource = PrimaryResource.Ore
+    color = 'dimgray'
 
 class Quarry(Biome):
     primaryRes: PrimaryResource = PrimaryResource.Brick
+    color = 'firebrick'
