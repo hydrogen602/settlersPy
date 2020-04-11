@@ -32,13 +32,11 @@ class Tile:
         typeCheck(location, HexPoint)
         self.location = location
 
-
     @classmethod
     def generate(cls, location: HexPoint) -> Tile:
         dieValue: int = random.randint(2, 12)
         biome: Biome = random.choice(Biome.biomeList)
         return cls(biome, dieValue, location)
-
 
     def addSettlement(self, settlement: Habitation):
         '''
@@ -60,7 +58,7 @@ class Tile:
     def isRobberHere(self) -> bool:
         return self.isBlockedByRobber
 
-    def diceRolled (self, valueRolled: int):
+    def diceRolled(self, valueRolled: int):
         '''
         Call this method on all tiles when the die
         are rolled for giving resources.
