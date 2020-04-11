@@ -1,14 +1,12 @@
 
-from biome import PrimaryResource
+from biome import Resource, Biome
 from point import HexPoint
 from typing import List
-# from outpost import Outpost
-from tools import interface
 
 from tile import Tile
 
 class Player:
-    def giveResource(self, resource: PrimaryResource):
+    def giveResource(self, resource: Resource):
         NotImplemented
 
 # @interface(Outpost)
@@ -26,8 +24,8 @@ class Habitation:
         self.__pos: HexPoint = pos
         self.owner: Player = owner
 
-    def __init_subclass__(subCls):
-        assert hasattr(subCls, "harvestTile")
+    def __init_subclass__(cls):
+        assert hasattr(cls, "harvestTile")
 
     def getPos(self) -> HexPoint:
         return self.__pos
@@ -37,3 +35,17 @@ class Settlement(Habitation):
 
     def __init__(self, pos: HexPoint, owner: Player):
         super().__init__(pos, owner)
+    
+    def harvestTile(self, b: Biome):
+        self.owner.giveResource(b.primaryRes)
+
+
+class City(Habitation):
+
+    def __init__(self, pos: HexPoint, owner: Player):
+        super().__init__(pos, owner)
+    
+    def harvestTile(self, b: Biome):
+        self.owner.giveResource(b.primaryRes)
+        self.owner.giveResource(b.primaryRes)
+

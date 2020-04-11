@@ -26,22 +26,9 @@ ResourceType extends enum
 
 Point -> abstract
  - getHexPoint
- - getRelPoint
- - getAbsPoint
  // if no conversion is needed, return copy of self
 
 HexPoint implements Point
  - row
  - col
- - required methods of Point
-
-RelPoint
- - x
- - y
- - required methods of Point
-
-AbsPoint
- - x
- - y
- - required methods of Point
 

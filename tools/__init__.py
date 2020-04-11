@@ -4,6 +4,7 @@ and verifying that functions expect the right arguments and types
 '''
 
 from .interface2 import InterfaceSuperType, interface
+from .functions import typeCheck
 
 if __name__ == '__main__':
     raise ImportError
