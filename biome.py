@@ -30,7 +30,7 @@ class Biome:
         assert isinstance(getattr(cls, 'primaryRes'), PrimaryResource)
 
         Biome.biomeList.append(cls) # add new biome to list of biomes
-    
+
 
 
 class WheatField(Biome):

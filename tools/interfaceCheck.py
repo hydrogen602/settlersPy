@@ -39,7 +39,7 @@ def signatureChecker(cls: type, interface: type, attrName: str) -> None:
 
         if not hasattr(orig_ref, '__code__'):
             return  # can't analyze
-        
+
         orig_sig = signature(orig_ref)
         impl_sig = signature(a_ref)
 

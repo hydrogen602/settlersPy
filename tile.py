@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from biome import Biome
 from habitation import Habitation
+from point import HexPoint
 
 import random
 
@@ -10,7 +11,7 @@ from typing import List
 
 class Tile:
 
-    def __init__(self, biome: Biome, dieValue: int):
+    def __init__(self, biome: Biome, dieValue: int, location: HexPoint):
         '''
         Represents one tile on the map.
         diceValue is the number that needs to be rolled for
@@ -27,14 +28,18 @@ class Tile:
 
         self.diceValue: int = dieValue 
         self.settlementList: List[Habitation] = []
-    
+
+        typeCheck(location, HexPoint)
+        self.location = location
+
+
     @classmethod
-    def generate(cls) -> Tile:
+    def generate(cls, location: HexPoint) -> Tile:
         dieValue: int = random.randint(2, 12)
         biome: Biome = random.choice(Biome.biomeList)
-        return cls(biome, dieValue)
+        return cls(biome, dieValue, location)
 
-    
+
     def addSettlement(self, settlement: Habitation):
         '''
         Adds a settlement to the tile.
@@ -45,26 +50,26 @@ class Tile:
         '''
         typeCheck(settlement, Habitation)
         self.settlementList.append(settlement)
-    
+
     def robberArrives(self):
         self.isBlockedByRobber = True
-    
+
     def robberDeparts(self):
         self.isBlockedByRobber = False
-    
+
     def isRobberHere(self) -> bool:
         return self.isBlockedByRobber
-        
+
     def diceRolled (self, valueRolled: int):
         '''
         Call this method on all tiles when the die
         are rolled for giving resources.
         '''
         typeCheck(valueRolled, int)
-        
+
         if self.isBlockedByRobber:
             return
-        
+
         if valueRolled == self.diceValue:
             for s in self.settlementList:
                 s.giveResource(self.biome)
