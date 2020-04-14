@@ -3,8 +3,6 @@ from biome import Resource, Biome
 from point import HexPoint
 from typing import List
 
-from tile import Tile
-
 class Player:
     def giveResource(self, resource: Resource):
         NotImplemented
@@ -48,4 +46,3 @@ class City(Habitation):
     def harvestTile(self, b: Biome):
         self.owner.giveResource(b.primaryRes)
         self.owner.giveResource(b.primaryRes)
-

@@ -1,19 +1,20 @@
+import json
 
 from typing import List
-from tools import typeCheck
+from tools import typeCheck, customJsonEncoder
 from tile import Tile
 from habitation import Habitation
 from point import HexPoint
 
-class Map:
+class GameMap:
 
     def __init__(self, size: int = 3):
         self.__size = size
         self.tiles: List[Tile] = []
         self.settlements: List[Habitation] = []
 
-        nP: int = (size - 1) / 2
-        nP2: int = (size - 2) / 2
+        nP: int = (size - 1) // 2
+        nP2: int = (size - 2) // 2
 
         for j in range(size):    
             addition: int = -abs(j - nP) + nP
@@ -34,3 +35,9 @@ class Map:
     def addSettlement(self, s: Habitation):
         typeCheck(s, Habitation)
         self.settlements.append(s)
+    
+    def getAsJson(self):
+        return json.dumps(self, cls=customJsonEncoder)
+
+# m = GameMap()
+# print(json.dumps(m, cls=customJsonEncoder, indent=4))

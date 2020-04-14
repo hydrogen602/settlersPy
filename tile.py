@@ -6,7 +6,7 @@ from point import HexPoint
 
 import random
 
-from tools import typeCheck
+from tools import typeCheck, subclassCheck
 from typing import List
 
 class Tile:
@@ -17,7 +17,7 @@ class Tile:
         diceValue is the number that needs to be rolled for
         resources to be harvested
         '''
-        typeCheck(biome, Biome)
+        subclassCheck(biome, Biome)
         self.biome: Biome = biome
         #checks that the dice value is an instance of an Int 
         typeCheck(dieValue, int)
@@ -37,6 +37,13 @@ class Tile:
         dieValue: int = random.randint(2, 12)
         biome: Biome = random.choice(Biome.biomeList)
         return cls(biome, dieValue, location)
+    
+    def toJsonSerializable(self):
+        return {
+            'biome': self.biome.__name__,
+            'diceValue': self.diceValue,
+            'location': self.location
+        }
 
     def addSettlement(self, settlement: Habitation):
         '''

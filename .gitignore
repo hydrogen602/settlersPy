@@ -1,2 +1,4 @@
 **/__pycache__/
 **.DS_Store
+gameMsgLog.log
+test.json
