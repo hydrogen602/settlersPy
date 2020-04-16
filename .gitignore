@@ -2,3 +2,5 @@
 **.DS_Store
 gameMsgLog.log
 test.json
+web/built/**
+web/libraries/*

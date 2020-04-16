@@ -1,6 +1,7 @@
 import { Hex } from "./Hex";
 import { Config } from "../Config";
 import { assert, assertInt } from "../util";
+import { JsonParser } from "../jsonParser";
 
 class Point {
     x: number;
@@ -31,6 +32,15 @@ export class HexPoint extends Point {
         assertInt(col);
         assertInt(row);
         super(col, row);
+    }
+
+    static fromJson(data: object): HexPoint {
+        JsonParser.requireName(data, 'HexPoint');
+
+        const row = JsonParser.requireNumber(data, 'row');
+        const col = JsonParser.requireNumber(data, 'col');
+
+        return new HexPoint(col, row);
     }
 
     toAbsPoint(): AbsPoint {

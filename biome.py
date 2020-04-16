@@ -36,7 +36,7 @@ class Biome:
         Biome.biomeList.append(cls) # add new biome to list of biomes
 
 
-class WheatField(Biome):
+class Farmland(Biome):
     primaryRes: PrimaryResource = PrimaryResource.Wheat
     color = 'goldenrod'
 
@@ -48,7 +48,7 @@ class Forest(Biome):
     primaryRes: PrimaryResource = PrimaryResource.Lumber
     color = 'forestgreen'
 
-class Mountains(Biome):
+class Mountain(Biome):
     primaryRes: PrimaryResource = PrimaryResource.Ore
     color = 'dimgray'
 

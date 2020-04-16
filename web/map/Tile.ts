@@ -1,9 +1,10 @@
-import { Biome, biomeDistributionArray, Desert } from "./Biome";
-import { defined, assertInt, randomInt, shuffle } from "../util";
+import { Biome, Desert, getBiomeByName } from "./Biome";
+import { defined } from "../util";
 import { HexPoint, AbsPoint } from "../graphics/Point"
 import { Hex } from "../graphics/Hex"
-import { Settlement } from "./Settlement";
-import { Config } from "../Config";
+import { JsonParserError, JsonParser } from "../jsonParser"
+// import { Settlement } from "./Settlement";
+// import { Config } from "../Config";
 
 export class Tile {
     private p: HexPoint;
@@ -12,56 +13,13 @@ export class Tile {
     private center: AbsPoint;
 
     private active: boolean = false; // whether this round's die roll matches this tile
+    private isDisabledByRobber: boolean = false;
 
-    private static diceValueChoices = [2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 9, 10, 10, 11, 11, 12];
-
-    private static localBiomeDistributionArray = biomeDistributionArray.slice();
-    private static localDiceValueChoices = Tile.diceValueChoices.slice();
-
-    private isDisabledByRobber = false;
-
-    static shuffle() {
-        Tile.localDiceValueChoices = shuffle(Tile.localDiceValueChoices);
-        Tile.localBiomeDistributionArray = shuffle(Tile.localBiomeDistributionArray);
-    }
-
-    constructor(location: HexPoint, landType?: Biome, diceValue?: number) {
-        if (diceValue) {
-            assertInt(diceValue)
-            this.diceValue = diceValue;
-        } else {
-            // diceValue should be 2 <= n <= 12 && n != 7
-            // distribution:
-            //      2 3 3 4 4 5 5 6 6 8 8  9  9  9  10 10 11 11 12
-            //      | | | | | | | | | | |  |  |  |  |  |  |  |  |
-            //      0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18
-            // out of 19
-
-            if (Config.getN() == 3) {
-                this.diceValue = <number>Tile.localDiceValueChoices.pop();
-            }
-            else {
-                this.diceValue = Tile.diceValueChoices[randomInt(19)];
-            }
-            
-        }
-
-        if (landType) {
-            this.landType = landType;
-        } else {
-            if (Config.getN() == 3) {
-                this.landType = <Biome>Tile.localBiomeDistributionArray.pop();
-            }
-            else {
-                this.landType = biomeDistributionArray[randomInt(19)];
-            }
-        }
-
-        if (this.landType == Desert) {
-            this.diceValue = 0;
-        }
-
+    constructor(location: HexPoint, landType: Biome, diceValue: number) {
+        this.diceValue = diceValue;
+        this.landType = landType;
         this.p = location;
+
         this.center = Hex.getCenterOfHex(location.y, location.x); // flip on purpose
 
         defined(this.diceValue);
@@ -70,39 +28,49 @@ export class Tile {
         defined(this.center);
     }
 
-    getDiceValue() {
-        return this.diceValue;
+    static fromJson(data: object): Tile {
+        JsonParser.requireName(data, 'Tile');
+
+        const diceValue = JsonParser.requireNumber(data, 'diceValue');
+        const location = HexPoint.fromJson(JsonParser.requireObject(data, 'location'));
+        const biome = getBiomeByName(JsonParser.requireString(data, 'biome'));
+
+        return new Tile(location, biome, diceValue);
     }
 
-    getLandType() {
-        return this.landType;
-    }
+    // getDiceValue() {
+    //     return this.diceValue;
+    // }
 
-    getPos() {
-        return this.p;
-    }
+    // getLandType() {
+    //     return this.landType;
+    // }
 
-    // activate if die matches this tile. Also does production
-    activateIfDiceValueMatches(value: number, settlements: Array<Settlement>) {
-        assertInt(value);
-        if (value == this.diceValue && !this.isDisabledByRobber) { // no profits if the robber is around
-            this.active = true;
+    // getPos() {
+    //     return this.p;
+    // }
+
+    // // activate if die matches this tile. Also does production
+    // activateIfDiceValueMatches(value: number, settlements: Array<Settlement>) {
+    //     assertInt(value);
+    //     if (value == this.diceValue && !this.isDisabledByRobber) { // no profits if the robber is around
+    //         this.active = true;
             
-            // find neighboring settlements and award resource
-            Hex.getHexCorners(this.p.y, this.p.x).forEach(c => {
-                settlements.forEach(s => {
-                    if (s.isHere(c)) {
-                        s.production(this.landType.getResourceType());
-                    }
-                })
-            })
+    //         // find neighboring settlements and award resource
+    //         Hex.getHexCorners(this.p.y, this.p.x).forEach(c => {
+    //             settlements.forEach(s => {
+    //                 if (s.isHere(c)) {
+    //                     s.production(this.landType.getResourceType());
+    //                 }
+    //             })
+    //         })
             
-        }
-    }
+    //     }
+    // }
 
-    deactivate() {
-        this.active = false;
-    }
+    // deactivate() {
+    //     this.active = false;
+    // }
 
     highlightIfActive(ctx: CanvasRenderingContext2D) {
         if (this.active && !this.isDisabledByRobber) {
@@ -112,13 +80,13 @@ export class Tile {
         }
     }
 
-    arriveRobber() {
-        this.isDisabledByRobber = true;
-    }
+    // arriveRobber() {
+    //     this.isDisabledByRobber = true;
+    // }
 
-    departRobber() {
-        this.isDisabledByRobber = false;
-    }
+    // departRobber() {
+    //     this.isDisabledByRobber = false;
+    // }
 
     draw(ctx: CanvasRenderingContext2D) {
         ctx.fillStyle = this.landType.getColor();

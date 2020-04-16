@@ -1,8 +1,11 @@
 
 class HexPoint:
-    def __init__(self, row: int, col: int):
+    def __init__(self, col: int, row: int):
         self.__row: int = row
         self.__col: int = col
+    
+    def toJsonSerializable(self) -> dict:
+        return {'row': self.__row, 'col': self.__col}
 
     @property
     def row(self) -> int:

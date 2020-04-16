@@ -11,23 +11,23 @@ export class Robber {
 
         this.place = tiles[0];
 
-        let found = false;
-        for (const k of tiles) {
-            if (k.getLandType() == Desert) {
-                this.place = k;
-                found = true;
-                break
-            }
-        }
+        // let found = false;
+        // for (const k of tiles) {
+        //     if (k.getLandType() == Desert) {
+        //         this.place = k;
+        //         found = true;
+        //         break
+        //     }
+        // }
 
-        if (!found) {
-            const randoKey = randomInt(tiles.length);
-            this.place = tiles[randoKey];
-        }
+        // if (!found) {
+        //     const randoKey = randomInt(tiles.length);
+        //     this.place = tiles[randoKey];
+        // }
 
         defined(this.place);
 
-        this.place.arriveRobber();
+        // this.place.arriveRobber();
     }
 
     getTile() {
@@ -35,9 +35,11 @@ export class Robber {
     }
 
     moveTo(t: Tile) {
-        this.place.departRobber();
-        this.place = t;
-        this.place.arriveRobber();
+        // tell server
+
+        // this.place.departRobber();
+        // this.place = t;
+        // this.place.arriveRobber();
     }
 
     // draw() {} handled by Tile

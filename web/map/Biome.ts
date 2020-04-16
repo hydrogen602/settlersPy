@@ -1,26 +1,10 @@
-import { ResourceType } from "../dataTypes";
 import { defined } from "../util";
 
 export class Biome {
-
-    private abundance: number; // out of 19
-    private resource: ResourceType;
     private color: string;
 
-    protected constructor(abundance: number, resource: ResourceType, color: string) {
-        this.abundance = abundance;
-        this.resource = resource;
+    protected constructor(color: string) {
         this.color = color;
-    }
-
-    public getAbundance() {
-        defined(this.abundance);
-        return this.abundance;
-    }
-
-    public getResourceType() {
-        defined(this.resource);
-        return this.resource;
     }
 
     public getColor() {
@@ -31,48 +15,68 @@ export class Biome {
 
 export const Desert = new (class Desert extends Biome {
     constructor() {
-        super(1, ResourceType.NoResource, 'yellow');
+        super('yellow');
     }
 })();
 
 export const Grassland = new (class Grassland extends Biome {
     constructor() {
-        super(4, ResourceType.Sheep, 'limegreen');
+        super('limegreen');
     }
 })();
 
 export const Forest = new (class Forest extends Biome {
     constructor() {
-        super(4, ResourceType.Lumber, 'forestgreen');
+        super('forestgreen');
     }
 })();
 
 export const Mountain = new (class Mountain extends Biome {
     constructor() {
-        super(3, ResourceType.Ore, 'dimgray');
+        super('dimgray');
     }
 })();
 
 export const Farmland = new (class Farmland extends Biome {
     constructor() {
-        super(4, ResourceType.Wheat, 'goldenrod');
+        super('goldenrod');
     }
 })();
 
 export const Quarry = new (class Quarry extends Biome {
     constructor() {
-        super(3, ResourceType.Brick, 'firebrick');
+        super('firebrick');
     }
 })();
 
 export const biomes: Array<Biome> = [Desert, Grassland, Forest, Mountain, Farmland, Quarry];
 
-export const biomeDistributionArray = function() {
-    let tmp_biomeDistributionArray: Array<Biome> = [];
-    biomes.forEach((e: Biome) => {
-        for (let i = 0; i < e.getAbundance(); i++) {
-            tmp_biomeDistributionArray.push(e);
-        }
-    });
-    return tmp_biomeDistributionArray;
-}();
+export function getBiomeByName(name: string): Biome {
+    switch (name) {
+        case 'Desert':
+            return Desert;
+        case 'Grassland':
+            return Grassland;
+        case 'Forest':
+            return Forest;
+        case 'Mountain':
+            return Mountain;
+        case 'Farmland':
+            return Farmland;
+        case 'Quarry':
+            return Quarry;
+    
+        default:
+            throw new Error("KeyError: Could not find biome named '" + name + "'")
+    }
+}
+
+// export const biomeDistributionArray = function() {
+//     let tmp_biomeDistributionArray: Array<Biome> = [];
+//     biomes.forEach((e: Biome) => {
+//         for (let i = 0; i < e.getAbundance(); i++) {
+//             tmp_biomeDistributionArray.push(e);
+//         }
+//     });
+//     return tmp_biomeDistributionArray;
+// }();

@@ -5,7 +5,8 @@ import { Settlement } from "./Settlement";
 import { canvas } from "../graphics/Screen";
 import { Road } from "./Road";
 import { GameManager } from "../mechanics/GameManager";
-import { Config } from "../Config";
+import { JsonParser } from "../jsonParser";
+import { ctx } from "../graphics/Screen";
 
 export class GameMap {
     private sz: number;
@@ -14,47 +15,40 @@ export class GameMap {
     private roadsArr: Array<Road>;
     private ctx: CanvasRenderingContext2D;
 
+    static instance: GameMap;
+
     // offset of map on screen in order to move around the map
     // currLocation: RelPoint;
 
-    constructor(size: number, ctx: CanvasRenderingContext2D) {
-        this.sz = size;
-        if (size == 3) {
-            Tile.shuffle();
-        }
+    constructor(size: number, ctx: CanvasRenderingContext2D, tiles: Array<Tile>) {
+        GameMap.instance = this;
 
+        this.sz = size;
         this.ctx = ctx;
 
         defined(this.sz);
         defined(this.ctx);
 
-        const nP: number = (size - 1) / 2;
-        const nP2: number = (size - 2) / 2;
-
-        this.tilesArr = [];
-        
-        for (let j = 0; j < size; j++) {
-
-            const addition: number = - Math.abs(j - nP) + nP;
-            
-            for (let i = -addition; i < size + addition; i++) {
-                this.tilesArr.push(new Tile(new HexPoint(2*j, 2*i)));
-            }
-        }
-
-        for (let j = 0; j < size - 1; j++) {
-
-            const addition: number = - Math.abs(j - nP2) + nP2;
-
-            for (let i = -addition; i <= size + addition; i++) {
-                this.tilesArr.push(new Tile(new HexPoint(2*j + 1, 2*i - 1)));
-            }
-        }
+        this.tilesArr = tiles;
 
         defined(this.tilesArr);
 
         this.settlementsArr = [];
         this.roadsArr = [];
+    }
+
+    static fromJson(data: object): GameMap {
+        JsonParser.requireName(data, 'GameMap');
+
+        const n = JsonParser.requireNumber(data, '_GameMap__size');
+        const tilesArr_tmp: Array<any> = JsonParser.requireArray(data, 'tiles');
+
+        const tilesArr: Array<Tile> = [];
+        for (const t of tilesArr_tmp) {
+            tilesArr.push(Tile.fromJson(t));
+        }
+
+        return new GameMap(n, ctx, tilesArr);
     }
 
     getTiles() {
@@ -74,7 +68,8 @@ export class GameMap {
     }
 
     isWithinMap(h: HexPoint): boolean {
-        const n = Config.getN();
+        const n = this.sz;
+
         if (h.x < 0 || h.x > 2 * n - 1) {
             return false;
         }

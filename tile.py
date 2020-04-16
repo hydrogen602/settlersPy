@@ -70,6 +70,7 @@ class Tile:
         Call this method on all tiles when the die
         are rolled for giving resources.
         '''
+        # diceValueChoices = [2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 9, 10, 10, 11, 11, 12]
         typeCheck(valueRolled, int)
 
         if self.isBlockedByRobber:

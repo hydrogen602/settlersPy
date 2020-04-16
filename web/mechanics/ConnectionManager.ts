@@ -1,5 +1,9 @@
 import { Config } from "../Config"
-import { defined } from "../util";
+import { defined, assertInt } from "../util";
+import { JsonParser } from "../jsonParser";
+import { GameMap } from "../map/GameMap";
+import { Hex } from "../graphics/Hex";
+import { ctx } from "../graphics/Screen";
 
 // ws = new WebSocket('ws://127.0.0.1:5050')
 
@@ -8,14 +12,14 @@ export class ConnectionManager {
     private ws: WebSocket
     private url: string;
 
-    private testPhase: number;
-
     public static instance: ConnectionManager;
 
-    constructor() {
+    constructor(ip: string, port: number) {
+        assertInt(port);
+
         ConnectionManager.instance = this;
 
-        this.url = 'ws://' + Config.getIP() + ":" + Config.getPort();
+        this.url = 'ws://' + ip + ":" + port;
         this.ws = new WebSocket(this.url);
 
         this.ws.onmessage = function(e: MessageEvent) {
@@ -26,15 +30,8 @@ export class ConnectionManager {
             ConnectionManager.instance.onopen(ev);
         };
 
-        this.testPhase = -1;
-
         defined(this.url);
         defined(this.ws);
-    }
-
-    ready() {
-        // passed tests
-        return this.testPhase == 2
     }
 
     send(o: Object) {
@@ -42,36 +39,42 @@ export class ConnectionManager {
         this.ws.send(msg);
     }
 
+    getHistory() {
+        this.ws.send('history')
+    }
+
     onopen(ev: Event) {
         this.ws.send('Hi');
-        this.testPhase = 0;
+        this.getHistory();
     }
 
     onmessage(e: MessageEvent) {
-        if (this.testPhase == 0 && e.data == "Hello") {
-            this.testPhase = 1;
+        if (e.data == "Hello") {
             console.log("Successful Echo, Server is alive!");
-            this.send({"test": "verify"});
         }
         else {
             try {
                 const obj = JSON.parse(e.data);
-                if (this.testPhase == 1 && "test" in obj && obj["test"] == "echo verified") {
-                    this.testPhase = 2;
-                    console.log("JSON echo success");
+
+                console.log("got msg")
+                console.log(obj)
+
+                if (JsonParser.askName(obj) == 'GameMap' && GameMap.instance == undefined) {
+                    const g = GameMap.fromJson(obj);
+                    g.draw_SHOULD_ONLY_BE_CALLED_BY_GAME_MANAGER();
+                    ctx.fillStyle = 'black';
                 }
-                
-                if ("update" in obj) {
-                    // update
-                    console.log("got msg")
-                    console.log(obj)
+
+            } catch (e) {
+                if (e.name == 'SyntaxError') {
+                    console.log('Got invalid JSON')
                 }
-            } catch (SyntaxError) {
-                // not json
+                else {
+                    console.log(e)
+                    console.log(e.data)
+                }
             }
         }
         
     }
 }
-
-const c = new ConnectionManager();

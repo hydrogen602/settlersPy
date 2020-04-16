@@ -27,6 +27,7 @@ export class GameManager {
     mayPlaceRobber = false;
 
     constructor(map: GameMap, players: Array<Player>) {
+        GameManager.instance = this
         this.map = map;
         this.players = players;
         this.msgBoard = new MessageBoard(map.getCtx(), 3);
@@ -87,9 +88,9 @@ export class GameManager {
 
         this.msgBoard.clear();
         this.errBoard.clear();
-        this.map.getTiles().forEach(t => {
-            t.deactivate();
-        });
+        // this.map.getTiles().forEach(t => {
+        //     t.deactivate();
+        // });
 
         this.msgBoard.print("New turn: " + p.getName());
         if (this.isEarlyRound()) {
@@ -103,17 +104,17 @@ export class GameManager {
             this.mayPlaceRoad = true;
         }
         else {
-            // post init
-            const dieRoll = rollTwoDice();
-            this.msgBoard.print("Die Rolled: " + dieRoll);
-            if (dieRoll == 7) {
-                this.mayPlaceRobber = true;
-            }
-            else {
-                this.map.getTiles().forEach(t => {
-                    t.activateIfDiceValueMatches(dieRoll, this.map.getSettlements());
-                });
-            }
+            // // post init
+            // const dieRoll = rollTwoDice();
+            // this.msgBoard.print("Die Rolled: " + dieRoll);
+            // if (dieRoll == 7) {
+            //     this.mayPlaceRobber = true;
+            // }
+            // else {
+            //     this.map.getTiles().forEach(t => {
+            //         t.activateIfDiceValueMatches(dieRoll, this.map.getSettlements());
+            //     });
+            // }
 
             this.draw();
         }

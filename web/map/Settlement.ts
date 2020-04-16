@@ -1,5 +1,5 @@
 import { HexPoint, RelPoint } from "../graphics/Point";
-import { defined, assertInt } from "../util";
+import { defined } from "../util";
 import { Hex } from "../graphics/Hex";
 import { Player } from "../mechanics/Player";
 import { ResourceType } from "../dataTypes";
@@ -38,15 +38,15 @@ export class Settlement {
         return h.isEqual(this.p);
     }
 
-    production(r: ResourceType) {
-        if (this._isCity) {
-            this.owner.giveResource(r, 2); // 2 if city
-        }
-        else {
-            this.owner.giveResource(r, 1);
-        }
+    // production(r: ResourceType) {
+    //     if (this._isCity) {
+    //         this.owner.giveResource(r, 2); // 2 if city
+    //     }
+    //     else {
+    //         this.owner.giveResource(r, 1);
+    //     }
         
-    }
+    // }
 
     draw(ctx: CanvasRenderingContext2D) {
         ctx.strokeStyle = 'black';
