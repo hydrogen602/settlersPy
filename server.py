@@ -19,11 +19,17 @@ from autobahn.twisted.websocket import \
 
 # twisted does asynchronous code execution needed for websockets
 from twisted.python import log
-from twisted.internet import reactor  # ,task
+from twisted.internet import reactor
 
-from typing import Callable
+from typing import Callable, Tuple
 
 class ServerProtocol(WebSocketServerProtocol):
+    '''
+    Sending a message of 'Hi' returns two messages, 'Hello' and a json
+    that is {'token': token}
+
+    Sending a message of 'history' returns all previously send messages
+    '''
 
     def onConnect(self, request):
 
@@ -75,7 +81,7 @@ class ServerFactory(WebSocketServerFactory):
     Keeps track of all connections and relays data to other clients
     '''
 
-    def __init__(self, url, f, callbackFunc: Callable[[str, dict], str]):
+    def __init__(self, url, f, callbackFunc: Callable[[str, dict], str], init_msgs: Tuple[str] = ()):
         '''
         Initializes the class
         Args:
@@ -87,7 +93,7 @@ class ServerFactory(WebSocketServerFactory):
 
         self.callbackFunc = callbackFunc
 
-        self.history = []
+        self.history = list(init_msgs)
 
         WebSocketServerFactory.__init__(self, url)
     
@@ -141,7 +147,7 @@ class ServerFactory(WebSocketServerFactory):
 
 class Server:
 
-    def __init__(self, ip: str = '127.0.0.1', port: int = 5000, callbackFunc: Callable[[str, dict], str] = None):
+    def __init__(self, ip: str = '127.0.0.1', port: int = 5000, callbackFunc: Callable[[str, dict], str] = None, init_msgs: Tuple[str] = ()):
         '''
         A class for managing the code for running the server.
         To setup the server, run `s = Server()`,
@@ -173,19 +179,23 @@ class Server:
         self.file = open('gameMsgLog.log', 'w')
 
         # Setup server factory
-        server = ServerFactory(u'ws://{}:{}'.format(ip, port), self.file, callbackFunc)
-        server.protocol = ServerProtocol
+        self.server = ServerFactory(u'ws://{}:{}'.format(ip, port), self.file, callbackFunc, init_msgs=init_msgs)
+        self.server.protocol = ServerProtocol
 
         # setup listening server
-        reactor.listenTCP(port, server)
+        reactor.listenTCP(port, self.server)
 
     def run(self):
         '''
         Run the server. This method will not return
-        until the server is ended by an Exception like ^C
+        until the server is ended by an Exception like ^C.
+
+        init_msgs are for messages that should be send to the player
+        immediately, like the game map for example.
         '''
         try:
             # start listening for and handling connections
+            # task.deferLater(reactor, 1, lambda: [self.server.broadcastToAll(msg) for msg in init_msgs])
             reactor.run()
         finally:
             self.file.close()

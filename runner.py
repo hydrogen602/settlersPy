@@ -8,7 +8,7 @@ else:
     raise Exception('This code needs Python 3.8 or higher due to use of annotations')
 
 from server import Server
-from tools import typeCheck
+from tools import typeCheck, customJsonEncoder
 from gameMap import GameMap
 
 import json
@@ -17,7 +17,7 @@ class GameManager:
 
     def __init__(self):
         self.m = GameMap()
-        self.serv = Server(ip='localhost', port=5000, callbackFunc=self.event)
+        self.serv = Server(ip='localhost', port=5000, callbackFunc=self.event, init_msgs=(self.m.getAsJson(),))
     
     def event(self, playerID: str, data: dict):
         '''
