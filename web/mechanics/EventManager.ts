@@ -6,6 +6,7 @@ import { Settlement } from "../map/Settlement";
 import { ctx } from "../graphics/Screen";
 import { Road } from "../map/Road";
 import { Tile } from "../map/Tile";
+import { ConnectionManager } from "./ConnectionManager";
 
 export class EventManager {
 
@@ -96,15 +97,15 @@ export class EventManager {
 
         if (GameManager.instance.mayPlaceRobber) {
             const tile = m.getAllowedRobberPlace(p.toAbsPoint());
-            if (tile != undefined) {
-                const tileExists = <Tile>tile;
-                GameManager.instance.moveRobber(tileExists);
-                GameManager.instance.draw();
-                GameManager.instance.mayPlaceRobber = false;
-            }
-            else {
-                GameManager.instance.draw();
-            }
+            // if (tile != undefined) {
+            //     const tileExists = <Tile>tile;
+            //     GameManager.instance.moveRobber(tileExists);
+            //     GameManager.instance.draw();
+            //     GameManager.instance.mayPlaceRobber = false;
+            // }
+            // else {
+            //     GameManager.instance.draw();
+            // }
         }
         else if (GameManager.instance.mayPlaceSettlement) {            
             
@@ -113,17 +114,18 @@ export class EventManager {
                 const h = p.toHexPoint();
                 //console.log("new settlement");
 
-                if (m.isAllowedSettlement(h)) {
-                    m.addSettlement(new Settlement(h, GameManager.instance.getCurrentPlayer()))
-                    GameManager.instance.draw();
-                    //console.log("success");
-                    GameManager.instance.print("New Settlement created");
-                    GameManager.instance.mayPlaceSettlement = false;
-                }
-                else {
-                    // console.log("not allowed position");
-                    GameManager.instance.printErr("Illegal Position");
-                }
+                // if (m.isAllowedSettlement(h)) {
+                //     m.addSettlement(new Settlement(h, GameManager.instance.getSelf()));
+
+                //     GameManager.instance.draw();
+                //     //console.log("success");
+                //     GameManager.instance.print("New Settlement created");
+                //     GameManager.instance.mayPlaceSettlement = false;
+                // }
+                // else {
+                //     // console.log("not allowed position");
+                //     GameManager.instance.printErr("Illegal Position");
+                // }
             }
         }
         else if (GameManager.instance.mayPlaceCity) {
@@ -146,30 +148,32 @@ export class EventManager {
         else if (GameManager.instance.mayPlaceRoad) {
             const hArr = p.toDualHexPoint();            
             if (hArr.length == 2) { // hArr is empty if not over a line 
-
-                if (m.isAllowedRoad(hArr[0], hArr[1])) { // check if road already there
-                    m.addRoad(new Road(hArr[0], hArr[1], GameManager.instance.getCurrentPlayer()));
-                    GameManager.instance.draw();
-                    GameManager.instance.print("New Road created");
-                    GameManager.instance.mayPlaceRoad = false;
-                }
-                else {
-                    GameManager.instance.printErr("Illegal Position");
-                }
+                // if (m.isAllowedRoad(hArr[0], hArr[1])) { // check if road already there
+                //     m.addRoad(new Road(hArr[0], hArr[1], GameManager.instance.getSelf()));
+                //     GameManager.instance.draw();
+                //     GameManager.instance.print("New Road created");
+                //     GameManager.instance.mayPlaceRoad = false;
+                // }
+                // else {
+                //     GameManager.instance.printErr("Illegal Position");
+                // }
             }
         }
     }
 
     static purchaseRoad() {
-        GameManager.instance.getCurrentPlayer().purchaseRoad();
+        ConnectionManager.instance.send({'action': 'purchase', 'name': 'road'})
+        //GameManager.instance.purchaseRoad();
     }
 
     static purchaseSettlement() {
-        GameManager.instance.getCurrentPlayer().purchaseSettlement();
+        ConnectionManager.instance.send({'action': 'purchase', 'name': 'settlement'})
+        //GameManager.instance.purchaseSettlement();
     }
 
     static purchaseCity() {
-        GameManager.instance.getCurrentPlayer().purchaseCity();
+        ConnectionManager.instance.send({'action': 'purchase', 'name': 'city'})
+        //GameManager.instance.purchaseCity();
     }
 
 

@@ -84,66 +84,66 @@ export class Player {
         return this.genericTrade(toPlayer, 1, fromPlayer, 4);
     }
 
-    purchaseRoad() {
-        if (GameManager.instance.mayPlaceRoad) {
-            GameManager.instance.printErr("Place road before buying another");
-            return;
-        }
-        if (GameManager.instance.getCurrentPlayer() != this) {
-            throw "Not this player's turn";
-        }
+    // purchaseRoad() {
+    //     if (GameManager.instance.mayPlaceRoad) {
+    //         GameManager.instance.printErr("Place road before buying another");
+    //         return;
+    //     }
+    //     if (GameManager.instance.getCurrentPlayer() != this) {
+    //         throw "Not this player's turn";
+    //     }
 
-        if (this.inventory.purchase([ResourceType.Brick, ResourceType.Lumber], [1, 1])) {
-            GameManager.instance.mayPlaceRoad = true;
-            GameManager.instance.print("Place new road");
-            this.updateInvBoard();
-        }
-        else {
-            GameManager.instance.printErr("Can't afford road");
-        }
-    }
+    //     if (this.inventory.purchase([ResourceType.Brick, ResourceType.Lumber], [1, 1])) {
+    //         GameManager.instance.mayPlaceRoad = true;
+    //         GameManager.instance.print("Place new road");
+    //         this.updateInvBoard();
+    //     }
+    //     else {
+    //         GameManager.instance.printErr("Can't afford road");
+    //     }
+    // }
 
-    purchaseCity() {
-        if (GameManager.instance.mayPlaceCity) {
-            GameManager.instance.printErr("Place city before buying another");
-            return;
-        }
-        if (GameManager.instance.getCurrentPlayer() != this) {
-            throw "Not this player's turn";
-        }
-        // requires 3 ore and 2 wheat
-        if (this.inventory.purchase([ResourceType.Wheat, ResourceType.Ore], [2, 3])) {
-            // new city!
-            GameManager.instance.mayPlaceCity = true;
-            GameManager.instance.print("Place new city");
-            this.updateInvBoard();
-        }
-        else {
-            GameManager.instance.printErr("Can't afford city");
-        }
-    }
+    // purchaseCity() {
+    //     if (GameManager.instance.mayPlaceCity) {
+    //         GameManager.instance.printErr("Place city before buying another");
+    //         return;
+    //     }
+    //     if (GameManager.instance.getCurrentPlayer() != this) {
+    //         throw "Not this player's turn";
+    //     }
+    //     // requires 3 ore and 2 wheat
+    //     if (this.inventory.purchase([ResourceType.Wheat, ResourceType.Ore], [2, 3])) {
+    //         // new city!
+    //         GameManager.instance.mayPlaceCity = true;
+    //         GameManager.instance.print("Place new city");
+    //         this.updateInvBoard();
+    //     }
+    //     else {
+    //         GameManager.instance.printErr("Can't afford city");
+    //     }
+    // }
 
-    purchaseSettlement() {
-        if (GameManager.instance.mayPlaceSettlement) {
-            GameManager.instance.printErr("Place settlement before buying another");
-            return;
-        }
-        if (GameManager.instance.getCurrentPlayer() != this) {
-            throw "Not this player's turn";
-        }
+    // purchaseSettlement() {
+    //     if (GameManager.instance.mayPlaceSettlement) {
+    //         GameManager.instance.printErr("Place settlement before buying another");
+    //         return;
+    //     }
+    //     if (GameManager.instance.getCurrentPlayer() != this) {
+    //         throw "Not this player's turn";
+    //     }
 
-        if (this.inventory.purchase(
-                [ResourceType.Brick, ResourceType.Lumber, ResourceType.Sheep, ResourceType.Wheat], [1, 1, 1, 1])) {
+    //     if (this.inventory.purchase(
+    //             [ResourceType.Brick, ResourceType.Lumber, ResourceType.Sheep, ResourceType.Wheat], [1, 1, 1, 1])) {
 
-            // new settlement!
-            GameManager.instance.mayPlaceSettlement = true;
-            GameManager.instance.print("Place new settlement");
-            this.updateInvBoard();
-        }
-        else {
-            GameManager.instance.printErr("Can't afford settlement");
-        }
-    }
+    //         // new settlement!
+    //         GameManager.instance.mayPlaceSettlement = true;
+    //         GameManager.instance.print("Place new settlement");
+    //         this.updateInvBoard();
+    //     }
+    //     else {
+    //         GameManager.instance.printErr("Can't afford settlement");
+    //     }
+    // }
 
     private updateInvBoard() {
         this.invBoard.clear();

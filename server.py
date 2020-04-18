@@ -69,8 +69,10 @@ class ServerProtocol(WebSocketServerProtocol):
 
         else:
             try:
-                obj = json.loads(msg)   
-                print(obj)
+                obj = json.loads(msg)
+                if type(obj) == 'str':
+                    raise json.decoder.JSONDecodeError
+
                 self.factory.callbackHandler(obj, self)   
             except json.decoder.JSONDecodeError:
                 print("Error: Invalid JSON:", msg)

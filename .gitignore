@@ -4,3 +4,4 @@ gameMsgLog.log
 test.json
 web/built/**
 web/libraries/*
+*.log*

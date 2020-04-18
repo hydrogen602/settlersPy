@@ -9,8 +9,12 @@ import { ctx } from "../graphics/Screen";
 
 export class ConnectionManager {
 
-    private ws: WebSocket
+    private ws: WebSocket | null;
     private url: string;
+
+    private token: string | null;
+
+    private spinner: HTMLElement;
 
     public static instance: ConnectionManager;
 
@@ -20,6 +24,21 @@ export class ConnectionManager {
         ConnectionManager.instance = this;
 
         this.url = 'ws://' + ip + ":" + port;
+
+        defined(this.url);
+
+        const tmp: HTMLElement | null = document.getElementById('connectionStatus');
+        if (tmp == null) {
+            throw new Error("Element with tag 'connectionStatus' not found")
+        }
+        this.spinner = <HTMLElement>tmp;
+
+        this.ws = null;
+        this.token = null;
+        this.connect();
+    }
+
+    private connect() {
         this.ws = new WebSocket(this.url);
 
         this.ws.onmessage = function(e: MessageEvent) {
@@ -30,22 +49,54 @@ export class ConnectionManager {
             ConnectionManager.instance.onopen(ev);
         };
 
-        defined(this.url);
         defined(this.ws);
     }
 
+    doneLoading() {
+        this.spinner.style['opacity'] = '0';
+    }
+
+    loading() {
+        this.spinner.style['opacity'] = '100';
+    }
+
+    /**
+     * The function handles the JSON.stringify
+     * 
+     * @param o An object to send.
+     */
     send(o: Object) {
         const msg = JSON.stringify(o);
-        this.ws.send(msg);
+        if (this.ws) {
+            this.ws.send(msg);
+        }
+        else {
+            console.log('Disconnected');
+        }
+        
+        this.loading();
     }
 
     getHistory() {
-        this.ws.send('history')
+        if (this.ws) {
+            this.ws.send('history');
+        }
+        else {
+            console.log('Disconnected');
+        }
+        this.loading();
     }
 
     onopen(ev: Event) {
-        this.ws.send('Hi');
+        if (this.ws) {
+            this.ws.send('Hi');
+        }
+        else {
+            console.log('Disconnected');
+        }
+        
         this.getHistory();
+        this.loading();
     }
 
     onmessage(e: MessageEvent) {
@@ -54,10 +105,22 @@ export class ConnectionManager {
         }
         else {
             try {
+                this.doneLoading();
+
                 const obj = JSON.parse(e.data);
 
-                console.log("got msg")
-                console.log(obj)
+                console.log("got msg");
+                console.log(obj);
+
+                if ('token' in obj) {
+                    const token: string = JsonParser.requireString(obj, 'token');
+                    console.log('yeet')
+                    if (!this.token) {
+                        // remember the token
+                        console.log('Got token', token)
+                        this.token = token;
+                    }
+                }
 
                 if (JsonParser.askName(obj) == 'GameMap' && GameMap.instance == undefined) {
                     const g = GameMap.fromJson(obj);

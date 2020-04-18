@@ -26,6 +26,18 @@ class GameManager:
         '''
         typeCheck(data, dict)
         print(playerID, data)
+
+        if 'action' in data:
+            if data['action'] == 'purchase':
+                if 'name' not in data:
+                    print('Malformed JSON: missing name tag in player action')
+                    print('->',playerID, data)
+                    return json.dumps({"Test": True})
+                
+                print(f'Player {playerID} would like to buy a {data["name"]}')
+                # isValid?
+                pass
+
         return json.dumps({"Test": True})
 
     def run(self):

@@ -4,9 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.7.5" />
-<title>tools API documentation</title>
-<meta name="description" content="The tools module is for enforcing interfaces on classes
-and verifying that functions expect the right arguments and types …" />
+<title>tools.functions API documentation</title>
+<meta name="description" content="" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
@@ -18,57 +17,77 @@ and verifying that functions expect the right arguments and types …" />
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>tools</code></h1>
+<h1 class="title">Module <code>tools.functions</code></h1>
 </header>
 <section id="section-intro">
-<p>The tools module is for enforcing interfaces on classes
-and verifying that functions expect the right arguments and types</p>
-<p>Also has a custom json encoder for objects</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">&#39;&#39;&#39;
-The tools module is for enforcing interfaces on classes
-and verifying that functions expect the right arguments and types
+<pre><code class="python">def typeCheck(value: object, type_: type):
+    if not isinstance(value, type_):
+        raise TypeError(f&#39;Expected type {type_} but got {type(value)}&#39;)
 
-Also has a custom json encoder for objects
-&#39;&#39;&#39;
+def subclassCheck(subCls: type, superCls: type):
+    if not issubclass(subCls, superCls):
+        raise TypeError(f&#39;Expected subclass of {superCls.__name__}, but {subCls.__name__} is not&#39;)
 
-from .interface2 import InterfaceSuperType, interface
-from .functions import typeCheck, subclassCheck
-from .customJson import customJsonEncoder
+# def enforceType(func):
+#     assert callable(func)
+#     assert hasattr(func, &#39;__annotations__&#39;)
 
-if __name__ == &#39;__main__&#39;:
-    raise ImportError
-if __name__ != &#39;tools&#39;:
-    raise ImportError(&#34;What? __name__ = &#34; + __name__)</code></pre>
+#     if &#39;return&#39; not in func.__annotations__:
+#         raise AttributeError(f&#39;Function {func.__name__} is missing a return type annotation&#39;)
+
+#     def wrapper(*args, **kwargs):
+
+#         pass
+
+#     return wrapper
+    
+
+# def foo(x: int) -&gt; None:
+#     pass
+
+# enforceType(foo)</code></pre>
 </details>
 </section>
 <section>
-<h2 class="section-title" id="header-submodules">Sub-modules</h2>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt><code class="name"><a title="tools.customJson" href="customJson.html">tools.customJson</a></code></dt>
+<dt id="tools.functions.subclassCheck"><code class="name flex">
+<span>def <span class="ident">subclassCheck</span></span>(<span>subCls, superCls)</span>
+</code></dt>
 <dd>
 <section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def subclassCheck(subCls: type, superCls: type):
+    if not issubclass(subCls, superCls):
+        raise TypeError(f&#39;Expected subclass of {superCls.__name__}, but {subCls.__name__} is not&#39;)</code></pre>
+</details>
 </dd>
-<dt><code class="name"><a title="tools.functions" href="functions.html">tools.functions</a></code></dt>
+<dt id="tools.functions.typeCheck"><code class="name flex">
+<span>def <span class="ident">typeCheck</span></span>(<span>value, type_)</span>
+</code></dt>
 <dd>
 <section class="desc"></section>
-</dd>
-<dt><code class="name"><a title="tools.interface2" href="interface2.html">tools.interface2</a></code></dt>
-<dd>
-<section class="desc"><p>Core features of the interface system</p></section>
-</dd>
-<dt><code class="name"><a title="tools.interfaceCheck" href="interfaceCheck.html">tools.interfaceCheck</a></code></dt>
-<dd>
-<section class="desc"><p>Additional interface and function checking systems</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def typeCheck(value: object, type_: type):
+    if not isinstance(value, type_):
+        raise TypeError(f&#39;Expected type {type_} but got {type(value)}&#39;)</code></pre>
+</details>
 </dd>
 </dl>
-</section>
-<section>
-</section>
-<section>
 </section>
 <section>
 </section>
@@ -79,12 +98,15 @@ if __name__ != &#39;tools&#39;:
 <ul></ul>
 </div>
 <ul id="index">
-<li><h3><a href="#header-submodules">Sub-modules</a></h3>
+<li><h3>Super-module</h3>
 <ul>
-<li><code><a title="tools.customJson" href="customJson.html">tools.customJson</a></code></li>
-<li><code><a title="tools.functions" href="functions.html">tools.functions</a></code></li>
-<li><code><a title="tools.interface2" href="interface2.html">tools.interface2</a></code></li>
-<li><code><a title="tools.interfaceCheck" href="interfaceCheck.html">tools.interfaceCheck</a></code></li>
+<li><code><a title="tools" href="index.html">tools</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="tools.functions.subclassCheck" href="#tools.functions.subclassCheck">subclassCheck</a></code></li>
+<li><code><a title="tools.functions.typeCheck" href="#tools.functions.typeCheck">typeCheck</a></code></li>
 </ul>
 </li>
 </ul>

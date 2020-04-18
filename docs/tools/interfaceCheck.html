@@ -66,7 +66,7 @@ def signatureChecker(cls: type, interface: type, attrName: str) -&gt; None:
 
         if not hasattr(orig_ref, &#39;__code__&#39;):
             return  # can&#39;t analyze
-        
+
         orig_sig = signature(orig_ref)
         impl_sig = signature(a_ref)
 
@@ -120,7 +120,7 @@ Returns <code>None</code> if no issue is found, else <code>TypeError</code> or <
 
         if not hasattr(orig_ref, &#39;__code__&#39;):
             return  # can&#39;t analyze
-        
+
         orig_sig = signature(orig_ref)
         impl_sig = signature(a_ref)
 

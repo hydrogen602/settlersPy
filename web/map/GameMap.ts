@@ -109,7 +109,7 @@ export class GameMap {
 
         if (!GameManager.instance.isEarlyRound()) {
 
-            const currPlayer = GameManager.instance.getCurrentPlayer();
+            const currPlayer = GameManager.instance.getSelf();
 
             let permitted = false;
             currPlayer.getRoads().forEach(r => {
@@ -128,7 +128,7 @@ export class GameMap {
 
     isAllowedCity(h: HexPoint) {
         // at settlement
-        const currPlayer = GameManager.instance.getCurrentPlayer();
+        const currPlayer = GameManager.instance.getSelf();
         let permitted = false;
         currPlayer.getSettlements().forEach(s => {
             const settlementLoc = s.getHexPoint();
@@ -154,7 +154,7 @@ export class GameMap {
         }
 
         // next to road or settlement owned
-        const currPlayer = GameManager.instance.getCurrentPlayer();
+        const currPlayer = GameManager.instance.getSelf();
         let permitted = false;
         currPlayer.getSettlements().forEach(s => {
             const settlementLoc = s.getHexPoint();
@@ -189,7 +189,7 @@ export class GameMap {
 
     addCity(h: HexPoint) {
         defined(h);
-        const currPlayer = GameManager.instance.getCurrentPlayer();
+        const currPlayer = GameManager.instance.getSelf();
 
         const re = currPlayer.getSettlements().filter(s => {
             const settlementLoc = s.getHexPoint();
