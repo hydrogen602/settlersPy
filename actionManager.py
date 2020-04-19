@@ -7,6 +7,8 @@ from typing import Dict, Callable
 from abc import ABC as AbstractBaseClass
 from abc import abstractmethod
 
+from mechanics.player import Player
+
 class ActionIllegalException(Exception):
     '''
     Raised when the game rules do not permit a certain action from
@@ -40,7 +42,7 @@ class ActionSuperCls(AbstractBaseClass):
         self.__name = name
 
     @abstractmethod
-    def isValid(self, playerID: str) -> bool:
+    def isValid(self, player: Player) -> bool:
         '''
         Called by `ActionManager` to verify an action is allowed
         by the Game Rules. Subclasses need to implement this method.
@@ -48,7 +50,7 @@ class ActionSuperCls(AbstractBaseClass):
         ...
     
     @abstractmethod
-    def doAction(self, playerID: str) -> None:
+    def doAction(self, player: Player) -> None:
         '''
         Called by `ActionManager` to run an action once it has been
         verified to be legal according to the game rules.
@@ -58,10 +60,19 @@ class ActionSuperCls(AbstractBaseClass):
     
     @property
     def group(self) -> str:
+        '''
+        The group name of the action. Similar actions should
+        be group for organization, like having a 'purchase' group
+        for buying roads, settlemnets, or towns.
+        '''
         return self.__group
     
     @property
     def name(self) -> str:
+        '''
+        The specific name of this action. This should be unique
+        to the group and descriptive.
+        '''
         return self.__name
 
 
@@ -81,27 +92,27 @@ class ActionManager:
         A class for making an action using just two functions rather than a whole subclass
         '''
 
-        def __init__(self, isValid: Callable[[str], bool], doAction: Callable[[str], None], group: str, name: str):
-            self.__isValid: Callable[[str], bool] = isValid
-            self.__doAction: Callable[[str], None] = doAction
+        def __init__(self, isValid: Callable[[Player], bool], doAction: Callable[[Player], None], group: str, name: str):
+            self.__isValid: Callable[[Player], bool] = isValid
+            self.__doAction: Callable[[Player], None] = doAction
             super().__init__(group, name)
         
-        def isValid(self, playerID: str) -> bool:
+        def isValid(self, player: Player) -> bool:
             '''
             Called by `ActionManager` to verify an action is allowed
             by the Game Rules. This is just a wrapper over the passed
             in `isValid` function that gives annotations.
             '''
-            return self.__isValid(playerID)
+            return self.__isValid(player)
         
-        def doAction(self, playerID: str) -> None:
+        def doAction(self, player: Player) -> None:
             '''
             Called by `ActionManager` to run an action once it has been
             verified to be legal according to the game rules.
             This is just a wrapper over the passed
             in `doAction` function that gives annotations.
             '''
-            return self.__doAction(playerID)
+            return self.__doAction(player)
 
 
     def __init__(self):
@@ -119,7 +130,7 @@ class ActionManager:
 
         self.actions[ac.group][ac.name] = ac
     
-    def call(self, group: str, name: str, playerID: str) -> None:
+    def call(self, group: str, name: str, player: Player) -> None:
         '''
         Call an action. If a player wanted to buy a road for example,
         then this method would be called as `call('purchase', 'road', 'player1')`.
@@ -135,9 +146,9 @@ class ActionManager:
         
         ac: ActionManager.Action = self.actions[group][name]
 
-        if not ac.isValid(playerID=playerID):
-            raise ActionIllegalException(f"Action '{name}' of group '{group}' for player '{playerID}' is not allowed")
+        if not ac.isValid(player=player):
+            raise ActionIllegalException(f"Action '{name}' of group '{group}' for player '{player}' is not allowed")
 
-        ac.doAction(playerID=playerID)
+        ac.doAction(player=player)
 
 
