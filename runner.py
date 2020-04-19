@@ -11,6 +11,8 @@ from server import Server
 from tools import typeCheck, customJsonEncoder
 from gameMap import GameMap
 
+import mechanics
+
 import json
 
 class GameManager:
@@ -18,27 +20,32 @@ class GameManager:
     def __init__(self):
         self.m = GameMap()
         self.serv = Server(ip='localhost', port=5000, callbackFunc=self.event, init_msgs=(self.m.getAsJson(),))
+
+        self.pm: mechanics.PlayerManager = mechanics.PlayerManager()
     
-    def event(self, playerID: str, data: dict):
+    def event(self, player: mechanics.Player, data: dict):
         '''
         event should be called by the `ServerFactory` when
         a new message has come from a client
         '''
         typeCheck(data, dict)
-        print(playerID, data)
+        print(player, data)
 
         if 'action' in data:
             if data['action'] == 'purchase':
                 if 'name' not in data:
                     print('Malformed JSON: missing name tag in player action')
-                    print('->',playerID, data)
+                    print('->',player, data)
                     return json.dumps({"Test": True})
                 
-                print(f'Player {playerID} would like to buy a {data["name"]}')
+                print(f'Player {player} would like to buy a {data["name"]}')
                 # isValid?
                 pass
 
         return json.dumps({"Test": True})
+    
+    def newPlayer(self, p: mechanics.Player):
+        self.pm.addPlayer(p)
 
     def run(self):
         print('Running Server...')
