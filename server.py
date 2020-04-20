@@ -21,7 +21,10 @@ from autobahn.twisted.websocket import \
 from twisted.python import log
 from twisted.internet import reactor
 
-from typing import Callable, Tuple
+from typing import Callable, Tuple, Union
+
+from tools import typeCheck
+import mechanics
 
 class ServerProtocol(WebSocketServerProtocol):
     '''
@@ -30,6 +33,13 @@ class ServerProtocol(WebSocketServerProtocol):
 
     Sending a message of 'history' returns all previously send messages
     '''
+
+    @property
+    def token(self) -> Union[str, None]:
+        try:
+            return self.__token
+        except AttributeError:
+            return None
 
     def onConnect(self, request):
 
@@ -44,7 +54,7 @@ class ServerProtocol(WebSocketServerProtocol):
             clientTypeRequest = clientTypeRequest[1:]
 
         # tell the factory to remember the connection
-        self.token = self.factory.register(self, clientTypeRequest)
+        self.__token = self.factory.register(self, clientTypeRequest)
 
     def onOpen(self):
         print('WebSocket connection open')
@@ -83,13 +93,19 @@ class ServerFactory(WebSocketServerFactory):
     Keeps track of all connections and relays data to other clients
     '''
 
-    def __init__(self, url, f, callbackFunc: Callable[[str, dict], str], init_msgs: Tuple[str] = ()):
+    def __init__(self, url, f, callbackFunc: Callable[[str, dict], str], 
+                 init_msgs: Tuple[str] = (), playerManage: mechanics.PlayerManager = None):
         '''
         Initializes the class
         Args:
             url (str): has to be in the format of "ws://127.0.0.1:8008"
+            f (file): a writable file for logging
+        
+        The playerManager should be shared with the GameManager
         '''
-        self.players = {}
+        typeCheck(playerManage, mechanics.PlayerManager)
+
+        self.pm: mechanics.PlayerManager = playerManage
 
         self.file = f
 
@@ -107,49 +123,97 @@ class ServerFactory(WebSocketServerFactory):
         jsonMsg = self.callbackFunc(client.token, msg)
         self.broadcastToAll(jsonMsg)
     
-    def getToken(self, client) -> str:
-        for token in self.players:
-            if self.players[token] is client:
-                return token
-        return ''
+    def getToken(self, client: ServerProtocol) -> str:
+        t = client.token
+        if t is None:
+            raise Exception('client has not yet registered. This error should not occur ever')
+
+        return t
     
     def sendHistory(self, client):
         for msg in self.history:
             client.sendMessage(msg.encode())
 
-    def register(self, client, clientTypeRequest) -> str:
-        if len(clientTypeRequest.strip()) > 0:
-            token = clientTypeRequest.strip()
-            if token in self.players:
-                print("Reconnecting player:", token)
-                self.players[token] = client
+    def register(self, client: ServerProtocol, clientTypeRequest: str) -> Union[str, None]:
+        '''
+        Called by any new connecting client to address
+        whether they are a new player or a reconnecting one.
 
-        else:
-            token = secrets.token_urlsafe(20)
-            print("Connecting player:", token)
-            self.players[token] = client
+        The request line should be /name/token
+        or /name but the first / is removed by onConnect
+
+        In the case that the name is missing the method will
+        return `None` and trigger a 400 error. Same goes for if
+        a token is given that the server does not know.        
+        '''
+        token = None
+        name = None
+
+        if len(clientTypeRequest.strip()) == 0:
+            print('name missing')
+            client.sendHttpErrorResponse(404, 'Name missing')
+            #client.sendClose()
         
-        return token
+        tmp = clientTypeRequest.strip()
+        tmp = tmp.split('/')
+        l = len(tmp)
+        if l == 1:
+            name = tmp[0]
+        elif l == 2:
+            name = tmp[0]
+            token = tmp[1]
+        else:
+            print('name missing')
+            client.sendHttpErrorResponse(404, 'Name missing')
+            #client.sendClose()
+            return None
+        
+        # print('clientTypeRequest =', len(clientTypeRequest.strip().split('/')))
+        
+        p: mechanics.Player = None
+
+        if token is None:
+            p = mechanics.Player(name, client)
+            print("New player:", p.token)
+            self.pm.addPlayer(p)
+
+        if token is not None:
+            if token in self.pm:
+                print("Reconnecting player:", token)
+                p = self.pm.getPlayer(token)
+                p.reconnect(client)
+            else:
+                print("Unknown token:", token)
+                client.sendHttpErrorResponse(403, 'Unknown token given')
+                #client.sendClose()
+                return None
+                # p = mechanics.Player(name, client)
+                # self.pm.addPlayer(p)
+        
+        return p.token
 
     def unregister(self, client):
-        for token in self.players:
-            if self.players[token] is client:
-                print("Disconnected player:", token)
-                self.players[token] = None
+        token = client.token
+        if token in self.pm:
+            print("Disconnected player:", token)
+            self.pm[token].disconnect()
+        else:
+            print("Disconnected player, but token not found?:", token)
     
     def broadcastToAll(self, msg: str): # sourceConnection: ServerProtocol
         self.file.write(msg + '\n')
         self.file.flush()
         self.history.append(msg)
-        
-        for token in self.players:
-            if self.players[token]: # is None if disconnected
-                self.players[token].sendMessage(msg.encode())
+
+        for p in self.pm:
+            if p.isConnected():
+                p.connection.sendMessage(msg.encode())
         
 
 class Server:
 
-    def __init__(self, ip: str = '127.0.0.1', port: int = 5000, callbackFunc: Callable[[str, dict], str] = None, init_msgs: Tuple[str] = ()):
+    def __init__(self, ip: str = '127.0.0.1', port: int = 5000, callbackFunc: Callable[[str, dict], str] = None, 
+                 init_msgs: Tuple[str] = (), playerManage: mechanics.PlayerManager = None):
         '''
         A class for managing the code for running the server.
         To setup the server, run `s = Server()`,
@@ -181,7 +245,7 @@ class Server:
         self.file = open('gameMsgLog.log', 'w')
 
         # Setup server factory
-        self.server = ServerFactory(u'ws://{}:{}'.format(ip, port), self.file, callbackFunc, init_msgs=init_msgs)
+        self.server = ServerFactory(u'ws://{}:{}'.format(ip, port), self.file, callbackFunc, init_msgs=init_msgs, playerManage=playerManage)
         self.server.protocol = ServerProtocol
 
         # setup listening server
@@ -199,6 +263,8 @@ class Server:
             # start listening for and handling connections
             # task.deferLater(reactor, 1, lambda: [self.server.broadcastToAll(msg) for msg in init_msgs])
             reactor.run()
+        except KeyboardInterrupt:
+            pass
         finally:
             self.file.close()
             # if logs are sent to a file instead of stdout

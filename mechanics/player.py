@@ -1,26 +1,57 @@
 
 from typing import Set
 
+from secrets import token_urlsafe
+
 class Player:
 
     __usedTokens: Set[str] = set()
 
-    def __init__(self, name: str, token: str):
+    def __init__(self, name: str, connection):
         '''
         `Player` is meant to represent one player uniquely.
         `name` is the name visible to other players and
         should be a real name. `token` is a semi-random
         string of characters to uniquely represent one
         player.
-        The `token` must be unique otherwise a `ValueError` will be raised.
+        `connection` should be of type `ServerProtocol` but its hard to enforce
         '''
-        if token in Player.__usedTokens:
-            raise ValueError(f"The token '{token}' is not unique")
+
+        token = token_urlsafe(16)
+        while token in Player.__usedTokens:
+            token = token_urlsafe(16)
 
         Player.__usedTokens.add(token)
 
         self.__name: str = name
         self.__token: str = token
+        self.__connection = connection
+    
+    @property
+    def connection(self):
+        '''
+        The instance of `ServerProtocol` that this player has
+        '''
+        return self.__connection
+    
+    def isConnected(self):
+        '''
+        Returns whether the connection variable is not None.
+        Equivalent to foo.connection is not None
+        '''
+        return self.__connection is not None
+    
+    def reconnect(self, connection):
+        '''
+        Called when the player reconnects and so has a different `ServerProtocol` instance
+        '''
+        self.__connection = connection
+    
+    def disconnect(self):
+        '''
+        Called when the player disconnects
+        '''
+        self.__connection = None
     
     @property
     def name(self) -> str:

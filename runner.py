@@ -18,10 +18,10 @@ import json
 class GameManager:
 
     def __init__(self):
-        self.m = GameMap()
-        self.serv = Server(ip='localhost', port=5000, callbackFunc=self.event, init_msgs=(self.m.getAsJson(),))
-
+        self.m: GameMap = GameMap()
         self.pm: mechanics.PlayerManager = mechanics.PlayerManager()
+
+        self.serv = Server(ip='localhost', port=5000, callbackFunc=self.event, init_msgs=(self.m.getAsJson(),), playerManage=self.pm)
     
     def event(self, player: mechanics.Player, data: dict):
         '''
