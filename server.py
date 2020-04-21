@@ -1,8 +1,11 @@
 #!/usr/bin/env python3.7
 
 '''
-Author: Jonathan Rotter
-Server code
+Server code for setting up a WebSocket server, handling connections, and verifying
+connection details.
+
+This code borrows from an earlier project with the CISS ROV Robotics Team
+
 
 Required 3rd-party libraries:
 `autobahn`

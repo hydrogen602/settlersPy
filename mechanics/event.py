@@ -1,3 +1,8 @@
+'''
+The event system is to turn received json messages into
+an understandable and known structure and verifying
+that all necessary tags are there.
+'''
 
 from typing import Dict, Union
 from tools import typeCheck
@@ -77,23 +82,54 @@ class ActionEvent(Event):
     Represents an action event. This convers anything done
     by the player with the board like a purchase of a road
     or the placement of a town.
+    Subclasses of this class must have an attribute
+    called `groupName` that must be of type `str`
+    and a `fromJson` method
     '''
 
     typeName = 'action'
 
-    def __init__(self, group: str, name: str, data: Dict[str, str]):
+    __subClsList: Dict[str, type] = {}
+
+    def __init__(self, group: str):
         self.__group: str = group
-        self.__name: str = name
         super().__init__('action')
+    
+    def __init_subclass__(cls):
+        if not hasattr(cls, 'groupName'):
+            raise AttributeError("Missing attribute 'groupName'")
+
+        groupName: str = getattr(cls, 'groupName')
+        typeCheck(groupName, str)
+
+        if not hasattr(cls, 'fromJson'):
+            raise AttributeError("Missing method 'fromJson'")
+        if ActionEvent.fromJson is getattr(cls, 'fromJson'):
+            raise AttributeError(f"ActionEvent subclass must overwrite 'fromJson', but has not")
+
+        if groupName in ActionEvent.__subClsList:
+            raise EventParseError(f"ActionEvent group '{groupName}' already exists")
+
+        ActionEvent.__subClsList[groupName] = cls
+        super().__init_subclass__()
     
     @property
     def group(self) -> str:
         return self.__group
     
-    @property
-    def name(self) -> str:
-        return self.__name
-    
     @staticmethod
-    def fromJson(data):
-        raise NotImplementedError
+    def fromJson(data: Dict[str, Union[str, dict]]):
+        typeCheck(data, dict)
+
+        if 'group' not in data:
+            raise KeyError("Missing key 'group'")
+
+        groupName = data['type']
+        if groupName not in ActionEvent.__subClsList:
+            raise KeyError(f"No subclass found for event group '{groupName}'")
+
+        subCls = ActionEvent.__subClsList[groupName]
+
+        return subCls.fromJson(data)
+
+        
