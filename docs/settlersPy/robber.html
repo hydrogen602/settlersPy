@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.7.5" />
-<title>tools.functions API documentation</title>
-<meta name="description" content="" />
+<title>settlersPy.robber API documentation</title>
+<meta name="description" content="Nothing here" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
@@ -17,42 +17,17 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>tools.functions</code></h1>
+<h1 class="title">Module <code>settlersPy.robber</code></h1>
 </header>
 <section id="section-intro">
+<p>Nothing here</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def typeCheck(value: object, type_: type):
-    &#39;&#39;&#39;
-    Raises a `TypeError` if value is not of the given type
-    &#39;&#39;&#39;
-    if not isinstance(value, type_):
-        raise TypeError(f&#39;Expected type {type_} but got {type(value)}&#39;)
-
-def subclassCheck(subCls: type, superCls: type):
-    if not issubclass(subCls, superCls):
-        raise TypeError(f&#39;Expected subclass of {superCls.__name__}, but {subCls.__name__} is not&#39;)
-
-# def enforceType(func):
-#     assert callable(func)
-#     assert hasattr(func, &#39;__annotations__&#39;)
-
-#     if &#39;return&#39; not in func.__annotations__:
-#         raise AttributeError(f&#39;Function {func.__name__} is missing a return type annotation&#39;)
-
-#     def wrapper(*args, **kwargs):
-
-#         pass
-
-#     return wrapper
-    
-
-# def foo(x: int) -&gt; None:
-#     pass
-
-# enforceType(foo)</code></pre>
+<pre><code class="python">&#39;&#39;&#39;
+Nothing here
+&#39;&#39;&#39;</code></pre>
 </details>
 </section>
 <section>
@@ -60,40 +35,6 @@ def subclassCheck(subCls: type, superCls: type):
 <section>
 </section>
 <section>
-<h2 class="section-title" id="header-functions">Functions</h2>
-<dl>
-<dt id="tools.functions.subclassCheck"><code class="name flex">
-<span>def <span class="ident">subclassCheck</span></span>(<span>subCls, superCls)</span>
-</code></dt>
-<dd>
-<section class="desc"></section>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def subclassCheck(subCls: type, superCls: type):
-    if not issubclass(subCls, superCls):
-        raise TypeError(f&#39;Expected subclass of {superCls.__name__}, but {subCls.__name__} is not&#39;)</code></pre>
-</details>
-</dd>
-<dt id="tools.functions.typeCheck"><code class="name flex">
-<span>def <span class="ident">typeCheck</span></span>(<span>value, type_)</span>
-</code></dt>
-<dd>
-<section class="desc"><p>Raises a <code>TypeError</code> if value is not of the given type</p></section>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def typeCheck(value: object, type_: type):
-    &#39;&#39;&#39;
-    Raises a `TypeError` if value is not of the given type
-    &#39;&#39;&#39;
-    if not isinstance(value, type_):
-        raise TypeError(f&#39;Expected type {type_} but got {type(value)}&#39;)</code></pre>
-</details>
-</dd>
-</dl>
 </section>
 <section>
 </section>
@@ -106,13 +47,7 @@ def subclassCheck(subCls: type, superCls: type):
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="tools" href="index.html">tools</a></code></li>
-</ul>
-</li>
-<li><h3><a href="#header-functions">Functions</a></h3>
-<ul class="">
-<li><code><a title="tools.functions.subclassCheck" href="#tools.functions.subclassCheck">subclassCheck</a></code></li>
-<li><code><a title="tools.functions.typeCheck" href="#tools.functions.typeCheck">typeCheck</a></code></li>
+<li><code><a title="settlersPy" href="index.html">settlersPy</a></code></li>
 </ul>
 </li>
 </ul>

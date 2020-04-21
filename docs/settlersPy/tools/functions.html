@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.7.5" />
-<title>tools.interfaceCheck API documentation</title>
-<meta name="description" content="Additional interface and function checking systems" />
+<title>settlersPy.tools.functions API documentation</title>
+<meta name="description" content="" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
@@ -17,75 +17,42 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>tools.interfaceCheck</code></h1>
+<h1 class="title">Module <code>settlersPy.tools.functions</code></h1>
 </header>
 <section id="section-intro">
-<p>Additional interface and function checking systems</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">&#39;&#39;&#39;
-Additional interface and function checking systems
-&#39;&#39;&#39;
-
-from typing import Union, Tuple, Dict, List
-from inspect import signature
-
-
-# def assertIsImplementation(obj: object, class_or_tuple: Union[type, Tuple[type]]) -&gt; bool:
-#     if isinstance(class_or_tuple):
-#         needToCheck: Tuple[type] = class_or_tuple
-#     else:
-#         needToCheck: Tuple[type] = (class_or_tuple, )
-
-#     for ty in needToCheck:
-#         methods = dir(ty)
-#         success = True
-#         crashReport = [&#34;Missing methods:&#34;]
-#         for m in methods:
-#             if not hasattr(obj, m):
-#                 success = False
-#                 crashReport.append(f&#34;Object &#39;{obj.__name__}&#39; is missing attribute &#39;{m}&#39;&#34;)
-        
-#         if not success:
-#             raise AttributeError(&#39;\n&#39;.join(crashReport))
-
-def signatureChecker(cls: type, interface: type, attrName: str) -&gt; None:
+<pre><code class="python">def typeCheck(value: object, type_: type):
     &#39;&#39;&#39;
-    Checks if an attribute of the interface is present in the class `cls`.
-    Returns `None` if no issue is found, else `TypeError` or `AttributeError`
+    Raises a `TypeError` if value is not of the given type
     &#39;&#39;&#39;
-    if not hasattr(cls, attrName):
-        raise AttributeError(f&#34;Class &#39;{cls.__name__}&#39; is missing attribute &#39;{attrName}&#39;&#34;)
-    a_ref = getattr(cls, attrName)
-    orig_ref = getattr(interface, attrName)
-    if callable(orig_ref):
-        if not callable(a_ref):
-            raise TypeError(f&#34;Interface &#39;{interface.__name__}&#39; requires callable attribute &#39;{attrName}&#39; but the implementation of &#39;{attrName}&#39; in class &#39;{cls.__name__}&#39; is not callable&#34;)
+    if not isinstance(value, type_):
+        raise TypeError(f&#39;Expected type {type_} but got {type(value)}&#39;)
 
-        if not hasattr(orig_ref, &#39;__code__&#39;):
-            return  # can&#39;t analyze
+def subclassCheck(subCls: type, superCls: type):
+    if not issubclass(subCls, superCls):
+        raise TypeError(f&#39;Expected subclass of {superCls.__name__}, but {subCls.__name__} is not&#39;)
 
-        orig_sig = signature(orig_ref)
-        impl_sig = signature(a_ref)
+# def enforceType(func):
+#     assert callable(func)
+#     assert hasattr(func, &#39;__annotations__&#39;)
 
-        if orig_sig != impl_sig:
-            raise TypeError(f&#34;Signatures don&#39;t match: Expected {orig_ref.__name__}{str(orig_sig)} but got {a_ref.__name__}{str(impl_sig)}&#34;)
+#     if &#39;return&#39; not in func.__annotations__:
+#         raise AttributeError(f&#39;Function {func.__name__} is missing a return type annotation&#39;)
 
-        #if hasattr(orig_ref, &#39;__annotations__&#39;) and orig_ref.__annotations__ != a_ref.__annotations__:
-        #    raise TypeError(f&#34;Signatures mismatch of attribute &#39;{a}&#39;: {reprinter(orig_ref)} &lt;=&gt; {reprinter(a_ref)}&#34;)
-    else:
-        if callable(a_ref):
-            raise TypeError(f&#34;Interface &#39;{interface.__name__}&#39; requires a non-callable attribute &#39;{attrName}&#39; but the implementation of &#39;{attrName}&#39; in class &#39;{cls.__name__}&#39; is callable&#34;)
+#     def wrapper(*args, **kwargs):
 
-# class A:
-#     def foo(self, x: int) -&gt; int: pass
+#         pass
 
-# class B:
-#     def foo(self, x: str) -&gt; int: pass
+#     return wrapper
+    
 
-# signatureChecker(B, A, &#39;foo&#39;)</code></pre>
+# def foo(x: int) -&gt; None:
+#     pass
+
+# enforceType(foo)</code></pre>
 </details>
 </section>
 <section>
@@ -95,43 +62,35 @@ def signatureChecker(cls: type, interface: type, attrName: str) -&gt; None:
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="tools.interfaceCheck.signatureChecker"><code class="name flex">
-<span>def <span class="ident">signatureChecker</span></span>(<span>cls, interface, attrName)</span>
+<dt id="settlersPy.tools.functions.subclassCheck"><code class="name flex">
+<span>def <span class="ident">subclassCheck</span></span>(<span>subCls, superCls)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Checks if an attribute of the interface is present in the class <code>cls</code>.
-Returns <code>None</code> if no issue is found, else <code>TypeError</code> or <code>AttributeError</code></p></section>
+<section class="desc"></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def signatureChecker(cls: type, interface: type, attrName: str) -&gt; None:
+<pre><code class="python">def subclassCheck(subCls: type, superCls: type):
+    if not issubclass(subCls, superCls):
+        raise TypeError(f&#39;Expected subclass of {superCls.__name__}, but {subCls.__name__} is not&#39;)</code></pre>
+</details>
+</dd>
+<dt id="settlersPy.tools.functions.typeCheck"><code class="name flex">
+<span>def <span class="ident">typeCheck</span></span>(<span>value, type_)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Raises a <code>TypeError</code> if value is not of the given type</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def typeCheck(value: object, type_: type):
     &#39;&#39;&#39;
-    Checks if an attribute of the interface is present in the class `cls`.
-    Returns `None` if no issue is found, else `TypeError` or `AttributeError`
+    Raises a `TypeError` if value is not of the given type
     &#39;&#39;&#39;
-    if not hasattr(cls, attrName):
-        raise AttributeError(f&#34;Class &#39;{cls.__name__}&#39; is missing attribute &#39;{attrName}&#39;&#34;)
-    a_ref = getattr(cls, attrName)
-    orig_ref = getattr(interface, attrName)
-    if callable(orig_ref):
-        if not callable(a_ref):
-            raise TypeError(f&#34;Interface &#39;{interface.__name__}&#39; requires callable attribute &#39;{attrName}&#39; but the implementation of &#39;{attrName}&#39; in class &#39;{cls.__name__}&#39; is not callable&#34;)
-
-        if not hasattr(orig_ref, &#39;__code__&#39;):
-            return  # can&#39;t analyze
-
-        orig_sig = signature(orig_ref)
-        impl_sig = signature(a_ref)
-
-        if orig_sig != impl_sig:
-            raise TypeError(f&#34;Signatures don&#39;t match: Expected {orig_ref.__name__}{str(orig_sig)} but got {a_ref.__name__}{str(impl_sig)}&#34;)
-
-        #if hasattr(orig_ref, &#39;__annotations__&#39;) and orig_ref.__annotations__ != a_ref.__annotations__:
-        #    raise TypeError(f&#34;Signatures mismatch of attribute &#39;{a}&#39;: {reprinter(orig_ref)} &lt;=&gt; {reprinter(a_ref)}&#34;)
-    else:
-        if callable(a_ref):
-            raise TypeError(f&#34;Interface &#39;{interface.__name__}&#39; requires a non-callable attribute &#39;{attrName}&#39; but the implementation of &#39;{attrName}&#39; in class &#39;{cls.__name__}&#39; is callable&#34;)</code></pre>
+    if not isinstance(value, type_):
+        raise TypeError(f&#39;Expected type {type_} but got {type(value)}&#39;)</code></pre>
 </details>
 </dd>
 </dl>
@@ -147,12 +106,13 @@ Returns <code>None</code> if no issue is found, else <code>TypeError</code> or <
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="tools" href="index.html">tools</a></code></li>
+<li><code><a title="settlersPy.tools" href="index.html">settlersPy.tools</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="tools.interfaceCheck.signatureChecker" href="#tools.interfaceCheck.signatureChecker">signatureChecker</a></code></li>
+<li><code><a title="settlersPy.tools.functions.subclassCheck" href="#settlersPy.tools.functions.subclassCheck">subclassCheck</a></code></li>
+<li><code><a title="settlersPy.tools.functions.typeCheck" href="#settlersPy.tools.functions.typeCheck">typeCheck</a></code></li>
 </ul>
 </li>
 </ul>

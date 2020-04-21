@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.7.5" />
-<title>mechanics.actionManager API documentation</title>
+<title>settlersPy.mechanics.actionManager API documentation</title>
 <meta name="description" content="Action Manager module" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
@@ -17,7 +17,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>mechanics.actionManager</code></h1>
+<h1 class="title">Module <code>settlersPy.mechanics.actionManager</code></h1>
 </header>
 <section id="section-intro">
 <p>Action Manager module</p>
@@ -188,7 +188,7 @@ class ActionManager:
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="mechanics.actionManager.ActionIllegalException"><code class="flex name class">
+<dt id="settlersPy.mechanics.actionManager.ActionIllegalException"><code class="flex name class">
 <span>class <span class="ident">ActionIllegalException</span></span>
 <span>(</span><span>...)</span>
 </code></dt>
@@ -212,13 +212,13 @@ happening, like purchasing something that the player cannot afford.</p></section
 <li>builtins.BaseException</li>
 </ul>
 </dd>
-<dt id="mechanics.actionManager.ActionManager"><code class="flex name class">
+<dt id="settlersPy.mechanics.actionManager.ActionManager"><code class="flex name class">
 <span>class <span class="ident">ActionManager</span></span>
 </code></dt>
 <dd>
 <section class="desc"><p>This module is for managing all the actions a player can trigger
 in the game in one place. Each action, like buying a road
-or placed it is represented with an instance of the <a title="mechanics.actionManager.ActionManager.Action" href="#mechanics.actionManager.ActionManager.Action"><code>ActionManager.Action</code></a>
+or placed it is represented with an instance of the <a title="settlersPy.mechanics.actionManager.ActionManager.Action" href="#settlersPy.mechanics.actionManager.ActionManager.Action"><code>ActionManager.Action</code></a>
 class, and then added to the manager using the <code>addAction</code> method.
 Later the actions can be called with the <code>call</code> method. All
 actions have a group and their own name, like an all buying actions group
@@ -304,18 +304,18 @@ which would have group="purchase" for example.</p></section>
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="mechanics.actionManager.ActionManager.Action"><code class="name">var <span class="ident">Action</span></code></dt>
+<dt id="settlersPy.mechanics.actionManager.ActionManager.Action"><code class="name">var <span class="ident">Action</span></code></dt>
 <dd>
 <section class="desc"><p>A class for making an action using just two functions rather than a whole subclass</p></section>
 </dd>
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="mechanics.actionManager.ActionManager.addAction"><code class="name flex">
+<dt id="settlersPy.mechanics.actionManager.ActionManager.addAction"><code class="name flex">
 <span>def <span class="ident">addAction</span></span>(<span>self, ac)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Add an action of type <a title="mechanics.actionManager.ActionManager.Action" href="#mechanics.actionManager.ActionManager.Action"><code>ActionManager.Action</code></a> to the list
+<section class="desc"><p>Add an action of type <a title="settlersPy.mechanics.actionManager.ActionManager.Action" href="#settlersPy.mechanics.actionManager.ActionManager.Action"><code>ActionManager.Action</code></a> to the list
 of actions.</p></section>
 <details class="source">
 <summary>
@@ -334,7 +334,7 @@ of actions.</p></section>
     self.actions[ac.group][ac.name] = ac</code></pre>
 </details>
 </dd>
-<dt id="mechanics.actionManager.ActionManager.call"><code class="name flex">
+<dt id="settlersPy.mechanics.actionManager.ActionManager.call"><code class="name flex">
 <span>def <span class="ident">call</span></span>(<span>self, group, name, player)</span>
 </code></dt>
 <dd>
@@ -342,7 +342,7 @@ of actions.</p></section>
 then this method would be called as <code>call('purchase', 'road', 'player1')</code>.
 This method raises <code>KeyError</code> if either the group does not exist or an
 action of the specified name does not exist in the group.
-The method raises an <a title="mechanics.actionManager.ActionIllegalException" href="#mechanics.actionManager.ActionIllegalException"><code>ActionIllegalException</code></a> if the game rules
+The method raises an <a title="settlersPy.mechanics.actionManager.ActionIllegalException" href="#settlersPy.mechanics.actionManager.ActionIllegalException"><code>ActionIllegalException</code></a> if the game rules
 prohibit this action, i.e. <code>isValid()</code> returned false.</p></section>
 <details class="source">
 <summary>
@@ -372,7 +372,7 @@ prohibit this action, i.e. <code>isValid()</code> returned false.</p></section>
 </dd>
 </dl>
 </dd>
-<dt id="mechanics.actionManager.ActionSuperCls"><code class="flex name class">
+<dt id="settlersPy.mechanics.actionManager.ActionSuperCls"><code class="flex name class">
 <span>class <span class="ident">ActionSuperCls</span></span>
 <span>(</span><span>group, name)</span>
 </code></dt>
@@ -380,7 +380,7 @@ prohibit this action, i.e. <code>isValid()</code> returned false.</p></section>
 <section class="desc"><p>This class is for implementing new actions. Each
 action needs a <code>isValid</code> method and a <code>doAction</code>
 method so that all the actions can be called from
-one place, the <a title="mechanics.actionManager.ActionManager" href="#mechanics.actionManager.ActionManager"><code>ActionManager</code></a>.</p>
+one place, the <a title="settlersPy.mechanics.actionManager.ActionManager" href="#settlersPy.mechanics.actionManager.ActionManager"><code>ActionManager</code></a>.</p>
 <p>Represents a single action. Each action needs a function
 called <code>isValid</code> that takes a <code>str</code>, playerID, and returns a <code>bool</code>
 representing whether this player is allowed to do this action or not.
@@ -458,11 +458,11 @@ and are later referred to using those names.</p></section>
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
-<li><a title="mechanics.actionManager.ActionManager.Action" href="#mechanics.actionManager.ActionManager.Action">ActionManager.Action</a></li>
+<li><a title="settlersPy.mechanics.actionManager.ActionManager.Action" href="#settlersPy.mechanics.actionManager.ActionManager.Action">ActionManager.Action</a></li>
 </ul>
 <h3>Instance variables</h3>
 <dl>
-<dt id="mechanics.actionManager.ActionSuperCls.group"><code class="name">var <span class="ident">group</span></code></dt>
+<dt id="settlersPy.mechanics.actionManager.ActionSuperCls.group"><code class="name">var <span class="ident">group</span></code></dt>
 <dd>
 <section class="desc"><p>The group name of the action. Similar actions should
 be group for organization, like having a 'purchase' group
@@ -481,7 +481,7 @@ def group(self) -&gt; str:
     return self.__group</code></pre>
 </details>
 </dd>
-<dt id="mechanics.actionManager.ActionSuperCls.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dt id="settlersPy.mechanics.actionManager.ActionSuperCls.name"><code class="name">var <span class="ident">name</span></code></dt>
 <dd>
 <section class="desc"><p>The specific name of this action. This should be unique
 to the group and descriptive.</p></section>
@@ -501,11 +501,11 @@ def name(self) -&gt; str:
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="mechanics.actionManager.ActionSuperCls.doAction"><code class="name flex">
+<dt id="settlersPy.mechanics.actionManager.ActionSuperCls.doAction"><code class="name flex">
 <span>def <span class="ident">doAction</span></span>(<span>self, player)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Called by <a title="mechanics.actionManager.ActionManager" href="#mechanics.actionManager.ActionManager"><code>ActionManager</code></a> to run an action once it has been
+<section class="desc"><p>Called by <a title="settlersPy.mechanics.actionManager.ActionManager" href="#settlersPy.mechanics.actionManager.ActionManager"><code>ActionManager</code></a> to run an action once it has been
 verified to be legal according to the game rules.
 Subclasses need to implement this method.</p></section>
 <details class="source">
@@ -522,11 +522,11 @@ def doAction(self, player: Player) -&gt; None:
     ...</code></pre>
 </details>
 </dd>
-<dt id="mechanics.actionManager.ActionSuperCls.isValid"><code class="name flex">
+<dt id="settlersPy.mechanics.actionManager.ActionSuperCls.isValid"><code class="name flex">
 <span>def <span class="ident">isValid</span></span>(<span>self, player)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Called by <a title="mechanics.actionManager.ActionManager" href="#mechanics.actionManager.ActionManager"><code>ActionManager</code></a> to verify an action is allowed
+<section class="desc"><p>Called by <a title="settlersPy.mechanics.actionManager.ActionManager" href="#settlersPy.mechanics.actionManager.ActionManager"><code>ActionManager</code></a> to verify an action is allowed
 by the Game Rules. Subclasses need to implement this method.</p></section>
 <details class="source">
 <summary>
@@ -554,29 +554,29 @@ def isValid(self, player: Player) -&gt; bool:
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="mechanics" href="index.html">mechanics</a></code></li>
+<li><code><a title="settlersPy.mechanics" href="index.html">settlersPy.mechanics</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="mechanics.actionManager.ActionIllegalException" href="#mechanics.actionManager.ActionIllegalException">ActionIllegalException</a></code></h4>
+<h4><code><a title="settlersPy.mechanics.actionManager.ActionIllegalException" href="#settlersPy.mechanics.actionManager.ActionIllegalException">ActionIllegalException</a></code></h4>
 </li>
 <li>
-<h4><code><a title="mechanics.actionManager.ActionManager" href="#mechanics.actionManager.ActionManager">ActionManager</a></code></h4>
+<h4><code><a title="settlersPy.mechanics.actionManager.ActionManager" href="#settlersPy.mechanics.actionManager.ActionManager">ActionManager</a></code></h4>
 <ul class="">
-<li><code><a title="mechanics.actionManager.ActionManager.Action" href="#mechanics.actionManager.ActionManager.Action">Action</a></code></li>
-<li><code><a title="mechanics.actionManager.ActionManager.addAction" href="#mechanics.actionManager.ActionManager.addAction">addAction</a></code></li>
-<li><code><a title="mechanics.actionManager.ActionManager.call" href="#mechanics.actionManager.ActionManager.call">call</a></code></li>
+<li><code><a title="settlersPy.mechanics.actionManager.ActionManager.Action" href="#settlersPy.mechanics.actionManager.ActionManager.Action">Action</a></code></li>
+<li><code><a title="settlersPy.mechanics.actionManager.ActionManager.addAction" href="#settlersPy.mechanics.actionManager.ActionManager.addAction">addAction</a></code></li>
+<li><code><a title="settlersPy.mechanics.actionManager.ActionManager.call" href="#settlersPy.mechanics.actionManager.ActionManager.call">call</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="mechanics.actionManager.ActionSuperCls" href="#mechanics.actionManager.ActionSuperCls">ActionSuperCls</a></code></h4>
+<h4><code><a title="settlersPy.mechanics.actionManager.ActionSuperCls" href="#settlersPy.mechanics.actionManager.ActionSuperCls">ActionSuperCls</a></code></h4>
 <ul class="">
-<li><code><a title="mechanics.actionManager.ActionSuperCls.doAction" href="#mechanics.actionManager.ActionSuperCls.doAction">doAction</a></code></li>
-<li><code><a title="mechanics.actionManager.ActionSuperCls.group" href="#mechanics.actionManager.ActionSuperCls.group">group</a></code></li>
-<li><code><a title="mechanics.actionManager.ActionSuperCls.isValid" href="#mechanics.actionManager.ActionSuperCls.isValid">isValid</a></code></li>
-<li><code><a title="mechanics.actionManager.ActionSuperCls.name" href="#mechanics.actionManager.ActionSuperCls.name">name</a></code></li>
+<li><code><a title="settlersPy.mechanics.actionManager.ActionSuperCls.doAction" href="#settlersPy.mechanics.actionManager.ActionSuperCls.doAction">doAction</a></code></li>
+<li><code><a title="settlersPy.mechanics.actionManager.ActionSuperCls.group" href="#settlersPy.mechanics.actionManager.ActionSuperCls.group">group</a></code></li>
+<li><code><a title="settlersPy.mechanics.actionManager.ActionSuperCls.isValid" href="#settlersPy.mechanics.actionManager.ActionSuperCls.isValid">isValid</a></code></li>
+<li><code><a title="settlersPy.mechanics.actionManager.ActionSuperCls.name" href="#settlersPy.mechanics.actionManager.ActionSuperCls.name">name</a></code></li>
 </ul>
 </li>
 </ul>

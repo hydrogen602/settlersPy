@@ -11,5 +11,5 @@ from .customJson import customJsonEncoder
 
 if __name__ == '__main__':
     raise ImportError
-if __name__ != 'tools':
+if __name__ != 'tools' and __name__ != 'settlersPy.tools':
     raise ImportError("What? __name__ = " + __name__)

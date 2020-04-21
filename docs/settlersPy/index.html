@@ -4,9 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.7.5" />
-<title>tools API documentation</title>
-<meta name="description" content="The tools module is for enforcing interfaces on classes
-and verifying that functions expect the right arguments and types …" />
+<title>settlersPy API documentation</title>
+<meta name="description" content="" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
@@ -18,51 +17,67 @@ and verifying that functions expect the right arguments and types …" />
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>tools</code></h1>
+<h1 class="title">Module <code>settlersPy</code></h1>
 </header>
 <section id="section-intro">
-<p>The tools module is for enforcing interfaces on classes
-and verifying that functions expect the right arguments and types</p>
-<p>Also has a custom json encoder for objects</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">&#39;&#39;&#39;
-The tools module is for enforcing interfaces on classes
-and verifying that functions expect the right arguments and types
-
-Also has a custom json encoder for objects
-&#39;&#39;&#39;
-
-from .interface2 import InterfaceSuperType, interface
-from .functions import typeCheck, subclassCheck
-from .customJson import customJsonEncoder
-
-if __name__ == &#39;__main__&#39;:
-    raise ImportError
-if __name__ != &#39;tools&#39;:
-    raise ImportError(&#34;What? __name__ = &#34; + __name__)</code></pre>
+<pre><code class="python">import os
+p = os.path.dirname(__file__)
+from sys import path
+path.append(p)</code></pre>
 </details>
 </section>
 <section>
 <h2 class="section-title" id="header-submodules">Sub-modules</h2>
 <dl>
-<dt><code class="name"><a title="tools.customJson" href="customJson.html">tools.customJson</a></code></dt>
+<dt><code class="name"><a title="settlersPy.biome" href="biome.html">settlersPy.biome</a></code></dt>
 <dd>
 <section class="desc"></section>
 </dd>
-<dt><code class="name"><a title="tools.functions" href="functions.html">tools.functions</a></code></dt>
+<dt><code class="name"><a title="settlersPy.gameMap" href="gameMap.html">settlersPy.gameMap</a></code></dt>
 <dd>
 <section class="desc"></section>
 </dd>
-<dt><code class="name"><a title="tools.interface2" href="interface2.html">tools.interface2</a></code></dt>
+<dt><code class="name"><a title="settlersPy.habitation" href="habitation.html">settlersPy.habitation</a></code></dt>
 <dd>
-<section class="desc"><p>Core features of the interface system</p></section>
+<section class="desc"></section>
 </dd>
-<dt><code class="name"><a title="tools.interfaceCheck" href="interfaceCheck.html">tools.interfaceCheck</a></code></dt>
+<dt><code class="name"><a title="settlersPy.mechanics" href="mechanics/index.html">settlersPy.mechanics</a></code></dt>
 <dd>
-<section class="desc"><p>Additional interface and function checking systems</p></section>
+<section class="desc"></section>
+</dd>
+<dt><code class="name"><a title="settlersPy.point" href="point.html">settlersPy.point</a></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt><code class="name"><a title="settlersPy.robber" href="robber.html">settlersPy.robber</a></code></dt>
+<dd>
+<section class="desc"><p>Nothing here</p></section>
+</dd>
+<dt><code class="name"><a title="settlersPy.runner" href="runner.html">settlersPy.runner</a></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt><code class="name"><a title="settlersPy.server" href="server.html">settlersPy.server</a></code></dt>
+<dd>
+<section class="desc"><p>Author: Jonathan Rotter
+Server code …</p></section>
+</dd>
+<dt><code class="name"><a title="settlersPy.tests" href="tests/index.html">settlersPy.tests</a></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt><code class="name"><a title="settlersPy.tile" href="tile.html">settlersPy.tile</a></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt><code class="name"><a title="settlersPy.tools" href="tools/index.html">settlersPy.tools</a></code></dt>
+<dd>
+<section class="desc"><p>The tools module is for enforcing interfaces on classes
+and verifying that functions expect the right arguments and types …</p></section>
 </dd>
 </dl>
 </section>
@@ -81,10 +96,17 @@ if __name__ != &#39;tools&#39;:
 <ul id="index">
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>
 <ul>
-<li><code><a title="tools.customJson" href="customJson.html">tools.customJson</a></code></li>
-<li><code><a title="tools.functions" href="functions.html">tools.functions</a></code></li>
-<li><code><a title="tools.interface2" href="interface2.html">tools.interface2</a></code></li>
-<li><code><a title="tools.interfaceCheck" href="interfaceCheck.html">tools.interfaceCheck</a></code></li>
+<li><code><a title="settlersPy.biome" href="biome.html">settlersPy.biome</a></code></li>
+<li><code><a title="settlersPy.gameMap" href="gameMap.html">settlersPy.gameMap</a></code></li>
+<li><code><a title="settlersPy.habitation" href="habitation.html">settlersPy.habitation</a></code></li>
+<li><code><a title="settlersPy.mechanics" href="mechanics/index.html">settlersPy.mechanics</a></code></li>
+<li><code><a title="settlersPy.point" href="point.html">settlersPy.point</a></code></li>
+<li><code><a title="settlersPy.robber" href="robber.html">settlersPy.robber</a></code></li>
+<li><code><a title="settlersPy.runner" href="runner.html">settlersPy.runner</a></code></li>
+<li><code><a title="settlersPy.server" href="server.html">settlersPy.server</a></code></li>
+<li><code><a title="settlersPy.tests" href="tests/index.html">settlersPy.tests</a></code></li>
+<li><code><a title="settlersPy.tile" href="tile.html">settlersPy.tile</a></code></li>
+<li><code><a title="settlersPy.tools" href="tools/index.html">settlersPy.tools</a></code></li>
 </ul>
 </li>
 </ul>

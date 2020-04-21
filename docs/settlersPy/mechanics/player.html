@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.7.5" />
-<title>mechanics.player API documentation</title>
+<title>settlersPy.mechanics.player API documentation</title>
 <meta name="description" content="" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
@@ -17,7 +17,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>mechanics.player</code></h1>
+<h1 class="title">Module <code>settlersPy.mechanics.player</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -135,12 +135,12 @@ class Player:
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="mechanics.player.Player"><code class="flex name class">
+<dt id="settlersPy.mechanics.player.Player"><code class="flex name class">
 <span>class <span class="ident">Player</span></span>
 <span>(</span><span>name, connection)</span>
 </code></dt>
 <dd>
-<section class="desc"><p><a title="mechanics.player.Player" href="#mechanics.player.Player"><code>Player</code></a> is meant to represent one player uniquely.
+<section class="desc"><p><a title="settlersPy.mechanics.player.Player" href="#settlersPy.mechanics.player.Player"><code>Player</code></a> is meant to represent one player uniquely.
 <code>name</code> is the name visible to other players and
 should be a real name. <code>token</code> is a semi-random
 string of characters to uniquely represent one
@@ -249,7 +249,7 @@ player.
 </details>
 <h3>Instance variables</h3>
 <dl>
-<dt id="mechanics.player.Player.connection"><code class="name">var <span class="ident">connection</span></code></dt>
+<dt id="settlersPy.mechanics.player.Player.connection"><code class="name">var <span class="ident">connection</span></code></dt>
 <dd>
 <section class="desc"><p>The instance of <code>ServerProtocol</code> that this player has</p></section>
 <details class="source">
@@ -264,7 +264,7 @@ def connection(self):
     return self.__connection</code></pre>
 </details>
 </dd>
-<dt id="mechanics.player.Player.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dt id="settlersPy.mechanics.player.Player.name"><code class="name">var <span class="ident">name</span></code></dt>
 <dd>
 <section class="desc"><p>The displayed name of the player</p></section>
 <details class="source">
@@ -279,7 +279,7 @@ def name(self) -&gt; str:
     return self.__name</code></pre>
 </details>
 </dd>
-<dt id="mechanics.player.Player.token"><code class="name">var <span class="ident">token</span></code></dt>
+<dt id="settlersPy.mechanics.player.Player.token"><code class="name">var <span class="ident">token</span></code></dt>
 <dd>
 <section class="desc"><p>The token used to uniquely identify the player</p></section>
 <details class="source">
@@ -297,7 +297,7 @@ def token(self) -&gt; str:
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="mechanics.player.Player.disconnect"><code class="name flex">
+<dt id="settlersPy.mechanics.player.Player.disconnect"><code class="name flex">
 <span>def <span class="ident">disconnect</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -313,7 +313,7 @@ def token(self) -&gt; str:
     self.__connection = None</code></pre>
 </details>
 </dd>
-<dt id="mechanics.player.Player.isConnected"><code class="name flex">
+<dt id="settlersPy.mechanics.player.Player.isConnected"><code class="name flex">
 <span>def <span class="ident">isConnected</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -331,7 +331,7 @@ Equivalent to foo.connection is not None</p></section>
     return self.__connection is not None</code></pre>
 </details>
 </dd>
-<dt id="mechanics.player.Player.reconnect"><code class="name flex">
+<dt id="settlersPy.mechanics.player.Player.reconnect"><code class="name flex">
 <span>def <span class="ident">reconnect</span></span>(<span>self, connection)</span>
 </code></dt>
 <dd>
@@ -360,20 +360,20 @@ Equivalent to foo.connection is not None</p></section>
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="mechanics" href="index.html">mechanics</a></code></li>
+<li><code><a title="settlersPy.mechanics" href="index.html">settlersPy.mechanics</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="mechanics.player.Player" href="#mechanics.player.Player">Player</a></code></h4>
+<h4><code><a title="settlersPy.mechanics.player.Player" href="#settlersPy.mechanics.player.Player">Player</a></code></h4>
 <ul class="two-column">
-<li><code><a title="mechanics.player.Player.connection" href="#mechanics.player.Player.connection">connection</a></code></li>
-<li><code><a title="mechanics.player.Player.disconnect" href="#mechanics.player.Player.disconnect">disconnect</a></code></li>
-<li><code><a title="mechanics.player.Player.isConnected" href="#mechanics.player.Player.isConnected">isConnected</a></code></li>
-<li><code><a title="mechanics.player.Player.name" href="#mechanics.player.Player.name">name</a></code></li>
-<li><code><a title="mechanics.player.Player.reconnect" href="#mechanics.player.Player.reconnect">reconnect</a></code></li>
-<li><code><a title="mechanics.player.Player.token" href="#mechanics.player.Player.token">token</a></code></li>
+<li><code><a title="settlersPy.mechanics.player.Player.connection" href="#settlersPy.mechanics.player.Player.connection">connection</a></code></li>
+<li><code><a title="settlersPy.mechanics.player.Player.disconnect" href="#settlersPy.mechanics.player.Player.disconnect">disconnect</a></code></li>
+<li><code><a title="settlersPy.mechanics.player.Player.isConnected" href="#settlersPy.mechanics.player.Player.isConnected">isConnected</a></code></li>
+<li><code><a title="settlersPy.mechanics.player.Player.name" href="#settlersPy.mechanics.player.Player.name">name</a></code></li>
+<li><code><a title="settlersPy.mechanics.player.Player.reconnect" href="#settlersPy.mechanics.player.Player.reconnect">reconnect</a></code></li>
+<li><code><a title="settlersPy.mechanics.player.Player.token" href="#settlersPy.mechanics.player.Player.token">token</a></code></li>
 </ul>
 </li>
 </ul>
