@@ -1,8 +1,14 @@
 
-.PHONY: tools-docs remove-tools-docs
+.PHONY: tools-docs remove-docs docs
 
-tools-docs: remove-tools-docs
+docs: remove-docs tools-docs mechanics-docs
+
+tools-docs:
 	pdoc3 --html -o docs tools
 
-remove-tools-docs:
-	rm -rf docs/tools
+mechanics-docs:
+	pdoc3 --html -o docs mechanics
+
+
+remove-docs:
+	rm -rf docs
