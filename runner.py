@@ -27,6 +27,10 @@ class GameManager:
         '''
         event should be called by the `ServerFactory` when
         a new message has come from a client
+
+        action messages should have the format:
+        {"type": "action", "group": groupName, "name": actionName, "data": extraData }
+        where the "data" tag is optional
         '''
         typeCheck(data, dict)
         print(player, data)

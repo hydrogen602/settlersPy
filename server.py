@@ -21,7 +21,7 @@ from autobahn.twisted.websocket import \
 from twisted.python import log
 from twisted.internet import reactor
 
-from typing import Callable, Tuple, Union
+from typing import Callable, Tuple, Union, List
 
 from tools import typeCheck
 import mechanics
@@ -197,17 +197,45 @@ class ServerFactory(WebSocketServerFactory):
         if token in self.pm:
             print("Disconnected player:", token)
             self.pm[token].disconnect()
+        elif token is None:
+            print("Player disconnected before assigned token:", token)
         else:
             print("Disconnected player, but token not found?:", token)
     
     def broadcastToAll(self, msg: str): # sourceConnection: ServerProtocol
+        '''
+        Sends a message of type `str` to all currently connected
+        players
+        '''
         self.file.write(msg + '\n')
         self.file.flush()
         self.history.append(msg)
 
+        encoded = msg.encode()
+
         for p in self.pm:
             if p.isConnected():
-                p.connection.sendMessage(msg.encode())
+                p.connection.sendMessage(encoded)
+    
+    def broadcastToSome(self, msg: str, tokenList: List[str], writeToHistory: bool = False):
+        '''
+        Sends a message of type `str` to all currently connected
+        players whose token is found in the list.
+        `writeToHistory`  determines whether or not this message should
+        be included in the history.
+        '''
+        if writeToHistory:
+            self.file.write(msg + '\n')
+            self.file.flush()
+            self.history.append(msg)
+        
+        encoded = msg.encode()
+        
+        for token in tokenList:
+            p = self.pm.getPlayer(token)
+            if p is not None and p.isConnected():
+                p.connection.sendMessage(encoded)
+
         
 
 class Server:
@@ -239,9 +267,6 @@ class Server:
 
             raise TypeError('Missing keyword argument "callbackFunc" which should be of type "Callable[[dict], str]"')
 
-        # display debug information to stdout for now
-        log.startLogging(sys.stdout)  # TODO: replace with log file (maybe)
-
         self.file = open('gameMsgLog.log', 'w')
 
         # Setup server factory
@@ -259,6 +284,9 @@ class Server:
         init_msgs are for messages that should be send to the player
         immediately, like the game map for example.
         '''
+        # display debug information to stdout for now
+        log.startLogging(sys.stdout)  # TODO: replace with log file (maybe)
+
         try:
             # start listening for and handling connections
             # task.deferLater(reactor, 1, lambda: [self.server.broadcastToAll(msg) for msg in init_msgs])

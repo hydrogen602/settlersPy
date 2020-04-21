@@ -28,7 +28,9 @@ Point -> abstract
  - getHexPoint
  // if no conversion is needed, return copy of self
 
-HexPoint implements Point
- - row
- - col
+
+## Design Ideas
+
+JSON validation should happen in server.py
+GameManager shouldn't be handling socket problems
 

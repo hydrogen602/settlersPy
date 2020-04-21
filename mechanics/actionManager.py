@@ -134,9 +134,9 @@ class ActionManager:
         '''
         Call an action. If a player wanted to buy a road for example,
         then this method would be called as `call('purchase', 'road', 'player1')`.
-        This method throws `KeyError` if either the group does not exist or an
+        This method raises `KeyError` if either the group does not exist or an
         action of the specified name does not exist in the group.
-        The method throws an `ActionIllegalException` if the game rules
+        The method raises an `ActionIllegalException` if the game rules
         prohibit this action, i.e. `isValid()` returned false.
         '''
         if group not in self.actions:

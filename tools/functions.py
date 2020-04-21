@@ -1,5 +1,8 @@
 
 def typeCheck(value: object, type_: type):
+    '''
+    Raises a `TypeError` if value is not of the given type
+    '''
     if not isinstance(value, type_):
         raise TypeError(f'Expected type {type_} but got {type(value)}')
 
