@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.7.5" />
 <title>settlersPy.mechanics.event API documentation</title>
-<meta name="description" content="" />
+<meta name="description" content="The event system is to turn received json messages into
+an understandable and known structure and verifying
+that all necessary tags are there." />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
@@ -20,16 +22,69 @@
 <h1 class="title">Module <code>settlersPy.mechanics.event</code></h1>
 </header>
 <section id="section-intro">
+<p>The event system is to turn received json messages into
+an understandable and known structure and verifying
+that all necessary tags are there.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from typing import Dict, Union
+<pre><code class="python">&#39;&#39;&#39;
+The event system is to turn received json messages into
+an understandable and known structure and verifying
+that all necessary tags are there.
+&#39;&#39;&#39;
+
+from typing import Dict, Union
+from functools import wraps
+
 from tools import typeCheck
+
+
+def requires_subclass_attr(varName: str):
+
+    def decorator_func(cls):
+
+        # @wraps(cls)
+        @classmethod
+        def __init_subclass__(subCls):
+            if not hasattr(subCls, varName):
+                raise AttributeError(f&#34;Missing attribute &#39;{varName}&#39;&#34;)
+
+            x: str = getattr(subCls, varName)
+            typeCheck(x, str)
+
+            if not hasattr(subCls, &#39;fromJson&#39;):
+                raise AttributeError(&#34;Missing method &#39;fromJson&#39;&#34;)
+
+            # clsList = subCls.mro()[1:] # first is itself so ignore that
+
+            # for cls in clsList:
+            #     if cls.__name__ == clsName:
+            #         break
+
+            if cls.fromJson is getattr(subCls, &#39;fromJson&#39;):
+                raise AttributeError(f&#34;{cls.__name__} subclass must overwrite &#39;fromJson&#39;, but has not&#34;)
+
+            subClsList = getattr(cls, f&#39;_{cls.__name__}__subClsList&#39;)
+
+            if x in subClsList:
+                raise EventParseError(f&#34;{cls.__name__} {varName}=&#39;{x}&#39; already exists&#34;)
+
+            print(f&#34;Registering {varName} &#39;{x}&#39; in class &#39;{cls.__name__}&#39;&#34;)
+            subClsList[x] = subCls
+
+
+        cls.__init_subclass__ = __init_subclass__
+        return cls
+
+    return decorator_func
+
 
 class EventParseError(Exception):
     pass
 
+@requires_subclass_attr(&#39;typeName&#39;)
 class Event:
     &#39;&#39;&#39;
     Subclasses needs a class variable
@@ -58,23 +113,6 @@ class Event:
     def eventType(self) -&gt; str:
         return self.__type
     
-    def __init_subclass__(cls):
-        if not hasattr(cls, &#39;typeName&#39;):
-            raise AttributeError(&#34;Missing attribute &#39;typeName&#39;&#34;)
-
-        typeName: str = getattr(cls, &#39;typeName&#39;)
-        typeCheck(typeName, str)
-
-        if not hasattr(cls, &#39;fromJson&#39;):
-            raise AttributeError(&#34;Missing method &#39;fromJson&#39;&#34;)
-        if Event.fromJson is getattr(cls, &#39;fromJson&#39;):
-            raise AttributeError(f&#34;Event subclass must overwrite &#39;fromJson&#39;, but has not&#34;)
-
-        if typeName in Event.__subClsList:
-            raise EventParseError(f&#34;Event type &#39;{typeName}&#39; already exists&#34;)
-
-        Event.__subClsList[typeName] = cls
-    
     @staticmethod
     def fromJson(data: Dict[str, Union[str, dict]]):
         &#39;&#39;&#39;
@@ -97,31 +135,76 @@ class Event:
         return subCls.fromJson(data)
         
 
+@requires_subclass_attr(&#39;groupName&#39;)
 class ActionEvent(Event):
     &#39;&#39;&#39;
     Represents an action event. This convers anything done
     by the player with the board like a purchase of a road
     or the placement of a town.
+    Subclasses of this class must have an attribute
+    called `groupName` that must be of type `str`
+    and a `fromJson` method
     &#39;&#39;&#39;
 
     typeName = &#39;action&#39;
 
-    def __init__(self, group: str, name: str, data: Dict[str, str]):
+    __subClsList: Dict[str, type] = {}
+
+    def __init__(self, group: str):
         self.__group: str = group
-        self.__name: str = name
-        super().__init__(&#39;action&#39;)
+        super().__init__(ActionEvent.typeName)
     
     @property
     def group(self) -&gt; str:
         return self.__group
+    
+    @staticmethod
+    def fromJson(data: Dict[str, Union[str, dict]]):
+        typeCheck(data, dict)
+
+        if &#39;group&#39; not in data:
+            raise KeyError(&#34;Missing key &#39;group&#39;&#34;)
+
+        groupName = data[&#39;group&#39;]
+        if groupName not in ActionEvent.__subClsList:
+            raise KeyError(f&#34;No subclass found for event group &#39;{groupName}&#39;&#34;)
+
+        subCls = ActionEvent.__subClsList[groupName]
+
+        return subCls.fromJson(data)
+
+
+class PurchaseAction(ActionEvent):
+
+    groupName = &#39;purchase&#39;
+
+    __subClsList: Dict[str, type] = {}
+
+    def __init__(self, name: str, data: dict):
+        self.__name: str = name
+        self.__data: dict = data
+        super().__init__(PurchaseAction.groupName)
     
     @property
     def name(self) -&gt; str:
         return self.__name
     
     @staticmethod
-    def fromJson(data):
-        raise NotImplementedError</code></pre>
+    def fromJson(data: Dict[str, Union[str, dict]]):
+        typeCheck(data, dict)
+
+        if &#39;name&#39; not in data:
+            raise KeyError(&#34;Missing key &#39;name&#39;&#34;)
+
+        name = data[&#39;name&#39;]
+        if name not in PurchaseAction.__subClsList:
+            raise KeyError(f&#34;No subclass found for event name &#39;{name}&#39;&#34;)
+
+        subCls = ActionEvent.__subClsList[name]
+
+        return subCls.fromJson(data)
+
+        </code></pre>
 </details>
 </section>
 <section>
@@ -129,18 +212,73 @@ class ActionEvent(Event):
 <section>
 </section>
 <section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="settlersPy.mechanics.event.requires_subclass_attr"><code class="name flex">
+<span>def <span class="ident">requires_subclass_attr</span></span>(<span>varName)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def requires_subclass_attr(varName: str):
+
+    def decorator_func(cls):
+
+        # @wraps(cls)
+        @classmethod
+        def __init_subclass__(subCls):
+            if not hasattr(subCls, varName):
+                raise AttributeError(f&#34;Missing attribute &#39;{varName}&#39;&#34;)
+
+            x: str = getattr(subCls, varName)
+            typeCheck(x, str)
+
+            if not hasattr(subCls, &#39;fromJson&#39;):
+                raise AttributeError(&#34;Missing method &#39;fromJson&#39;&#34;)
+
+            # clsList = subCls.mro()[1:] # first is itself so ignore that
+
+            # for cls in clsList:
+            #     if cls.__name__ == clsName:
+            #         break
+
+            if cls.fromJson is getattr(subCls, &#39;fromJson&#39;):
+                raise AttributeError(f&#34;{cls.__name__} subclass must overwrite &#39;fromJson&#39;, but has not&#34;)
+
+            subClsList = getattr(cls, f&#39;_{cls.__name__}__subClsList&#39;)
+
+            if x in subClsList:
+                raise EventParseError(f&#34;{cls.__name__} {varName}=&#39;{x}&#39; already exists&#34;)
+
+            print(f&#34;Registering {varName} &#39;{x}&#39; in class &#39;{cls.__name__}&#39;&#34;)
+            subClsList[x] = subCls
+
+
+        cls.__init_subclass__ = __init_subclass__
+        return cls
+
+    return decorator_func</code></pre>
+</details>
+</dd>
+</dl>
 </section>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
 <dt id="settlersPy.mechanics.event.ActionEvent"><code class="flex name class">
 <span>class <span class="ident">ActionEvent</span></span>
-<span>(</span><span>group, name, data)</span>
+<span>(</span><span>group)</span>
 </code></dt>
 <dd>
 <section class="desc"><p>Represents an action event. This convers anything done
 by the player with the board like a purchase of a road
-or the placement of a town.</p>
+or the placement of a town.
+Subclasses of this class must have an attribute
+called <code>groupName</code> that must be of type <code>str</code>
+and a <code>fromJson</code> method</p>
 <p>Don't call this method directly.
 It should only be called by a subclass</p></section>
 <details class="source">
@@ -152,30 +290,45 @@ It should only be called by a subclass</p></section>
     Represents an action event. This convers anything done
     by the player with the board like a purchase of a road
     or the placement of a town.
+    Subclasses of this class must have an attribute
+    called `groupName` that must be of type `str`
+    and a `fromJson` method
     &#39;&#39;&#39;
 
     typeName = &#39;action&#39;
 
-    def __init__(self, group: str, name: str, data: Dict[str, str]):
+    __subClsList: Dict[str, type] = {}
+
+    def __init__(self, group: str):
         self.__group: str = group
-        self.__name: str = name
-        super().__init__(&#39;action&#39;)
+        super().__init__(ActionEvent.typeName)
     
     @property
     def group(self) -&gt; str:
         return self.__group
     
-    @property
-    def name(self) -&gt; str:
-        return self.__name
-    
     @staticmethod
-    def fromJson(data):
-        raise NotImplementedError</code></pre>
+    def fromJson(data: Dict[str, Union[str, dict]]):
+        typeCheck(data, dict)
+
+        if &#39;group&#39; not in data:
+            raise KeyError(&#34;Missing key &#39;group&#39;&#34;)
+
+        groupName = data[&#39;group&#39;]
+        if groupName not in ActionEvent.__subClsList:
+            raise KeyError(f&#34;No subclass found for event group &#39;{groupName}&#39;&#34;)
+
+        subCls = ActionEvent.__subClsList[groupName]
+
+        return subCls.fromJson(data)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="settlersPy.mechanics.event.Event" href="#settlersPy.mechanics.event.Event">Event</a></li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="settlersPy.mechanics.event.PurchaseAction" href="#settlersPy.mechanics.event.PurchaseAction">PurchaseAction</a></li>
 </ul>
 <h3>Class variables</h3>
 <dl>
@@ -196,18 +349,6 @@ It should only be called by a subclass</p></section>
 <pre><code class="python">@property
 def group(self) -&gt; str:
     return self.__group</code></pre>
-</details>
-</dd>
-<dt id="settlersPy.mechanics.event.ActionEvent.name"><code class="name">var <span class="ident">name</span></code></dt>
-<dd>
-<section class="desc"></section>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@property
-def name(self) -&gt; str:
-    return self.__name</code></pre>
 </details>
 </dd>
 </dl>
@@ -261,23 +402,6 @@ It should only be called by a subclass</p></section>
     @property
     def eventType(self) -&gt; str:
         return self.__type
-    
-    def __init_subclass__(cls):
-        if not hasattr(cls, &#39;typeName&#39;):
-            raise AttributeError(&#34;Missing attribute &#39;typeName&#39;&#34;)
-
-        typeName: str = getattr(cls, &#39;typeName&#39;)
-        typeCheck(typeName, str)
-
-        if not hasattr(cls, &#39;fromJson&#39;):
-            raise AttributeError(&#34;Missing method &#39;fromJson&#39;&#34;)
-        if Event.fromJson is getattr(cls, &#39;fromJson&#39;):
-            raise AttributeError(f&#34;Event subclass must overwrite &#39;fromJson&#39;, but has not&#34;)
-
-        if typeName in Event.__subClsList:
-            raise EventParseError(f&#34;Event type &#39;{typeName}&#39; already exists&#34;)
-
-        Event.__subClsList[typeName] = cls
     
     @staticmethod
     def fromJson(data: Dict[str, Union[str, dict]]):
@@ -377,6 +501,89 @@ def eventType(self) -&gt; str:
 <li>builtins.BaseException</li>
 </ul>
 </dd>
+<dt id="settlersPy.mechanics.event.PurchaseAction"><code class="flex name class">
+<span>class <span class="ident">PurchaseAction</span></span>
+<span>(</span><span>name, data)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Represents an action event. This convers anything done
+by the player with the board like a purchase of a road
+or the placement of a town.
+Subclasses of this class must have an attribute
+called <code>groupName</code> that must be of type <code>str</code>
+and a <code>fromJson</code> method</p>
+<p>Don't call this method directly.
+It should only be called by a subclass</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PurchaseAction(ActionEvent):
+
+    groupName = &#39;purchase&#39;
+
+    __subClsList: Dict[str, type] = {}
+
+    def __init__(self, name: str, data: dict):
+        self.__name: str = name
+        self.__data: dict = data
+        super().__init__(PurchaseAction.groupName)
+    
+    @property
+    def name(self) -&gt; str:
+        return self.__name
+    
+    @staticmethod
+    def fromJson(data: Dict[str, Union[str, dict]]):
+        typeCheck(data, dict)
+
+        if &#39;name&#39; not in data:
+            raise KeyError(&#34;Missing key &#39;name&#39;&#34;)
+
+        name = data[&#39;name&#39;]
+        if name not in PurchaseAction.__subClsList:
+            raise KeyError(f&#34;No subclass found for event name &#39;{name}&#39;&#34;)
+
+        subCls = ActionEvent.__subClsList[name]
+
+        return subCls.fromJson(data)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="settlersPy.mechanics.event.ActionEvent" href="#settlersPy.mechanics.event.ActionEvent">ActionEvent</a></li>
+<li><a title="settlersPy.mechanics.event.Event" href="#settlersPy.mechanics.event.Event">Event</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="settlersPy.mechanics.event.PurchaseAction.groupName"><code class="name">var <span class="ident">groupName</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="settlersPy.mechanics.event.PurchaseAction.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def name(self) -&gt; str:
+    return self.__name</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="settlersPy.mechanics.event.ActionEvent" href="#settlersPy.mechanics.event.ActionEvent">ActionEvent</a></b></code>:
+<ul class="hlist">
+<li><code><a title="settlersPy.mechanics.event.ActionEvent.fromJson" href="#settlersPy.mechanics.event.Event.fromJson">fromJson</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
 </dl>
 </section>
 </article>
@@ -391,13 +598,17 @@ def eventType(self) -&gt; str:
 <li><code><a title="settlersPy.mechanics" href="index.html">settlersPy.mechanics</a></code></li>
 </ul>
 </li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="settlersPy.mechanics.event.requires_subclass_attr" href="#settlersPy.mechanics.event.requires_subclass_attr">requires_subclass_attr</a></code></li>
+</ul>
+</li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
 <h4><code><a title="settlersPy.mechanics.event.ActionEvent" href="#settlersPy.mechanics.event.ActionEvent">ActionEvent</a></code></h4>
 <ul class="">
 <li><code><a title="settlersPy.mechanics.event.ActionEvent.group" href="#settlersPy.mechanics.event.ActionEvent.group">group</a></code></li>
-<li><code><a title="settlersPy.mechanics.event.ActionEvent.name" href="#settlersPy.mechanics.event.ActionEvent.name">name</a></code></li>
 <li><code><a title="settlersPy.mechanics.event.ActionEvent.typeName" href="#settlersPy.mechanics.event.ActionEvent.typeName">typeName</a></code></li>
 </ul>
 </li>
@@ -410,6 +621,13 @@ def eventType(self) -&gt; str:
 </li>
 <li>
 <h4><code><a title="settlersPy.mechanics.event.EventParseError" href="#settlersPy.mechanics.event.EventParseError">EventParseError</a></code></h4>
+</li>
+<li>
+<h4><code><a title="settlersPy.mechanics.event.PurchaseAction" href="#settlersPy.mechanics.event.PurchaseAction">PurchaseAction</a></code></h4>
+<ul class="">
+<li><code><a title="settlersPy.mechanics.event.PurchaseAction.groupName" href="#settlersPy.mechanics.event.PurchaseAction.groupName">groupName</a></code></li>
+<li><code><a title="settlersPy.mechanics.event.PurchaseAction.name" href="#settlersPy.mechanics.event.PurchaseAction.name">name</a></code></li>
+</ul>
 </li>
 </ul>
 </li>

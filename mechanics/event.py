@@ -10,11 +10,13 @@ from functools import wraps
 from tools import typeCheck
 
 
-def init_subclass_event(clsName: str, varName: str):
+def requires_subclass_attr(varName: str):
 
-    def decorator_func(func):
-        @wraps(func)
-        def wrapper_func(subCls):
+    def decorator_func(cls):
+
+        # @wraps(cls)
+        @classmethod
+        def __init_subclass__(subCls):
             if not hasattr(subCls, varName):
                 raise AttributeError(f"Missing attribute '{varName}'")
 
@@ -24,11 +26,11 @@ def init_subclass_event(clsName: str, varName: str):
             if not hasattr(subCls, 'fromJson'):
                 raise AttributeError("Missing method 'fromJson'")
 
-            clsList = subCls.mro()[1:] # first is itself so ignore that
+            # clsList = subCls.mro()[1:] # first is itself so ignore that
 
-            for cls in clsList:
-                if cls.__name__ == clsName:
-                    break
+            # for cls in clsList:
+            #     if cls.__name__ == clsName:
+            #         break
 
             if cls.fromJson is getattr(subCls, 'fromJson'):
                 raise AttributeError(f"{cls.__name__} subclass must overwrite 'fromJson', but has not")
@@ -41,7 +43,9 @@ def init_subclass_event(clsName: str, varName: str):
             print(f"Registering {varName} '{x}' in class '{cls.__name__}'")
             subClsList[x] = subCls
 
-        return wrapper_func
+
+        cls.__init_subclass__ = __init_subclass__
+        return cls
 
     return decorator_func
 
@@ -49,6 +53,7 @@ def init_subclass_event(clsName: str, varName: str):
 class EventParseError(Exception):
     pass
 
+@requires_subclass_attr('typeName')
 class Event:
     '''
     Subclasses needs a class variable
@@ -77,10 +82,6 @@ class Event:
     def eventType(self) -> str:
         return self.__type
     
-    @init_subclass_event('Event', 'typeName')
-    def __init_subclass__(cls):
-        pass
-    
     @staticmethod
     def fromJson(data: Dict[str, Union[str, dict]]):
         '''
@@ -103,6 +104,7 @@ class Event:
         return subCls.fromJson(data)
         
 
+@requires_subclass_attr('groupName')
 class ActionEvent(Event):
     '''
     Represents an action event. This convers anything done
@@ -120,24 +122,6 @@ class ActionEvent(Event):
     def __init__(self, group: str):
         self.__group: str = group
         super().__init__(ActionEvent.typeName)
-    
-    def __init_subclass__(cls):
-        if not hasattr(cls, 'groupName'):
-            raise AttributeError("Missing attribute 'groupName'")
-
-        groupName: str = getattr(cls, 'groupName')
-        typeCheck(groupName, str)
-
-        if not hasattr(cls, 'fromJson'):
-            raise AttributeError("Missing method 'fromJson'")
-        if ActionEvent.fromJson is getattr(cls, 'fromJson'):
-            raise AttributeError(f"ActionEvent subclass must overwrite 'fromJson', but has not")
-
-        if groupName in ActionEvent.__subClsList:
-            raise EventParseError(f"ActionEvent group '{groupName}' already exists")
-
-        ActionEvent.__subClsList[groupName] = cls
-        #super().__init_subclass__()
     
     @property
     def group(self) -> str:

@@ -37,35 +37,49 @@ sys.path.append(newPath)
 
 # print(sys.path)
 
-import mechanics.event as event
+@pytest.mark.incremental
+class TestFaultySubClsExceptions:
+    def testImporting(self):
+        import mechanics.event as event
 
-def testFaultySubCls():
+    def testFaultySubCls1(self):
+        import mechanics.event as event
 
-    with pytest.raises(AttributeError):
-        class FaultyNoName(event.Event):
-            pass
-    
-    with pytest.raises(TypeError):
-        class FaultyWrongNameType(event.Event):
-            typeName = 42
-    
-    with pytest.raises(AttributeError):
-        class FaultyNoFromJson(event.Event):
-            typeName = &#34;faulty&#34;
-    
-    with pytest.raises(event.EventParseError):
-        class FaultyTakenName(event.Event):
-            typeName = &#34;action&#34;
-            def fromJson(self, data):
+        with pytest.raises(AttributeError):
+            class FaultyNoName(event.Event):
                 pass
 
-def testReturn():
+    def testFaultySubCls2(self):
+        import mechanics.event as event
 
-    with pytest.raises(KeyError):
-        event.Event.fromJson({})
-    
-    with pytest.raises(KeyError):
-        event.Event.fromJson({&#39;type&#39;: &#39;noExist1234567890&#39;})
+        with pytest.raises(TypeError):
+            class FaultyWrongNameType(event.Event):
+                typeName = 42
+
+    def testFaultySubCls3(self):
+        import mechanics.event as event
+
+        with pytest.raises(AttributeError):
+            class FaultyNoFromJson(event.Event):
+                typeName = &#34;faulty&#34;
+
+    def testFaultySubCls4(self):
+        import mechanics.event as event
+
+        with pytest.raises(event.EventParseError):
+            class FaultyTakenName(event.Event):
+                typeName = &#34;action&#34;
+                def fromJson(self, data):
+                    pass
+
+    def testReturn(self):
+        import mechanics.event as event
+
+        with pytest.raises(KeyError):
+            event.Event.fromJson({})
+        
+        with pytest.raises(KeyError):
+            event.Event.fromJson({&#39;type&#39;: &#39;noExist1234567890&#39;})
 
     </code></pre>
 </details>
@@ -75,10 +89,12 @@ def testReturn():
 <section>
 </section>
 <section>
-<h2 class="section-title" id="header-functions">Functions</h2>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="settlersPy.tests.eventCls_test.testFaultySubCls"><code class="name flex">
-<span>def <span class="ident">testFaultySubCls</span></span>(<span>)</span>
+<dt id="settlersPy.tests.eventCls_test.TestFaultySubClsExceptions"><code class="flex name class">
+<span>class <span class="ident">TestFaultySubClsExceptions</span></span>
 </code></dt>
 <dd>
 <section class="desc"></section>
@@ -86,20 +102,121 @@ def testReturn():
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def testFaultySubCls():
+<pre><code class="python">class TestFaultySubClsExceptions:
+    def testImporting(self):
+        import mechanics.event as event
+
+    def testFaultySubCls1(self):
+        import mechanics.event as event
+
+        with pytest.raises(AttributeError):
+            class FaultyNoName(event.Event):
+                pass
+
+    def testFaultySubCls2(self):
+        import mechanics.event as event
+
+        with pytest.raises(TypeError):
+            class FaultyWrongNameType(event.Event):
+                typeName = 42
+
+    def testFaultySubCls3(self):
+        import mechanics.event as event
+
+        with pytest.raises(AttributeError):
+            class FaultyNoFromJson(event.Event):
+                typeName = &#34;faulty&#34;
+
+    def testFaultySubCls4(self):
+        import mechanics.event as event
+
+        with pytest.raises(event.EventParseError):
+            class FaultyTakenName(event.Event):
+                typeName = &#34;action&#34;
+                def fromJson(self, data):
+                    pass
+
+    def testReturn(self):
+        import mechanics.event as event
+
+        with pytest.raises(KeyError):
+            event.Event.fromJson({})
+        
+        with pytest.raises(KeyError):
+            event.Event.fromJson({&#39;type&#39;: &#39;noExist1234567890&#39;})</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="settlersPy.tests.eventCls_test.TestFaultySubClsExceptions.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="settlersPy.tests.eventCls_test.TestFaultySubClsExceptions.testFaultySubCls1"><code class="name flex">
+<span>def <span class="ident">testFaultySubCls1</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def testFaultySubCls1(self):
+    import mechanics.event as event
 
     with pytest.raises(AttributeError):
         class FaultyNoName(event.Event):
-            pass
-    
+            pass</code></pre>
+</details>
+</dd>
+<dt id="settlersPy.tests.eventCls_test.TestFaultySubClsExceptions.testFaultySubCls2"><code class="name flex">
+<span>def <span class="ident">testFaultySubCls2</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def testFaultySubCls2(self):
+    import mechanics.event as event
+
     with pytest.raises(TypeError):
         class FaultyWrongNameType(event.Event):
-            typeName = 42
-    
+            typeName = 42</code></pre>
+</details>
+</dd>
+<dt id="settlersPy.tests.eventCls_test.TestFaultySubClsExceptions.testFaultySubCls3"><code class="name flex">
+<span>def <span class="ident">testFaultySubCls3</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def testFaultySubCls3(self):
+    import mechanics.event as event
+
     with pytest.raises(AttributeError):
         class FaultyNoFromJson(event.Event):
-            typeName = &#34;faulty&#34;
-    
+            typeName = &#34;faulty&#34;</code></pre>
+</details>
+</dd>
+<dt id="settlersPy.tests.eventCls_test.TestFaultySubClsExceptions.testFaultySubCls4"><code class="name flex">
+<span>def <span class="ident">testFaultySubCls4</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def testFaultySubCls4(self):
+    import mechanics.event as event
+
     with pytest.raises(event.EventParseError):
         class FaultyTakenName(event.Event):
             typeName = &#34;action&#34;
@@ -107,8 +224,8 @@ def testReturn():
                 pass</code></pre>
 </details>
 </dd>
-<dt id="settlersPy.tests.eventCls_test.testReturn"><code class="name flex">
-<span>def <span class="ident">testReturn</span></span>(<span>)</span>
+<dt id="settlersPy.tests.eventCls_test.TestFaultySubClsExceptions.testImporting"><code class="name flex">
+<span>def <span class="ident">testImporting</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <section class="desc"></section>
@@ -116,7 +233,21 @@ def testReturn():
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def testReturn():
+<pre><code class="python">def testImporting(self):
+    import mechanics.event as event</code></pre>
+</details>
+</dd>
+<dt id="settlersPy.tests.eventCls_test.TestFaultySubClsExceptions.testReturn"><code class="name flex">
+<span>def <span class="ident">testReturn</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def testReturn(self):
+    import mechanics.event as event
 
     with pytest.raises(KeyError):
         event.Event.fromJson({})
@@ -126,8 +257,8 @@ def testReturn():
 </details>
 </dd>
 </dl>
-</section>
-<section>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -141,10 +272,20 @@ def testReturn():
 <li><code><a title="settlersPy.tests" href="index.html">settlersPy.tests</a></code></li>
 </ul>
 </li>
-<li><h3><a href="#header-functions">Functions</a></h3>
-<ul class="">
-<li><code><a title="settlersPy.tests.eventCls_test.testFaultySubCls" href="#settlersPy.tests.eventCls_test.testFaultySubCls">testFaultySubCls</a></code></li>
-<li><code><a title="settlersPy.tests.eventCls_test.testReturn" href="#settlersPy.tests.eventCls_test.testReturn">testReturn</a></code></li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="settlersPy.tests.eventCls_test.TestFaultySubClsExceptions" href="#settlersPy.tests.eventCls_test.TestFaultySubClsExceptions">TestFaultySubClsExceptions</a></code></h4>
+<ul class="two-column">
+<li><code><a title="settlersPy.tests.eventCls_test.TestFaultySubClsExceptions.pytestmark" href="#settlersPy.tests.eventCls_test.TestFaultySubClsExceptions.pytestmark">pytestmark</a></code></li>
+<li><code><a title="settlersPy.tests.eventCls_test.TestFaultySubClsExceptions.testFaultySubCls1" href="#settlersPy.tests.eventCls_test.TestFaultySubClsExceptions.testFaultySubCls1">testFaultySubCls1</a></code></li>
+<li><code><a title="settlersPy.tests.eventCls_test.TestFaultySubClsExceptions.testFaultySubCls2" href="#settlersPy.tests.eventCls_test.TestFaultySubClsExceptions.testFaultySubCls2">testFaultySubCls2</a></code></li>
+<li><code><a title="settlersPy.tests.eventCls_test.TestFaultySubClsExceptions.testFaultySubCls3" href="#settlersPy.tests.eventCls_test.TestFaultySubClsExceptions.testFaultySubCls3">testFaultySubCls3</a></code></li>
+<li><code><a title="settlersPy.tests.eventCls_test.TestFaultySubClsExceptions.testFaultySubCls4" href="#settlersPy.tests.eventCls_test.TestFaultySubClsExceptions.testFaultySubCls4">testFaultySubCls4</a></code></li>
+<li><code><a title="settlersPy.tests.eventCls_test.TestFaultySubClsExceptions.testImporting" href="#settlersPy.tests.eventCls_test.TestFaultySubClsExceptions.testImporting">testImporting</a></code></li>
+<li><code><a title="settlersPy.tests.eventCls_test.TestFaultySubClsExceptions.testReturn" href="#settlersPy.tests.eventCls_test.TestFaultySubClsExceptions.testReturn">testReturn</a></code></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
