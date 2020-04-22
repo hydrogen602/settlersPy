@@ -5,6 +5,8 @@ that all necessary tags are there.
 '''
 
 from typing import Dict, Union
+from functools import wraps
+
 from tools import typeCheck
 
 class EventParseError(Exception):
@@ -93,7 +95,7 @@ class ActionEvent(Event):
 
     def __init__(self, group: str):
         self.__group: str = group
-        super().__init__('action')
+        super().__init__(ActionEvent.typeName)
     
     def __init_subclass__(cls):
         if not hasattr(cls, 'groupName'):
@@ -124,11 +126,42 @@ class ActionEvent(Event):
         if 'group' not in data:
             raise KeyError("Missing key 'group'")
 
-        groupName = data['type']
+        groupName = data['group']
         if groupName not in ActionEvent.__subClsList:
             raise KeyError(f"No subclass found for event group '{groupName}'")
 
         subCls = ActionEvent.__subClsList[groupName]
+
+        return subCls.fromJson(data)
+
+
+class PurchaseAction(ActionEvent):
+
+    groupName = 'purchase'
+
+    __subClsList: Dict[str, type] = {}
+
+    def __init__(self, name: str, data: dict):
+        self.__name: str = name
+        self.__data: dict = data
+        super().__init__(PurchaseAction.groupName)
+    
+    @property
+    def name(self) -> str:
+        return self.__name
+    
+    @staticmethod
+    def fromJson(data: Dict[str, Union[str, dict]]):
+        typeCheck(data, dict)
+
+        if 'name' not in data:
+            raise KeyError("Missing key 'name'")
+
+        name = data['name']
+        if name not in PurchaseAction.__subClsList:
+            raise KeyError(f"No subclass found for event name '{name}'")
+
+        subCls = ActionEvent.__subClsList[name]
 
         return subCls.fromJson(data)
 
