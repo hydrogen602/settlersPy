@@ -9,6 +9,43 @@ from functools import wraps
 
 from tools import typeCheck
 
+
+def init_subclass_event(clsName: str, varName: str):
+
+    def decorator_func(func):
+        @wraps(func)
+        def wrapper_func(subCls):
+            if not hasattr(subCls, varName):
+                raise AttributeError(f"Missing attribute '{varName}'")
+
+            x: str = getattr(subCls, varName)
+            typeCheck(x, str)
+
+            if not hasattr(subCls, 'fromJson'):
+                raise AttributeError("Missing method 'fromJson'")
+
+            clsList = subCls.mro()[1:] # first is itself so ignore that
+
+            for cls in clsList:
+                if cls.__name__ == clsName:
+                    break
+
+            if cls.fromJson is getattr(subCls, 'fromJson'):
+                raise AttributeError(f"{cls.__name__} subclass must overwrite 'fromJson', but has not")
+
+            subClsList = getattr(cls, f'_{cls.__name__}__subClsList')
+
+            if x in subClsList:
+                raise EventParseError(f"{cls.__name__} {varName}='{x}' already exists")
+
+            print(f"Registering {varName} '{x}' in class '{cls.__name__}'")
+            subClsList[x] = subCls
+
+        return wrapper_func
+
+    return decorator_func
+
+
 class EventParseError(Exception):
     pass
 
@@ -40,22 +77,9 @@ class Event:
     def eventType(self) -> str:
         return self.__type
     
+    @init_subclass_event('Event', 'typeName')
     def __init_subclass__(cls):
-        if not hasattr(cls, 'typeName'):
-            raise AttributeError("Missing attribute 'typeName'")
-
-        typeName: str = getattr(cls, 'typeName')
-        typeCheck(typeName, str)
-
-        if not hasattr(cls, 'fromJson'):
-            raise AttributeError("Missing method 'fromJson'")
-        if Event.fromJson is getattr(cls, 'fromJson'):
-            raise AttributeError(f"Event subclass must overwrite 'fromJson', but has not")
-
-        if typeName in Event.__subClsList:
-            raise EventParseError(f"Event type '{typeName}' already exists")
-
-        Event.__subClsList[typeName] = cls
+        pass
     
     @staticmethod
     def fromJson(data: Dict[str, Union[str, dict]]):
@@ -113,7 +137,7 @@ class ActionEvent(Event):
             raise EventParseError(f"ActionEvent group '{groupName}' already exists")
 
         ActionEvent.__subClsList[groupName] = cls
-        super().__init_subclass__()
+        #super().__init_subclass__()
     
     @property
     def group(self) -> str:

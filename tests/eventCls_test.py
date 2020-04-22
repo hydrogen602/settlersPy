@@ -11,22 +11,33 @@ sys.path.append(newPath)
 
 # print(sys.path)
 
-import mechanics.event as event
+def testImporting():
+    import mechanics.event as event
 
-def testFaultySubCls():
+def testFaultySubCls1():
+    import mechanics.event as event
 
     with pytest.raises(AttributeError):
         class FaultyNoName(event.Event):
-            pass
-    
+           pass
+
+def testFaultySubCls2():
+    import mechanics.event as event
+
     with pytest.raises(TypeError):
         class FaultyWrongNameType(event.Event):
             typeName = 42
-    
+
+def testFaultySubCls3():
+    import mechanics.event as event
+
     with pytest.raises(AttributeError):
         class FaultyNoFromJson(event.Event):
             typeName = "faulty"
-    
+
+def testFaultySubCls4():
+    import mechanics.event as event
+
     with pytest.raises(event.EventParseError):
         class FaultyTakenName(event.Event):
             typeName = "action"
@@ -34,6 +45,7 @@ def testFaultySubCls():
                 pass
 
 def testReturn():
+    import mechanics.event as event
 
     with pytest.raises(KeyError):
         event.Event.fromJson({})
