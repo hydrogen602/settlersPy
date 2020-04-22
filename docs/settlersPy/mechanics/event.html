@@ -42,12 +42,22 @@ from tools import typeCheck
 
 
 def requires_subclass_attr(varName: str):
-
+    &#39;&#39;&#39;
+    Decorator for the `Event` class or one
+    of its subclasses.
+    Gives the wrapped class a `__init_subclass__` method
+    and a variable called `__subClsList`
+    &#39;&#39;&#39;
     def decorator_func(cls):
 
         # @wraps(cls)
         @classmethod
         def __init_subclass__(subCls):
+            &#39;&#39;&#39;
+            Verifies a subCls has the right attributes
+            and adds the subCls to the list of subClasses
+            for later reference
+            &#39;&#39;&#39;
             if not hasattr(subCls, varName):
                 raise AttributeError(f&#34;Missing attribute &#39;{varName}&#39;&#34;)
 
@@ -76,6 +86,17 @@ def requires_subclass_attr(varName: str):
 
 
         cls.__init_subclass__ = __init_subclass__
+        setattr(cls, f&#39;_{cls.__name__}__subClsList&#39;, {})
+        &#39;&#39;&#39;
+        A `dict` of all subclasses of the Event class.
+        This is useful for parsing json
+        as the type name determines what is should expect.
+
+        Every received json must have a key called type whose
+        value matches one of the subclasses of `Event`
+
+        The var is of type Dict[str, type]
+        &#39;&#39;&#39;
         return cls
 
     return decorator_func
@@ -90,17 +111,7 @@ class Event:
     Subclasses needs a class variable
     called `typeName` that is of type `str`
     and a method called `fromJson`
-    &#39;&#39;&#39;
-
-    __subClsList: Dict[str, type] = {}
-    &#39;&#39;&#39;
-    A `dict` of all subclasses of the Event class.
-    This is useful for parsing json
-    as the type name determines what is should expect.
-
-    Every received json must have a key called type whose
-    value matches one of the subclasses of `Event`
-    &#39;&#39;&#39;
+    &#39;&#39;&#39;    
 
     def __init__(self, type_: str):
         &#39;&#39;&#39;
@@ -148,8 +159,6 @@ class ActionEvent(Event):
 
     typeName = &#39;action&#39;
 
-    __subClsList: Dict[str, type] = {}
-
     def __init__(self, group: str):
         self.__group: str = group
         super().__init__(ActionEvent.typeName)
@@ -174,15 +183,15 @@ class ActionEvent(Event):
         return subCls.fromJson(data)
 
 
+@requires_subclass_attr(&#39;name&#39;)
 class PurchaseAction(ActionEvent):
 
     groupName = &#39;purchase&#39;
 
     __subClsList: Dict[str, type] = {}
 
-    def __init__(self, name: str, data: dict):
+    def __init__(self, name: str):
         self.__name: str = name
-        self.__data: dict = data
         super().__init__(PurchaseAction.groupName)
     
     @property
@@ -218,18 +227,31 @@ class PurchaseAction(ActionEvent):
 <span>def <span class="ident">requires_subclass_attr</span></span>(<span>varName)</span>
 </code></dt>
 <dd>
-<section class="desc"></section>
+<section class="desc"><p>Decorator for the <a title="settlersPy.mechanics.event.Event" href="#settlersPy.mechanics.event.Event"><code>Event</code></a> class or one
+of its subclasses.
+Gives the wrapped class a <code>__init_subclass__</code> method
+and a variable called <code>__subClsList</code></p></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def requires_subclass_attr(varName: str):
-
+    &#39;&#39;&#39;
+    Decorator for the `Event` class or one
+    of its subclasses.
+    Gives the wrapped class a `__init_subclass__` method
+    and a variable called `__subClsList`
+    &#39;&#39;&#39;
     def decorator_func(cls):
 
         # @wraps(cls)
         @classmethod
         def __init_subclass__(subCls):
+            &#39;&#39;&#39;
+            Verifies a subCls has the right attributes
+            and adds the subCls to the list of subClasses
+            for later reference
+            &#39;&#39;&#39;
             if not hasattr(subCls, varName):
                 raise AttributeError(f&#34;Missing attribute &#39;{varName}&#39;&#34;)
 
@@ -258,6 +280,17 @@ class PurchaseAction(ActionEvent):
 
 
         cls.__init_subclass__ = __init_subclass__
+        setattr(cls, f&#39;_{cls.__name__}__subClsList&#39;, {})
+        &#39;&#39;&#39;
+        A `dict` of all subclasses of the Event class.
+        This is useful for parsing json
+        as the type name determines what is should expect.
+
+        Every received json must have a key called type whose
+        value matches one of the subclasses of `Event`
+
+        The var is of type Dict[str, type]
+        &#39;&#39;&#39;
         return cls
 
     return decorator_func</code></pre>
@@ -296,8 +329,6 @@ It should only be called by a subclass</p></section>
     &#39;&#39;&#39;
 
     typeName = &#39;action&#39;
-
-    __subClsList: Dict[str, type] = {}
 
     def __init__(self, group: str):
         self.__group: str = group
@@ -380,17 +411,7 @@ It should only be called by a subclass</p></section>
     Subclasses needs a class variable
     called `typeName` that is of type `str`
     and a method called `fromJson`
-    &#39;&#39;&#39;
-
-    __subClsList: Dict[str, type] = {}
-    &#39;&#39;&#39;
-    A `dict` of all subclasses of the Event class.
-    This is useful for parsing json
-    as the type name determines what is should expect.
-
-    Every received json must have a key called type whose
-    value matches one of the subclasses of `Event`
-    &#39;&#39;&#39;
+    &#39;&#39;&#39;    
 
     def __init__(self, type_: str):
         &#39;&#39;&#39;
@@ -503,7 +524,7 @@ def eventType(self) -&gt; str:
 </dd>
 <dt id="settlersPy.mechanics.event.PurchaseAction"><code class="flex name class">
 <span>class <span class="ident">PurchaseAction</span></span>
-<span>(</span><span>name, data)</span>
+<span>(</span><span>name)</span>
 </code></dt>
 <dd>
 <section class="desc"><p>Represents an action event. This convers anything done
@@ -524,9 +545,8 @@ It should only be called by a subclass</p></section>
 
     __subClsList: Dict[str, type] = {}
 
-    def __init__(self, name: str, data: dict):
+    def __init__(self, name: str):
         self.__name: str = name
-        self.__data: dict = data
         super().__init__(PurchaseAction.groupName)
     
     @property

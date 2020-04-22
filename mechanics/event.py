@@ -11,12 +11,22 @@ from tools import typeCheck
 
 
 def requires_subclass_attr(varName: str):
-
+    '''
+    Decorator for the `Event` class or one
+    of its subclasses.
+    Gives the wrapped class a `__init_subclass__` method
+    and a variable called `__subClsList`
+    '''
     def decorator_func(cls):
 
         # @wraps(cls)
         @classmethod
         def __init_subclass__(subCls):
+            '''
+            Verifies a subCls has the right attributes
+            and adds the subCls to the list of subClasses
+            for later reference
+            '''
             if not hasattr(subCls, varName):
                 raise AttributeError(f"Missing attribute '{varName}'")
 
@@ -45,6 +55,17 @@ def requires_subclass_attr(varName: str):
 
 
         cls.__init_subclass__ = __init_subclass__
+        setattr(cls, f'_{cls.__name__}__subClsList', {})
+        '''
+        A `dict` of all subclasses of the Event class.
+        This is useful for parsing json
+        as the type name determines what is should expect.
+
+        Every received json must have a key called type whose
+        value matches one of the subclasses of `Event`
+
+        The var is of type Dict[str, type]
+        '''
         return cls
 
     return decorator_func
@@ -59,17 +80,7 @@ class Event:
     Subclasses needs a class variable
     called `typeName` that is of type `str`
     and a method called `fromJson`
-    '''
-
-    __subClsList: Dict[str, type] = {}
-    '''
-    A `dict` of all subclasses of the Event class.
-    This is useful for parsing json
-    as the type name determines what is should expect.
-
-    Every received json must have a key called type whose
-    value matches one of the subclasses of `Event`
-    '''
+    '''    
 
     def __init__(self, type_: str):
         '''
@@ -117,8 +128,6 @@ class ActionEvent(Event):
 
     typeName = 'action'
 
-    __subClsList: Dict[str, type] = {}
-
     def __init__(self, group: str):
         self.__group: str = group
         super().__init__(ActionEvent.typeName)
@@ -143,15 +152,15 @@ class ActionEvent(Event):
         return subCls.fromJson(data)
 
 
+@requires_subclass_attr('name')
 class PurchaseAction(ActionEvent):
 
     groupName = 'purchase'
 
     __subClsList: Dict[str, type] = {}
 
-    def __init__(self, name: str, data: dict):
+    def __init__(self, name: str):
         self.__name: str = name
-        self.__data: dict = data
         super().__init__(PurchaseAction.groupName)
     
     @property

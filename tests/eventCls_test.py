@@ -55,4 +55,7 @@ class TestFaultySubClsExceptions:
         with pytest.raises(KeyError):
             event.Event.fromJson({'type': 'noExist1234567890'})
 
-    
+@pytest.mark.incremental
+class TestParsingSubCls:
+    def testImporting(self):
+        import mechanics.event as event
