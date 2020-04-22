@@ -36,6 +36,7 @@ class TestFaultySubClsExceptions:
         with pytest.raises(AttributeError):
             class FaultyNoFromJson(event.Event):
                 typeName = "faulty"
+            print(FaultyNoFromJson.fromJson)
 
     def testFaultySubCls4(self):
         import mechanics.event as event

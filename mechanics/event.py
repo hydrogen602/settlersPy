@@ -9,17 +9,21 @@ from functools import wraps
 
 from tools import typeCheck
 
-
-def requires_subclass_attr(varName: str):
+def eventSystemSetup(varName: str, buildFromJsonMethod: bool):
     '''
     Decorator for the `Event` class or one
     of its subclasses.
     Gives the wrapped class a `__init_subclass__` method
     and a variable called `__subClsList`
-    '''
-    def decorator_func(cls):
 
-        # @wraps(cls)
+    If `buildFromJsonMethod` is True, then the decorator will
+    also build a default implementation of fromJson
+    with argument `varName` as the key to look
+    for in the json.
+    This overwrites the class's `fromJson` function.
+    '''
+    def decorator_func(cls: type):
+
         @classmethod
         def __init_subclass__(subCls):
             '''
@@ -52,7 +56,34 @@ def requires_subclass_attr(varName: str):
 
             print(f"Registering {varName} '{x}' in class '{cls.__name__}'")
             subClsList[x] = subCls
+        
 
+        def fromJson(cls, data: Dict[str, Union[str, dict]]):
+            '''
+            A fromJson default function
+
+            Takes a `dict` that represents a received Json message
+            and finds the appropriate subclass to further verify
+            and parse the message
+            Throws a `KeyError` if there is no 'type' key or
+            if the specified type does not have a subclass for it 
+            '''
+
+            typeCheck(data, dict)
+            if varName not in data:
+                raise KeyError(f"Missing key '{varName}': {data}")
+
+            varValue = data[varName]
+            if varValue not in cls.__subClsList:
+                raise KeyError(f"No subclass found for event {varName} '{varValue}'")
+
+            subCls = cls.__subClsList[varValue]
+
+            return subCls.fromJson(data)
+
+        if buildFromJsonMethod:
+            print(f"Build `fromJson` for class '{cls.__name__}'")
+            cls.fromJson = fromJson.__get__(cls, type(cls))
 
         cls.__init_subclass__ = __init_subclass__
         setattr(cls, f'_{cls.__name__}__subClsList', {})
@@ -74,7 +105,7 @@ def requires_subclass_attr(varName: str):
 class EventParseError(Exception):
     pass
 
-@requires_subclass_attr('typeName')
+@eventSystemSetup('typeName', buildFromJsonMethod=True)
 class Event:
     '''
     Subclasses needs a class variable
@@ -92,30 +123,9 @@ class Event:
     @property
     def eventType(self) -> str:
         return self.__type
-    
-    @staticmethod
-    def fromJson(data: Dict[str, Union[str, dict]]):
-        '''
-        Takes a `dict` that represents a received Json message
-        and finds the appropriate subclass to further verify
-        and parse the message
-        Throws a `KeyError` if there is no 'type' key or
-        if the specified type does not have a subclass for it 
-        '''
-        typeCheck(data, dict)
-        if 'type' not in data:
-            raise KeyError(f"Missing key 'type': {data}")
-
-        typeName = data['type']
-        if typeName not in Event.__subClsList:
-            raise KeyError(f"No subclass found for event type '{typeName}'")
-
-        subCls = Event.__subClsList[typeName]
-
-        return subCls.fromJson(data)
         
 
-@requires_subclass_attr('groupName')
+@eventSystemSetup('groupName', buildFromJsonMethod=False)
 class ActionEvent(Event):
     '''
     Represents an action event. This convers anything done
@@ -152,7 +162,7 @@ class ActionEvent(Event):
         return subCls.fromJson(data)
 
 
-@requires_subclass_attr('name')
+@eventSystemSetup('name', buildFromJsonMethod=False)
 class PurchaseAction(ActionEvent):
 
     groupName = 'purchase'
