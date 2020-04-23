@@ -24,6 +24,26 @@ def eventSystemSetup(varName: str, buildFromJsonMethod: bool):
     '''
     def decorator_func(cls: type):
 
+        if not hasattr(cls, 'fromJson'):
+            raise AttributeError("Missing method 'fromJson'")
+
+        clsList = cls.mro()[1:] # first is itself so ignore that
+
+        if clsList == [object]:
+            pass # top of class chain
+        else:
+            superCls = None
+            for c in clsList:
+                if hasattr(c, 'fromJson'):
+                    superCls = c
+                    break
+            
+            if superCls is None:
+                raise AttributeError(f"Nothing in {clsList} has a 'fromJson' method. This should not happen")
+
+            if not buildFromJsonMethod and cls.fromJson is superCls.fromJson:
+                raise AttributeError(f"{cls.__name__} subclass must overwrite 'fromJson', but has not")
+
         @classmethod
         def __init_subclass__(subCls):
             '''
@@ -37,30 +57,24 @@ def eventSystemSetup(varName: str, buildFromJsonMethod: bool):
             x: str = getattr(subCls, varName)
             typeCheck(x, str)
 
-            if not hasattr(subCls, 'fromJson'):
-                raise AttributeError("Missing method 'fromJson'")
-
             # clsList = subCls.mro()[1:] # first is itself so ignore that
 
             # for cls in clsList:
             #     if cls.__name__ == clsName:
             #         break
 
-            if cls.fromJson is getattr(subCls, 'fromJson'):
-                raise AttributeError(f"{cls.__name__} subclass must overwrite 'fromJson', but has not")
-
             subClsList = getattr(cls, f'_{cls.__name__}__subClsList')
 
             if x in subClsList:
-                raise EventParseError(f"{cls.__name__} {varName}='{x}' already exists")
+                raise EventParseError(f"{cls.__name__} {varName}='{x}' already exists while attempting to register {subCls.__name__}")
 
-            print(f"Registering {varName} '{x}' in class '{cls.__name__}'")
+            print(f"Registering {varName} '{x}' from subcls '{subCls.__name__}' in class '{cls.__name__}'")
             subClsList[x] = subCls
-        
+
 
         def fromJson(cls, data: Dict[str, Union[str, dict]]):
             '''
-            A fromJson default function
+            A fromJson default method implementation
 
             Takes a `dict` that represents a received Json message
             and finds the appropriate subclass to further verify
@@ -70,23 +84,31 @@ def eventSystemSetup(varName: str, buildFromJsonMethod: bool):
             '''
 
             typeCheck(data, dict)
-            if varName not in data:
-                raise KeyError(f"Missing key '{varName}': {data}")
+            if cls.varName not in data:
+                raise KeyError(f"Missing key '{cls.varName}': {data}")
 
-            varValue = data[varName]
-            if varValue not in cls.__subClsList:
-                raise KeyError(f"No subclass found for event {varName} '{varValue}'")
+            varValue = data[cls.varName]
+            if varValue not in getattr(cls, f'_{cls.__name__}__subClsList'):
+                print(getattr(cls, f'_{cls.__name__}__subClsList'))
+                raise KeyError(f"No subclass found for event {cls.varName} '{varValue}'")
 
-            subCls = cls.__subClsList[varValue]
+            subCls = getattr(cls, f'_{cls.__name__}__subClsList')[varValue]
 
             return subCls.fromJson(data)
 
         if buildFromJsonMethod:
-            print(f"Build `fromJson` for class '{cls.__name__}'")
+            print(f"Build 'fromJson' for class '{cls.__name__}'")
             cls.fromJson = fromJson.__get__(cls, type(cls))
 
         cls.__init_subclass__ = __init_subclass__
         setattr(cls, f'_{cls.__name__}__subClsList', {})
+
+        if not hasattr(cls, 'varName'):
+            #  this shouldn't happen as varName is inherited from the Event class
+            raise AttributeError(f"{cls.__name__} is missing the attribute 'varName'")
+
+        setattr(cls, 'varName', varName)
+
         '''
         A `dict` of all subclasses of the Event class.
         This is useful for parsing json
@@ -111,7 +133,20 @@ class Event:
     Subclasses needs a class variable
     called `typeName` that is of type `str`
     and a method called `fromJson`
-    '''    
+    '''
+
+    __subClsList: Dict[str, type] = {}
+    '''
+    Mostly for making pyling be quiet about
+    this method missing. It is set by the
+    `eventSystemSetup` decorator.
+    '''
+
+    varName: str = None
+    '''
+    Stores the key that the fromJson method requires.
+    Set by the `eventSystemSetup` decorator
+    '''
 
     def __init__(self, type_: str):
         '''
@@ -123,6 +158,13 @@ class Event:
     @property
     def eventType(self) -> str:
         return self.__type
+    
+    @classmethod
+    def fromJson(cls, data: Dict[str, Union[str, dict]]):
+        '''
+        To make pylint shut up. This is overwritten by `eventSystemSetup`
+        '''
+        raise NotImplementedError
         
 
 @eventSystemSetup('groupName', buildFromJsonMethod=False)

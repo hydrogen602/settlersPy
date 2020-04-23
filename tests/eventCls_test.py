@@ -34,6 +34,7 @@ class TestFaultySubClsExceptions:
         import mechanics.event as event
 
         with pytest.raises(AttributeError):
+            @event.eventSystemSetup('typeName_testFaultySubCls3', buildFromJsonMethod=False)
             class FaultyNoFromJson(event.Event):
                 typeName = "faulty"
             print(FaultyNoFromJson.fromJson)
@@ -60,3 +61,35 @@ class TestFaultySubClsExceptions:
 class TestParsingSubCls:
     def testImporting(self):
         import mechanics.event as event
+
+    def testSubClass(self):
+        import mechanics.event as event
+
+        @event.eventSystemSetup('actionTest', buildFromJsonMethod=True)
+        class BasicSubCls(event.Event):
+            typeName = 'testType_testSubClass'
+    
+    def testSubClass2(self):
+        import mechanics.event as event
+
+        global called
+        called = False
+
+        @event.eventSystemSetup('basicSubCls', buildFromJsonMethod=True)
+        class BasicSubCls(event.Event):
+            typeName = 'testType_testSubClass2'
+        
+        @event.eventSystemSetup('actionSubCls', buildFromJsonMethod=False)
+        class ActionSubCls(BasicSubCls):
+            basicSubCls = 'actionName'
+        
+            @classmethod
+            def fromJson(cls, data):
+                global called
+                called = True
+                return ''
+        
+        event.Event.fromJson({'typeName': 'testType_testSubClass2', 'basicSubCls': 'actionName'})
+
+        assert called
+
