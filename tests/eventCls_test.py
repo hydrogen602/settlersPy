@@ -93,3 +93,15 @@ class TestParsingSubCls:
 
         assert called
 
+
+@pytest.mark.incremental
+class TestFeatureClasses:
+    def testImporting(self):
+        import mechanics.event as event
+        import features.purchaseAction as purchaseModule
+    
+    def testModule(self):
+        import mechanics.event as event
+        import features.purchaseAction as purchaseModule
+
+        cls = purchaseModule.PurchaseAction
