@@ -1,17 +1,16 @@
 from enum import Enum
 
-class Resource(Enum):
-    pass
 
-class PrimaryResource(Resource):
+class Resource(Enum):
     Wheat = 0
     Sheepie = 1
     Lumber = 2
     Ore = 3
     Brick = 4
 
+
 class Biome:
-    primaryRes: PrimaryResource = None
+    primaryRes: Resource = None
     color: str = None
 
     biomeList: list = []
@@ -28,7 +27,7 @@ class Biome:
 
     def __init_subclass__(cls):
         assert hasattr(cls, 'primaryRes')
-        assert isinstance(getattr(cls, 'primaryRes'), PrimaryResource)
+        assert isinstance(getattr(cls, 'primaryRes'), Resource)
 
         assert hasattr(cls, 'color')
         assert isinstance(getattr(cls, 'color'), str)
@@ -37,21 +36,21 @@ class Biome:
 
 
 class Farmland(Biome):
-    primaryRes: PrimaryResource = PrimaryResource.Wheat
+    primaryRes: Resource = Resource.Wheat
     color = 'goldenrod'
 
 class Grassland(Biome):
-    primaryRes: PrimaryResource = PrimaryResource.Sheepie
+    primaryRes: Resource = Resource.Sheepie
     color = 'limegreen'
 
 class Forest(Biome):
-    primaryRes: PrimaryResource = PrimaryResource.Lumber
+    primaryRes: Resource = Resource.Lumber
     color = 'forestgreen'
 
 class Mountain(Biome):
-    primaryRes: PrimaryResource = PrimaryResource.Ore
+    primaryRes: Resource = Resource.Ore
     color = 'dimgray'
 
 class Quarry(Biome):
-    primaryRes: PrimaryResource = PrimaryResource.Brick
+    primaryRes: Resource = Resource.Brick
     color = 'firebrick'

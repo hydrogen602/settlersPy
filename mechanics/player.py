@@ -3,6 +3,8 @@ from typing import Set
 
 from secrets import token_urlsafe
 
+from .inventory import Inventory
+
 class Player:
 
     __usedTokens: Set[str] = set()
@@ -26,6 +28,8 @@ class Player:
         self.__name: str = name
         self.__token: str = token
         self.__connection = connection
+
+        self.__inventory: Inventory = Inventory()
     
     @property
     def connection(self):
@@ -66,6 +70,10 @@ class Player:
         The token used to uniquely identify the player
         '''
         return self.__token
+    
+    @property
+    def inventory(self) -> Inventory:
+        return self.__inventory
     
     def __eq__(self, other: object) -> bool:
         '''

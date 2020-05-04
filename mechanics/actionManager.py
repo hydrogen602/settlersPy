@@ -87,6 +87,11 @@ class ActionManager:
     which would have group="purchase" for example.
     '''
 
+    __actions: Dict[str, Dict[str, ActionSuperCls]] = {}
+    '''
+    Stores a list of all registered actions
+    '''
+
     class Action(ActionSuperCls):
         '''
         A class for making an action using just two functions rather than a whole subclass
@@ -114,23 +119,27 @@ class ActionManager:
             '''
             return self.__doAction(player)
 
-
     def __init__(self):
-        self.actions: Dict[str, Dict[str, ActionManager.Action]] = {}
+        raise Exception("Don't init, use as singleton object")
     
-    def addAction(self, ac: Action) -> None:
+    @classmethod
+    def register(cls, ac: ActionSuperCls) -> ActionSuperCls:
         '''
         Add an action of type `ActionManager.Action` to the list
-        of actions.
+        of actions. Returns `ac` so that it can be used with
+        the decorator syntax
         '''
         typeCheck(ac, ActionSuperCls)
 
-        if ac.group not in self.actions:
-            self.actions[ac.group] = {} # create group if it doesn't exist
+        if ac.group not in cls.__actions:
+            cls.__actions[ac.group] = {} # create group if it doesn't exist
 
-        self.actions[ac.group][ac.name] = ac
+        cls.__actions[ac.group][ac.name] = ac
+
+        return ac
     
-    def call(self, group: str, name: str, player: Player) -> None:
+    @classmethod
+    def call(cls, group: str, name: str, player: Player) -> None:
         '''
         Call an action. If a player wanted to buy a road for example,
         then this method would be called as `call('purchase', 'road', 'player1')`.
@@ -139,12 +148,12 @@ class ActionManager:
         The method raises an `ActionIllegalException` if the game rules
         prohibit this action, i.e. `isValid()` returned false.
         '''
-        if group not in self.actions:
+        if group not in cls.__actions:
             raise KeyError(f"No group found called '{group}' in ActionManager")
-        if name not in self.actions[group]:
+        if name not in cls.__actions[group]:
             raise KeyError(f"No action found called '{name}' in group '{group}' in ActionManager")
         
-        ac: ActionManager.Action = self.actions[group][name]
+        ac: ActionManager.Action = cls.__actions[group][name]
 
         if not ac.isValid(player=player):
             raise ActionIllegalException(f"Action '{name}' of group '{group}' for player '{player}' is not allowed")

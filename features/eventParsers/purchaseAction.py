@@ -4,7 +4,7 @@ from typing import Dict, Union
 from mechanics.event import eventSystemSetup, Event, ActionEvent
 from tools import typeCheck
 
-import mechanics.actionManager
+from mechanics.actionManager import ActionManager, ActionIllegalException
 
 
 @eventSystemSetup('name', buildFromJsonMethod=True)
@@ -65,5 +65,6 @@ class PurchaseRoad(PurchaseAction):
     
     def doAction(self, messageCls):
         print("Purchase road")
+        ActionManager.call(self.group, self.name, messageCls.player)
         
         
