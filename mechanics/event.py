@@ -8,6 +8,8 @@ from typing import Dict, Union
 from functools import wraps
 
 from tools import typeCheck
+import abc
+from abc import ABC as AbstractBaseClass
 
 def eventSystemSetup(varName: str, buildFromJsonMethod: bool):
     '''
@@ -29,7 +31,7 @@ def eventSystemSetup(varName: str, buildFromJsonMethod: bool):
 
         clsList = cls.mro()[1:] # first is itself so ignore that
 
-        if clsList == [object]:
+        if clsList == [abc.ABC, object]:
             pass # top of class chain
         else:
             superCls = None
@@ -128,11 +130,13 @@ class EventParseError(Exception):
     pass
 
 @eventSystemSetup('typeName', buildFromJsonMethod=True)
-class Event:
+class Event(AbstractBaseClass):
     '''
     Subclasses needs a class variable
     called `typeName` that is of type `str`
-    and a method called `fromJson`
+    and a method called `fromJson`.
+    The final subclass also needs an `doAction` method.
+    Start event parsing by calling `Event.fromJson`
     '''
 
     __subClsList: Dict[str, type] = {}
@@ -165,6 +169,15 @@ class Event:
         To make pylint shut up. This is overwritten by `eventSystemSetup`
         '''
         raise NotImplementedError
+
+    @abc.abstractmethod
+    def doAction(self, messageCls):
+        '''
+        Do some action regarding the json message's content.
+        '''
+        pass
+    
+
         
 
 @eventSystemSetup('groupName', buildFromJsonMethod=False)

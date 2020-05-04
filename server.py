@@ -28,6 +28,7 @@ from typing import Callable, Tuple, Union, List
 
 from tools import typeCheck
 import mechanics
+from message import Message
 
 class ServerProtocol(WebSocketServerProtocol):
     '''
@@ -86,6 +87,8 @@ class ServerProtocol(WebSocketServerProtocol):
                 if type(obj) == 'str':
                     raise json.decoder.JSONDecodeError
 
+                m = Message(mechanics.PlayerManager.instance.getPlayer(self.token), obj, self.factory)
+
                 self.factory.callbackHandler(obj, self)   
             except json.decoder.JSONDecodeError:
                 print("Error: Invalid JSON:", msg)
@@ -108,7 +111,7 @@ class ServerFactory(WebSocketServerFactory):
         '''
         typeCheck(playerManage, mechanics.PlayerManager)
 
-        self.pm: mechanics.PlayerManager = playerManage
+        self.playerManager: mechanics.PlayerManager = playerManage
 
         self.file = f
 
@@ -178,12 +181,12 @@ class ServerFactory(WebSocketServerFactory):
         if token is None:
             p = mechanics.Player(name, client)
             print("New player:", p.token)
-            self.pm.addPlayer(p)
+            self.playerManager.addPlayer(p)
 
         if token is not None:
-            if token in self.pm:
+            if token in self.playerManager:
                 print("Reconnecting player:", token)
-                p = self.pm.getPlayer(token)
+                p = self.playerManager.getPlayer(token)
                 p.reconnect(client)
             else:
                 print("Unknown token:", token)
@@ -197,9 +200,9 @@ class ServerFactory(WebSocketServerFactory):
 
     def unregister(self, client):
         token = client.token
-        if token in self.pm:
+        if token in self.playerManager:
             print("Disconnected player:", token)
-            self.pm[token].disconnect()
+            self.playerManager[token].disconnect()
         elif token is None:
             print("Player disconnected before assigned token:", token)
         else:
@@ -216,7 +219,7 @@ class ServerFactory(WebSocketServerFactory):
 
         encoded = msg.encode()
 
-        for p in self.pm:
+        for p in self.playerManager:
             if p.isConnected():
                 p.connection.sendMessage(encoded)
     
@@ -235,10 +238,9 @@ class ServerFactory(WebSocketServerFactory):
         encoded = msg.encode()
         
         for token in tokenList:
-            p = self.pm.getPlayer(token)
+            p = self.playerManager.getPlayer(token)
             if p is not None and p.isConnected():
                 p.connection.sendMessage(encoded)
-
         
 
 class Server:

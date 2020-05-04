@@ -13,6 +13,8 @@ from gameMap import GameMap
 
 import mechanics
 
+import features
+
 import json
 
 class GameManager:

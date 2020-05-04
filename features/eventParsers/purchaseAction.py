@@ -4,6 +4,8 @@ from typing import Dict, Union
 from mechanics.event import eventSystemSetup, Event, ActionEvent
 from tools import typeCheck
 
+import mechanics.actionManager
+
 
 @eventSystemSetup('name', buildFromJsonMethod=True)
 class PurchaseAction(ActionEvent):
@@ -34,3 +36,34 @@ class PurchaseAction(ActionEvent):
     #     subCls = ActionEvent.__subClsList[name]
 
     #     return subCls.fromJson(data)
+
+
+class PurchaseRoad(PurchaseAction):
+    '''
+    Example js to trigger this class:
+    ws.send(JSON.stringify({'typeName':'action', 'group':'purchase', 'name':'purchase_road'}))
+    '''
+
+    name = "purchase_road"
+
+    def __init__(self, data):
+        self.__data: Dict[str, object] = data
+    
+    @property
+    def data(self) -> Dict[str, object]:
+        return self.__data
+    
+    @staticmethod
+    def fromJson(data: Dict[str, Union[str, dict]]):
+        typeCheck(data, dict)
+
+        # purchase road needs no extra data
+
+        print("Player wants to purchase a road")
+
+        return PurchaseRoad(data)
+    
+    def doAction(self, messageCls):
+        print("Purchase road")
+        
+        

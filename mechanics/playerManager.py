@@ -8,6 +8,8 @@ class PlayerManager:
 
     __hasInit: bool = False
 
+    instance = None
+
     def __init__(self):
         '''
         Manages instances of the `Player` class.
@@ -18,6 +20,7 @@ class PlayerManager:
         if PlayerManager.__hasInit:
             raise Exception('There should only be one instance of the PlayerManager')
         PlayerManager.__hasInit = True
+        PlayerManager.instance = self
 
         self.__players: Dict[str, Player] = {}
     
