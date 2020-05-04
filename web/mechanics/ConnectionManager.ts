@@ -18,12 +18,12 @@ export class ConnectionManager {
 
     public static instance: ConnectionManager;
 
-    constructor(ip: string, port: number) {
+    constructor(ip: string, port: number, name: string) {
         assertInt(port);
 
         ConnectionManager.instance = this;
 
-        this.url = 'ws://' + ip + ":" + port;
+        this.url = 'ws://' + ip + ":" + port + '/' + name;
 
         defined(this.url);
 

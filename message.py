@@ -39,4 +39,7 @@ class Message:
         return self.__serverFactoryInstance
     
     def doAction(self):
-        return self.__msgProcessed.doAction(self)
+        if self.__msgProcessed is None:
+            print("Invalid Json caused doAction to be null")
+        else:
+            return self.__msgProcessed.doAction(self)

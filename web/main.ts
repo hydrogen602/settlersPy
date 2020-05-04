@@ -1,14 +1,14 @@
 
-import { ctx } from "./graphics/Screen";
+// import { ctx } from "./graphics/Screen";
 //import { GameMap } from "./map/GameMap";
-import { currLocation, maxDistance, centerOfScreen } from "./graphics/Point";
+// import { currLocation, maxDistance, centerOfScreen } from "./graphics/Point";
 //import { Player } from "./mechanics/Player";
-import { EventManager } from "./mechanics/EventManager";
-import { GameManager } from "./mechanics/GameManager";
+// import { EventManager } from "./mechanics/EventManager";
+// import { GameManager } from "./mechanics/GameManager";
 import { ConnectionManager } from "./mechanics/ConnectionManager";
 
 function main() {
-    const cm = new ConnectionManager('localhost', 5000);
+    
     // cm.getHistory(); <- called onopen
 
     //const m = new GameMap(Config.getN(), ctx);
@@ -18,7 +18,25 @@ function main() {
     //GameManager.instance.draw();
 }
 
-main();
+function setup() {
+    
+    const name = (<HTMLInputElement>document.getElementById("nameInput")).value;
+    const ip = (<HTMLInputElement>document.getElementById("ipAddrInput")).value;
+    const port = (<HTMLInputElement>document.getElementById("portInput")).value;
+
+    const cm = new ConnectionManager(ip, parseInt(port), name);
+
+    (<HTMLElement>document.getElementById("introBannerCover")).hidden = true;
+}
+
+const maybeButton = document.getElementById("submitInput");
+if (maybeButton == null) {
+    throw new Error("missing submit button");
+}
+else {
+    const button = <HTMLElement>maybeButton;
+    button.onclick = setup
+}
 
 // ctx.fillStyle = 'black';
 // ctx.fillRect(currLocation.x, currLocation.y, 10, 10); 
