@@ -89,7 +89,7 @@ class ServerProtocol(WebSocketServerProtocol):
 
                 m = Message(mechanics.PlayerManager.instance.getPlayer(self.token), obj, self.factory)
 
-                self.factory.callbackHandler(obj, self)   
+                self.factory.callbackHandler(m, self)   
             except json.decoder.JSONDecodeError:
                 print("Error: Invalid JSON:", msg)
 
@@ -121,12 +121,12 @@ class ServerFactory(WebSocketServerFactory):
 
         WebSocketServerFactory.__init__(self, url)
     
-    def callbackHandler(self, msg: dict, client: ServerProtocol):
+    def callbackHandler(self, msg: Message, client: ServerProtocol):
         '''
         call the callbackFunc to notify the game manager of a new
         message
         '''
-        jsonMsg = self.callbackFunc(client.token, msg)
+        jsonMsg = self.callbackFunc(msg)
         self.broadcastToAll(jsonMsg)
     
     def getToken(self, client: ServerProtocol) -> str:
@@ -245,7 +245,7 @@ class ServerFactory(WebSocketServerFactory):
 
 class Server:
 
-    def __init__(self, ip: str = '127.0.0.1', port: int = 5000, callbackFunc: Callable[[str, dict], str] = None, 
+    def __init__(self, ip: str = '127.0.0.1', port: int = 5000, callbackFunc: Callable[[Message], str] = None, 
                  init_msgs: Tuple[str] = (), playerManage: mechanics.PlayerManager = None):
         '''
         A class for managing the code for running the server.

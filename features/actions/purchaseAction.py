@@ -1,41 +1,50 @@
 
-from abc import abstractmethod
-from typing import Dict
+# from abc import abstractmethod
+# from typing import Dict
 
-from mechanics.actionManager import ActionManager, ActionSuperCls
-from mechanics.player import Player
+# from mechanics.actionManager import ActionManager, ActionSuperCls
+# from mechanics.player import Player
 
-from biome import Resource
+# from message import Message
 
-class PurchaseSomething(ActionSuperCls):
+# from biome import Resource
 
-    @abstractmethod
-    def getPurchaseCost(self) -> Dict[Resource, int]:
-        pass
+# class PurchaseSomething(ActionSuperCls):
+
+#     def __init__(self, name):
+#         super().__init__('purchase', name)
+
+#     @abstractmethod
+#     def getPurchaseCost(self) -> Dict[Resource, int]:
+#         pass
     
-    def isValid(self, player: Player) -> bool:
-        cost = self.getPurchaseCost()
-        for resource in cost:
-            numRequired = cost[resource]
-            if not player.inventory.hasResource(resource, numRequired):
-                return False
-        return True
+#     def doAction(self, messageObject: Message):
+#         cost = self.getPurchaseCost()
 
-    def __init__(self, name):
-        super().__init__('purchase', name)
+#         inventory = messageObject.player.inventory
+#         for resource in cost:
+#             numRequired = cost[resource]
+#             if not inventory.hasResource(resource, numRequired):
+#                 print('Invalid resources')
 
-@ActionManager.register
-class PurchaseRoad(PurchaseSomething):
+#                 return
+        
+#         print('Buying road')
+                
+#         cost = self.getPurchaseCost()
+#         for resource in cost:
+#             numRequired = cost[resource]
+#             inventory.removeResource(resource, numRequired)
 
-    def __init__(self):
-        # Use lowercase and underscores with names
-        super().__init__('purchase_road')
+# @ActionManager.register
+# class PurchaseRoad(PurchaseSomething):
+
+#     def __init__(self):
+#         # Use lowercase and underscores with names
+#         super().__init__('purchase_road')
     
-    def getPurchaseCost(self) -> Dict[Resource, int]:
-        return {
-            Resource.Brick: 1,
-            Resource.Lumber: 1
-        }
-
-    def doAction(self, player: Player):
-        pass # purchase
+#     def getPurchaseCost(self) -> Dict[Resource, int]:
+#         return {
+#             Resource.Brick: 1,
+#             Resource.Lumber: 1
+#         }

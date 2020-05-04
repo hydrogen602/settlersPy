@@ -4,8 +4,13 @@ from typing import Dict, Union
 from mechanics.event import eventSystemSetup, Event, ActionEvent
 from tools import typeCheck
 
-from mechanics.actionManager import ActionManager, ActionIllegalException
+from biome import Resource
 
+from abc import abstractmethod
+
+#from mechanics.actionManager import ActionManager, ActionIllegalException
+
+from message import Message
 
 @eventSystemSetup('name', buildFromJsonMethod=True)
 class PurchaseAction(ActionEvent):
@@ -21,6 +26,28 @@ class PurchaseAction(ActionEvent):
     @property
     def name(self) -> str:
         return self.__name
+    
+    @abstractmethod
+    def getPurchaseCost(self) -> Dict[Resource, int]:
+        pass
+    
+    def doAction(self, messageObject: Message):
+        cost = self.getPurchaseCost()
+
+        inventory = messageObject.player.inventory
+        for resource in cost:
+            numRequired = cost[resource]
+            if not inventory.hasResource(resource, numRequired):
+                print('Invalid resources')
+
+                return
+        
+        print('Buying something')
+                
+        cost = self.getPurchaseCost()
+        for resource in cost:
+            numRequired = cost[resource]
+            inventory.removeResource(resource, numRequired)
     
     # @staticmethod
     # def fromJson(data: Dict[str, Union[str, dict]]):
@@ -48,6 +75,7 @@ class PurchaseRoad(PurchaseAction):
 
     def __init__(self, data):
         self.__data: Dict[str, object] = data
+        super().__init__(PurchaseRoad.name)
     
     @property
     def data(self) -> Dict[str, object]:
@@ -63,8 +91,14 @@ class PurchaseRoad(PurchaseAction):
 
         return PurchaseRoad(data)
     
-    def doAction(self, messageCls):
-        print("Purchase road")
-        ActionManager.call(self.group, self.name, messageCls.player)
+    def getPurchaseCost(self) -> Dict[Resource, int]:
+        return {
+            Resource.Brick: 1,
+            Resource.Lumber: 1
+        }
+    
+    # def doAction(self, messageCls):
+    #     print("Purchase road")
+    #     ActionManager.call(self.group, self.name, messageCls)
         
         

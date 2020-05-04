@@ -162,6 +162,13 @@ class Event(AbstractBaseClass):
     @property
     def eventType(self) -> str:
         return self.__type
+
+    @abc.abstractmethod
+    def data(self):
+        '''
+        Return the json dict
+        '''
+        ...
     
     @classmethod
     def fromJson(cls, data: Dict[str, Union[str, dict]]):

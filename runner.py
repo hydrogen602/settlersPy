@@ -12,6 +12,7 @@ from tools import typeCheck, customJsonEncoder
 from gameMap import GameMap
 
 import mechanics
+from message import Message
 
 import features
 
@@ -25,7 +26,7 @@ class GameManager:
 
         self.serv = Server(ip='localhost', port=5000, callbackFunc=self.event, init_msgs=(self.m.getAsJson(),), playerManage=self.pm)
     
-    def event(self, player: mechanics.Player, data: dict):
+    def event(self, messageObject: Message):
         '''
         event should be called by the `ServerFactory` when
         a new message has come from a client
@@ -34,19 +35,9 @@ class GameManager:
         {"type": "action", "group": groupName, "name": actionName, "data": extraData }
         where the "data" tag is optional
         '''
-        typeCheck(data, dict)
-        print(player, data)
+        print(messageObject.player.name, messageObject.msg_raw)
 
-        if 'action' in data:
-            if data['action'] == 'purchase':
-                if 'name' not in data:
-                    print('Malformed JSON: missing name tag in player action')
-                    print('->',player, data)
-                    return json.dumps({"Test": True})
-                
-                print(f'Player {player} would like to buy a {data["name"]}')
-                # isValid?
-                pass
+        messageObject.doAction()
 
         return json.dumps({"Test": True})
     

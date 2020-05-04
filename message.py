@@ -31,6 +31,10 @@ class Message:
         return self.__msgProcessed
     
     @property
+    def msg_raw(self) -> dict:
+        return self.__msg_raw
+    
+    @property
     def serverFactoryInstance(self):
         return self.__serverFactoryInstance
     
