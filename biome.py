@@ -32,24 +32,28 @@ class Biome:
         assert hasattr(cls, 'color')
         assert isinstance(getattr(cls, 'color'), str)
 
-        Biome.biomeList.append(cls) # add new biome to list of biomes
+        Biome.biomeList.append(cls)  # add new biome to list of biomes
 
 
 class Farmland(Biome):
     primaryRes: Resource = Resource.Wheat
     color = 'goldenrod'
 
+
 class Grassland(Biome):
     primaryRes: Resource = Resource.Sheepie
     color = 'limegreen'
+
 
 class Forest(Biome):
     primaryRes: Resource = Resource.Lumber
     color = 'forestgreen'
 
+
 class Mountain(Biome):
     primaryRes: Resource = Resource.Ore
     color = 'dimgray'
+
 
 class Quarry(Biome):
     primaryRes: Resource = Resource.Brick

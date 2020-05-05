@@ -6,6 +6,7 @@ from tile import Tile
 from habitation import Habitation
 from point import HexPoint
 
+
 class GameMap:
 
     def __init__(self, size: int = 3):
@@ -16,7 +17,7 @@ class GameMap:
         nP: int = (size - 1) / 2
         nP2: int = (size - 2) / 2
 
-        for j in range(size):    
+        for j in range(size):
             addition: int = int(-abs(j - nP) + nP)
 
             for i in range(-addition, size + addition):
@@ -30,7 +31,6 @@ class GameMap:
                 self.tiles.append(Tile.generate(HexPoint(2*j + 1, 2*i - 1)))
                 # print(2*j + 1, 2*i - 1)
 
-
     def addTile(self, t: Tile):
         typeCheck(t, Tile)
         self.tiles.append(t)
@@ -38,7 +38,7 @@ class GameMap:
     def addSettlement(self, s: Habitation):
         typeCheck(s, Habitation)
         self.settlements.append(s)
-    
+
     def getAsJson(self):
         return json.dumps(self, cls=customJsonEncoder)
 

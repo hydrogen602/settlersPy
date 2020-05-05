@@ -6,13 +6,14 @@ from tools import typeCheck
 
 class Message:
 
-    def __init__(self, fromPlayer: Player, msg: dict, serverFactoryInstance: 'ServerFactory'):
+    def __init__(self, fromPlayer: Player, msg: dict, serverFactoryInstance):
+        # serverFactoryInstance is of type ServerFactory
         #typeCheck(fromPlayer, Player)
         #typeCheck(msg, dict)
 
         self.__player: Player = fromPlayer 
         self.__msg_raw: dict = msg
-        self.__serverFactoryInstance: 'ServerFactory' = serverFactoryInstance
+        self.__serverFactoryInstance = serverFactoryInstance
 
         self.__msgProcessed: Event = None
 
