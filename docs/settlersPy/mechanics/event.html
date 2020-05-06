@@ -39,18 +39,44 @@ from typing import Dict, Union
 from functools import wraps
 
 from tools import typeCheck
+import abc
+from abc import ABC as AbstractBaseClass
 
-
-def requires_subclass_attr(varName: str):
+def eventSystemSetup(varName: str, buildFromJsonMethod: bool):
     &#39;&#39;&#39;
     Decorator for the `Event` class or one
     of its subclasses.
     Gives the wrapped class a `__init_subclass__` method
     and a variable called `__subClsList`
-    &#39;&#39;&#39;
-    def decorator_func(cls):
 
-        # @wraps(cls)
+    If `buildFromJsonMethod` is True, then the decorator will
+    also build a default implementation of fromJson
+    with argument `varName` as the key to look
+    for in the json.
+    This overwrites the class&#39;s `fromJson` function.
+    &#39;&#39;&#39;
+    def decorator_func(cls: type):
+
+        if not hasattr(cls, &#39;fromJson&#39;):
+            raise AttributeError(&#34;Missing method &#39;fromJson&#39;&#34;)
+
+        clsList = cls.mro()[1:] # first is itself so ignore that
+
+        if clsList == [abc.ABC, object]:
+            pass # top of class chain
+        else:
+            superCls = None
+            for c in clsList:
+                if hasattr(c, &#39;fromJson&#39;):
+                    superCls = c
+                    break
+            
+            if superCls is None:
+                raise AttributeError(f&#34;Nothing in {clsList} has a &#39;fromJson&#39; method. This should not happen&#34;)
+
+            if not buildFromJsonMethod and cls.fromJson is superCls.fromJson:
+                raise AttributeError(f&#34;{cls.__name__} subclass must overwrite &#39;fromJson&#39;, but has not&#34;)
+
         @classmethod
         def __init_subclass__(subCls):
             &#39;&#39;&#39;
@@ -64,29 +90,58 @@ def requires_subclass_attr(varName: str):
             x: str = getattr(subCls, varName)
             typeCheck(x, str)
 
-            if not hasattr(subCls, &#39;fromJson&#39;):
-                raise AttributeError(&#34;Missing method &#39;fromJson&#39;&#34;)
-
             # clsList = subCls.mro()[1:] # first is itself so ignore that
 
             # for cls in clsList:
             #     if cls.__name__ == clsName:
             #         break
 
-            if cls.fromJson is getattr(subCls, &#39;fromJson&#39;):
-                raise AttributeError(f&#34;{cls.__name__} subclass must overwrite &#39;fromJson&#39;, but has not&#34;)
-
             subClsList = getattr(cls, f&#39;_{cls.__name__}__subClsList&#39;)
 
             if x in subClsList:
-                raise EventParseError(f&#34;{cls.__name__} {varName}=&#39;{x}&#39; already exists&#34;)
+                raise EventParseError(f&#34;{cls.__name__} {varName}=&#39;{x}&#39; already exists while attempting to register {subCls.__name__}&#34;)
 
-            print(f&#34;Registering {varName} &#39;{x}&#39; in class &#39;{cls.__name__}&#39;&#34;)
+            print(f&#34;Registering {varName} &#39;{x}&#39; from subcls &#39;{subCls.__name__}&#39; in class &#39;{cls.__name__}&#39;&#34;)
             subClsList[x] = subCls
 
 
+        def fromJson(cls, data: Dict[str, Union[str, dict]]):
+            &#39;&#39;&#39;
+            A fromJson default method implementation
+
+            Takes a `dict` that represents a received Json message
+            and finds the appropriate subclass to further verify
+            and parse the message
+            Throws a `KeyError` if there is no &#39;type&#39; key or
+            if the specified type does not have a subclass for it 
+            &#39;&#39;&#39;
+
+            typeCheck(data, dict)
+            if cls.varName not in data:
+                raise KeyError(f&#34;Missing key &#39;{cls.varName}&#39;: {data}&#34;)
+
+            varValue = data[cls.varName]
+            if varValue not in getattr(cls, f&#39;_{cls.__name__}__subClsList&#39;):
+                print(getattr(cls, f&#39;_{cls.__name__}__subClsList&#39;))
+                raise KeyError(f&#34;No subclass found for event {cls.varName} &#39;{varValue}&#39;&#34;)
+
+            subCls = getattr(cls, f&#39;_{cls.__name__}__subClsList&#39;)[varValue]
+
+            return subCls.fromJson(data)
+
+        if buildFromJsonMethod:
+            print(f&#34;Build &#39;fromJson&#39; for class &#39;{cls.__name__}&#39;&#34;)
+            cls.fromJson = fromJson.__get__(cls, type(cls))
+
         cls.__init_subclass__ = __init_subclass__
         setattr(cls, f&#39;_{cls.__name__}__subClsList&#39;, {})
+
+        if not hasattr(cls, &#39;varName&#39;):
+            #  this shouldn&#39;t happen as varName is inherited from the Event class
+            raise AttributeError(f&#34;{cls.__name__} is missing the attribute &#39;varName&#39;&#34;)
+
+        setattr(cls, &#39;varName&#39;, varName)
+
         &#39;&#39;&#39;
         A `dict` of all subclasses of the Event class.
         This is useful for parsing json
@@ -105,13 +160,28 @@ def requires_subclass_attr(varName: str):
 class EventParseError(Exception):
     pass
 
-@requires_subclass_attr(&#39;typeName&#39;)
-class Event:
+@eventSystemSetup(&#39;typeName&#39;, buildFromJsonMethod=True)
+class Event(AbstractBaseClass):
     &#39;&#39;&#39;
     Subclasses needs a class variable
     called `typeName` that is of type `str`
-    and a method called `fromJson`
-    &#39;&#39;&#39;    
+    and a method called `fromJson`.
+    The final subclass also needs an `doAction` method.
+    Start event parsing by calling `Event.fromJson`
+    &#39;&#39;&#39;
+
+    __subClsList: Dict[str, type] = {}
+    &#39;&#39;&#39;
+    Mostly for making pyling be quiet about
+    this method missing. It is set by the
+    `eventSystemSetup` decorator.
+    &#39;&#39;&#39;
+
+    varName: str = None
+    &#39;&#39;&#39;
+    Stores the key that the fromJson method requires.
+    Set by the `eventSystemSetup` decorator
+    &#39;&#39;&#39;
 
     def __init__(self, type_: str):
         &#39;&#39;&#39;
@@ -123,30 +193,32 @@ class Event:
     @property
     def eventType(self) -&gt; str:
         return self.__type
+
+    @abc.abstractmethod
+    def data(self):
+        &#39;&#39;&#39;
+        Return the json dict
+        &#39;&#39;&#39;
+        ...
     
-    @staticmethod
-    def fromJson(data: Dict[str, Union[str, dict]]):
+    @classmethod
+    def fromJson(cls, data: Dict[str, Union[str, dict]]):
         &#39;&#39;&#39;
-        Takes a `dict` that represents a received Json message
-        and finds the appropriate subclass to further verify
-        and parse the message
-        Throws a `KeyError` if there is no &#39;type&#39; key or
-        if the specified type does not have a subclass for it 
+        To make pylint shut up. This is overwritten by `eventSystemSetup`
         &#39;&#39;&#39;
-        typeCheck(data, dict)
-        if &#39;type&#39; not in data:
-            raise KeyError(f&#34;Missing key &#39;type&#39;: {data}&#34;)
+        raise NotImplementedError
 
-        typeName = data[&#39;type&#39;]
-        if typeName not in Event.__subClsList:
-            raise KeyError(f&#34;No subclass found for event type &#39;{typeName}&#39;&#34;)
+    @abc.abstractmethod
+    def doAction(self, messageCls):
+        &#39;&#39;&#39;
+        Do some action regarding the json message&#39;s content.
+        &#39;&#39;&#39;
+        pass
+    
 
-        subCls = Event.__subClsList[typeName]
-
-        return subCls.fromJson(data)
         
 
-@requires_subclass_attr(&#39;groupName&#39;)
+@eventSystemSetup(&#39;groupName&#39;, buildFromJsonMethod=False)
 class ActionEvent(Event):
     &#39;&#39;&#39;
     Represents an action event. This convers anything done
@@ -180,40 +252,7 @@ class ActionEvent(Event):
 
         subCls = ActionEvent.__subClsList[groupName]
 
-        return subCls.fromJson(data)
-
-
-@requires_subclass_attr(&#39;name&#39;)
-class PurchaseAction(ActionEvent):
-
-    groupName = &#39;purchase&#39;
-
-    __subClsList: Dict[str, type] = {}
-
-    def __init__(self, name: str):
-        self.__name: str = name
-        super().__init__(PurchaseAction.groupName)
-    
-    @property
-    def name(self) -&gt; str:
-        return self.__name
-    
-    @staticmethod
-    def fromJson(data: Dict[str, Union[str, dict]]):
-        typeCheck(data, dict)
-
-        if &#39;name&#39; not in data:
-            raise KeyError(&#34;Missing key &#39;name&#39;&#34;)
-
-        name = data[&#39;name&#39;]
-        if name not in PurchaseAction.__subClsList:
-            raise KeyError(f&#34;No subclass found for event name &#39;{name}&#39;&#34;)
-
-        subCls = ActionEvent.__subClsList[name]
-
-        return subCls.fromJson(data)
-
-        </code></pre>
+        return subCls.fromJson(data)</code></pre>
 </details>
 </section>
 <section>
@@ -223,28 +262,58 @@ class PurchaseAction(ActionEvent):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="settlersPy.mechanics.event.requires_subclass_attr"><code class="name flex">
-<span>def <span class="ident">requires_subclass_attr</span></span>(<span>varName)</span>
+<dt id="settlersPy.mechanics.event.eventSystemSetup"><code class="name flex">
+<span>def <span class="ident">eventSystemSetup</span></span>(<span>varName, buildFromJsonMethod)</span>
 </code></dt>
 <dd>
 <section class="desc"><p>Decorator for the <a title="settlersPy.mechanics.event.Event" href="#settlersPy.mechanics.event.Event"><code>Event</code></a> class or one
 of its subclasses.
 Gives the wrapped class a <code>__init_subclass__</code> method
-and a variable called <code>__subClsList</code></p></section>
+and a variable called <code>__subClsList</code></p>
+<p>If <code>buildFromJsonMethod</code> is True, then the decorator will
+also build a default implementation of fromJson
+with argument <code>varName</code> as the key to look
+for in the json.
+This overwrites the class's <code>fromJson</code> function.</p></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def requires_subclass_attr(varName: str):
+<pre><code class="python">def eventSystemSetup(varName: str, buildFromJsonMethod: bool):
     &#39;&#39;&#39;
     Decorator for the `Event` class or one
     of its subclasses.
     Gives the wrapped class a `__init_subclass__` method
     and a variable called `__subClsList`
-    &#39;&#39;&#39;
-    def decorator_func(cls):
 
-        # @wraps(cls)
+    If `buildFromJsonMethod` is True, then the decorator will
+    also build a default implementation of fromJson
+    with argument `varName` as the key to look
+    for in the json.
+    This overwrites the class&#39;s `fromJson` function.
+    &#39;&#39;&#39;
+    def decorator_func(cls: type):
+
+        if not hasattr(cls, &#39;fromJson&#39;):
+            raise AttributeError(&#34;Missing method &#39;fromJson&#39;&#34;)
+
+        clsList = cls.mro()[1:] # first is itself so ignore that
+
+        if clsList == [abc.ABC, object]:
+            pass # top of class chain
+        else:
+            superCls = None
+            for c in clsList:
+                if hasattr(c, &#39;fromJson&#39;):
+                    superCls = c
+                    break
+            
+            if superCls is None:
+                raise AttributeError(f&#34;Nothing in {clsList} has a &#39;fromJson&#39; method. This should not happen&#34;)
+
+            if not buildFromJsonMethod and cls.fromJson is superCls.fromJson:
+                raise AttributeError(f&#34;{cls.__name__} subclass must overwrite &#39;fromJson&#39;, but has not&#34;)
+
         @classmethod
         def __init_subclass__(subCls):
             &#39;&#39;&#39;
@@ -258,29 +327,58 @@ and a variable called <code>__subClsList</code></p></section>
             x: str = getattr(subCls, varName)
             typeCheck(x, str)
 
-            if not hasattr(subCls, &#39;fromJson&#39;):
-                raise AttributeError(&#34;Missing method &#39;fromJson&#39;&#34;)
-
             # clsList = subCls.mro()[1:] # first is itself so ignore that
 
             # for cls in clsList:
             #     if cls.__name__ == clsName:
             #         break
 
-            if cls.fromJson is getattr(subCls, &#39;fromJson&#39;):
-                raise AttributeError(f&#34;{cls.__name__} subclass must overwrite &#39;fromJson&#39;, but has not&#34;)
-
             subClsList = getattr(cls, f&#39;_{cls.__name__}__subClsList&#39;)
 
             if x in subClsList:
-                raise EventParseError(f&#34;{cls.__name__} {varName}=&#39;{x}&#39; already exists&#34;)
+                raise EventParseError(f&#34;{cls.__name__} {varName}=&#39;{x}&#39; already exists while attempting to register {subCls.__name__}&#34;)
 
-            print(f&#34;Registering {varName} &#39;{x}&#39; in class &#39;{cls.__name__}&#39;&#34;)
+            print(f&#34;Registering {varName} &#39;{x}&#39; from subcls &#39;{subCls.__name__}&#39; in class &#39;{cls.__name__}&#39;&#34;)
             subClsList[x] = subCls
 
 
+        def fromJson(cls, data: Dict[str, Union[str, dict]]):
+            &#39;&#39;&#39;
+            A fromJson default method implementation
+
+            Takes a `dict` that represents a received Json message
+            and finds the appropriate subclass to further verify
+            and parse the message
+            Throws a `KeyError` if there is no &#39;type&#39; key or
+            if the specified type does not have a subclass for it 
+            &#39;&#39;&#39;
+
+            typeCheck(data, dict)
+            if cls.varName not in data:
+                raise KeyError(f&#34;Missing key &#39;{cls.varName}&#39;: {data}&#34;)
+
+            varValue = data[cls.varName]
+            if varValue not in getattr(cls, f&#39;_{cls.__name__}__subClsList&#39;):
+                print(getattr(cls, f&#39;_{cls.__name__}__subClsList&#39;))
+                raise KeyError(f&#34;No subclass found for event {cls.varName} &#39;{varValue}&#39;&#34;)
+
+            subCls = getattr(cls, f&#39;_{cls.__name__}__subClsList&#39;)[varValue]
+
+            return subCls.fromJson(data)
+
+        if buildFromJsonMethod:
+            print(f&#34;Build &#39;fromJson&#39; for class &#39;{cls.__name__}&#39;&#34;)
+            cls.fromJson = fromJson.__get__(cls, type(cls))
+
         cls.__init_subclass__ = __init_subclass__
         setattr(cls, f&#39;_{cls.__name__}__subClsList&#39;, {})
+
+        if not hasattr(cls, &#39;varName&#39;):
+            #  this shouldn&#39;t happen as varName is inherited from the Event class
+            raise AttributeError(f&#34;{cls.__name__} is missing the attribute &#39;varName&#39;&#34;)
+
+        setattr(cls, &#39;varName&#39;, varName)
+
         &#39;&#39;&#39;
         A `dict` of all subclasses of the Event class.
         This is useful for parsing json
@@ -356,10 +454,7 @@ It should only be called by a subclass</p></section>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="settlersPy.mechanics.event.Event" href="#settlersPy.mechanics.event.Event">Event</a></li>
-</ul>
-<h3>Subclasses</h3>
-<ul class="hlist">
-<li><a title="settlersPy.mechanics.event.PurchaseAction" href="#settlersPy.mechanics.event.PurchaseAction">PurchaseAction</a></li>
+<li>abc.ABC</li>
 </ul>
 <h3>Class variables</h3>
 <dl>
@@ -387,7 +482,10 @@ def group(self) -&gt; str:
 <ul class="hlist">
 <li><code><b><a title="settlersPy.mechanics.event.Event" href="#settlersPy.mechanics.event.Event">Event</a></b></code>:
 <ul class="hlist">
+<li><code><a title="settlersPy.mechanics.event.Event.data" href="#settlersPy.mechanics.event.Event.data">data</a></code></li>
+<li><code><a title="settlersPy.mechanics.event.Event.doAction" href="#settlersPy.mechanics.event.Event.doAction">doAction</a></code></li>
 <li><code><a title="settlersPy.mechanics.event.Event.fromJson" href="#settlersPy.mechanics.event.Event.fromJson">fromJson</a></code></li>
+<li><code><a title="settlersPy.mechanics.event.Event.varName" href="#settlersPy.mechanics.event.Event.varName">varName</a></code></li>
 </ul>
 </li>
 </ul>
@@ -399,19 +497,36 @@ def group(self) -&gt; str:
 <dd>
 <section class="desc"><p>Subclasses needs a class variable
 called <code>typeName</code> that is of type <code>str</code>
-and a method called <code>fromJson</code></p>
+and a method called <code>fromJson</code>.
+The final subclass also needs an <code>doAction</code> method.
+Start event parsing by calling <a title="settlersPy.mechanics.event.Event.fromJson" href="#settlersPy.mechanics.event.Event.fromJson"><code>eventSystemSetup.&lt;locals&gt;.decorator_func.&lt;locals&gt;.fromJson()</code></a></p>
 <p>Don't call this method directly.
 It should only be called by a subclass</p></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Event:
+<pre><code class="python">class Event(AbstractBaseClass):
     &#39;&#39;&#39;
     Subclasses needs a class variable
     called `typeName` that is of type `str`
-    and a method called `fromJson`
-    &#39;&#39;&#39;    
+    and a method called `fromJson`.
+    The final subclass also needs an `doAction` method.
+    Start event parsing by calling `Event.fromJson`
+    &#39;&#39;&#39;
+
+    __subClsList: Dict[str, type] = {}
+    &#39;&#39;&#39;
+    Mostly for making pyling be quiet about
+    this method missing. It is set by the
+    `eventSystemSetup` decorator.
+    &#39;&#39;&#39;
+
+    varName: str = None
+    &#39;&#39;&#39;
+    Stores the key that the fromJson method requires.
+    Set by the `eventSystemSetup` decorator
+    &#39;&#39;&#39;
 
     def __init__(self, type_: str):
         &#39;&#39;&#39;
@@ -423,39 +538,52 @@ It should only be called by a subclass</p></section>
     @property
     def eventType(self) -&gt; str:
         return self.__type
+
+    @abc.abstractmethod
+    def data(self):
+        &#39;&#39;&#39;
+        Return the json dict
+        &#39;&#39;&#39;
+        ...
     
-    @staticmethod
-    def fromJson(data: Dict[str, Union[str, dict]]):
+    @classmethod
+    def fromJson(cls, data: Dict[str, Union[str, dict]]):
         &#39;&#39;&#39;
-        Takes a `dict` that represents a received Json message
-        and finds the appropriate subclass to further verify
-        and parse the message
-        Throws a `KeyError` if there is no &#39;type&#39; key or
-        if the specified type does not have a subclass for it 
+        To make pylint shut up. This is overwritten by `eventSystemSetup`
         &#39;&#39;&#39;
-        typeCheck(data, dict)
-        if &#39;type&#39; not in data:
-            raise KeyError(f&#34;Missing key &#39;type&#39;: {data}&#34;)
+        raise NotImplementedError
 
-        typeName = data[&#39;type&#39;]
-        if typeName not in Event.__subClsList:
-            raise KeyError(f&#34;No subclass found for event type &#39;{typeName}&#39;&#34;)
-
-        subCls = Event.__subClsList[typeName]
-
-        return subCls.fromJson(data)</code></pre>
+    @abc.abstractmethod
+    def doAction(self, messageCls):
+        &#39;&#39;&#39;
+        Do some action regarding the json message&#39;s content.
+        &#39;&#39;&#39;
+        pass</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>abc.ABC</li>
+</ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
 <li><a title="settlersPy.mechanics.event.ActionEvent" href="#settlersPy.mechanics.event.ActionEvent">ActionEvent</a></li>
 </ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="settlersPy.mechanics.event.Event.varName"><code class="name">var <span class="ident">varName</span></code></dt>
+<dd>
+<section class="desc"><p>Stores the key that the fromJson method requires.
+Set by the <a title="settlersPy.mechanics.event.eventSystemSetup" href="#settlersPy.mechanics.event.eventSystemSetup"><code>eventSystemSetup()</code></a> decorator</p></section>
+</dd>
+</dl>
 <h3>Static methods</h3>
 <dl>
 <dt id="settlersPy.mechanics.event.Event.fromJson"><code class="name flex">
 <span>def <span class="ident">fromJson</span></span>(<span>data)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Takes a <code>dict</code> that represents a received Json message
+<section class="desc"><p>A fromJson default method implementation</p>
+<p>Takes a <code>dict</code> that represents a received Json message
 and finds the appropriate subclass to further verify
 and parse the message
 Throws a <code>KeyError</code> if there is no 'type' key or
@@ -464,24 +592,27 @@ if the specified type does not have a subclass for it</p></section>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@staticmethod
-def fromJson(data: Dict[str, Union[str, dict]]):
+<pre><code class="python">def fromJson(cls, data: Dict[str, Union[str, dict]]):
     &#39;&#39;&#39;
+    A fromJson default method implementation
+
     Takes a `dict` that represents a received Json message
     and finds the appropriate subclass to further verify
     and parse the message
     Throws a `KeyError` if there is no &#39;type&#39; key or
     if the specified type does not have a subclass for it 
     &#39;&#39;&#39;
+
     typeCheck(data, dict)
-    if &#39;type&#39; not in data:
-        raise KeyError(f&#34;Missing key &#39;type&#39;: {data}&#34;)
+    if cls.varName not in data:
+        raise KeyError(f&#34;Missing key &#39;{cls.varName}&#39;: {data}&#34;)
 
-    typeName = data[&#39;type&#39;]
-    if typeName not in Event.__subClsList:
-        raise KeyError(f&#34;No subclass found for event type &#39;{typeName}&#39;&#34;)
+    varValue = data[cls.varName]
+    if varValue not in getattr(cls, f&#39;_{cls.__name__}__subClsList&#39;):
+        print(getattr(cls, f&#39;_{cls.__name__}__subClsList&#39;))
+        raise KeyError(f&#34;No subclass found for event {cls.varName} &#39;{varValue}&#39;&#34;)
 
-    subCls = Event.__subClsList[typeName]
+    subCls = getattr(cls, f&#39;_{cls.__name__}__subClsList&#39;)[varValue]
 
     return subCls.fromJson(data)</code></pre>
 </details>
@@ -499,6 +630,43 @@ def fromJson(data: Dict[str, Union[str, dict]]):
 <pre><code class="python">@property
 def eventType(self) -&gt; str:
     return self.__type</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="settlersPy.mechanics.event.Event.data"><code class="name flex">
+<span>def <span class="ident">data</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Return the json dict</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abc.abstractmethod
+def data(self):
+    &#39;&#39;&#39;
+    Return the json dict
+    &#39;&#39;&#39;
+    ...</code></pre>
+</details>
+</dd>
+<dt id="settlersPy.mechanics.event.Event.doAction"><code class="name flex">
+<span>def <span class="ident">doAction</span></span>(<span>self, messageCls)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Do some action regarding the json message's content.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abc.abstractmethod
+def doAction(self, messageCls):
+    &#39;&#39;&#39;
+    Do some action regarding the json message&#39;s content.
+    &#39;&#39;&#39;
+    pass</code></pre>
 </details>
 </dd>
 </dl>
@@ -522,88 +690,6 @@ def eventType(self) -&gt; str:
 <li>builtins.BaseException</li>
 </ul>
 </dd>
-<dt id="settlersPy.mechanics.event.PurchaseAction"><code class="flex name class">
-<span>class <span class="ident">PurchaseAction</span></span>
-<span>(</span><span>name)</span>
-</code></dt>
-<dd>
-<section class="desc"><p>Represents an action event. This convers anything done
-by the player with the board like a purchase of a road
-or the placement of a town.
-Subclasses of this class must have an attribute
-called <code>groupName</code> that must be of type <code>str</code>
-and a <code>fromJson</code> method</p>
-<p>Don't call this method directly.
-It should only be called by a subclass</p></section>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class PurchaseAction(ActionEvent):
-
-    groupName = &#39;purchase&#39;
-
-    __subClsList: Dict[str, type] = {}
-
-    def __init__(self, name: str):
-        self.__name: str = name
-        super().__init__(PurchaseAction.groupName)
-    
-    @property
-    def name(self) -&gt; str:
-        return self.__name
-    
-    @staticmethod
-    def fromJson(data: Dict[str, Union[str, dict]]):
-        typeCheck(data, dict)
-
-        if &#39;name&#39; not in data:
-            raise KeyError(&#34;Missing key &#39;name&#39;&#34;)
-
-        name = data[&#39;name&#39;]
-        if name not in PurchaseAction.__subClsList:
-            raise KeyError(f&#34;No subclass found for event name &#39;{name}&#39;&#34;)
-
-        subCls = ActionEvent.__subClsList[name]
-
-        return subCls.fromJson(data)</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="settlersPy.mechanics.event.ActionEvent" href="#settlersPy.mechanics.event.ActionEvent">ActionEvent</a></li>
-<li><a title="settlersPy.mechanics.event.Event" href="#settlersPy.mechanics.event.Event">Event</a></li>
-</ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="settlersPy.mechanics.event.PurchaseAction.groupName"><code class="name">var <span class="ident">groupName</span></code></dt>
-<dd>
-<section class="desc"></section>
-</dd>
-</dl>
-<h3>Instance variables</h3>
-<dl>
-<dt id="settlersPy.mechanics.event.PurchaseAction.name"><code class="name">var <span class="ident">name</span></code></dt>
-<dd>
-<section class="desc"></section>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@property
-def name(self) -&gt; str:
-    return self.__name</code></pre>
-</details>
-</dd>
-</dl>
-<h3>Inherited members</h3>
-<ul class="hlist">
-<li><code><b><a title="settlersPy.mechanics.event.ActionEvent" href="#settlersPy.mechanics.event.ActionEvent">ActionEvent</a></b></code>:
-<ul class="hlist">
-<li><code><a title="settlersPy.mechanics.event.ActionEvent.fromJson" href="#settlersPy.mechanics.event.Event.fromJson">fromJson</a></code></li>
-</ul>
-</li>
-</ul>
-</dd>
 </dl>
 </section>
 </article>
@@ -620,7 +706,7 @@ def name(self) -&gt; str:
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="settlersPy.mechanics.event.requires_subclass_attr" href="#settlersPy.mechanics.event.requires_subclass_attr">requires_subclass_attr</a></code></li>
+<li><code><a title="settlersPy.mechanics.event.eventSystemSetup" href="#settlersPy.mechanics.event.eventSystemSetup">eventSystemSetup</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
@@ -635,19 +721,15 @@ def name(self) -&gt; str:
 <li>
 <h4><code><a title="settlersPy.mechanics.event.Event" href="#settlersPy.mechanics.event.Event">Event</a></code></h4>
 <ul class="">
+<li><code><a title="settlersPy.mechanics.event.Event.data" href="#settlersPy.mechanics.event.Event.data">data</a></code></li>
+<li><code><a title="settlersPy.mechanics.event.Event.doAction" href="#settlersPy.mechanics.event.Event.doAction">doAction</a></code></li>
 <li><code><a title="settlersPy.mechanics.event.Event.eventType" href="#settlersPy.mechanics.event.Event.eventType">eventType</a></code></li>
 <li><code><a title="settlersPy.mechanics.event.Event.fromJson" href="#settlersPy.mechanics.event.Event.fromJson">fromJson</a></code></li>
+<li><code><a title="settlersPy.mechanics.event.Event.varName" href="#settlersPy.mechanics.event.Event.varName">varName</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="settlersPy.mechanics.event.EventParseError" href="#settlersPy.mechanics.event.EventParseError">EventParseError</a></code></h4>
-</li>
-<li>
-<h4><code><a title="settlersPy.mechanics.event.PurchaseAction" href="#settlersPy.mechanics.event.PurchaseAction">PurchaseAction</a></code></h4>
-<ul class="">
-<li><code><a title="settlersPy.mechanics.event.PurchaseAction.groupName" href="#settlersPy.mechanics.event.PurchaseAction.groupName">groupName</a></code></li>
-<li><code><a title="settlersPy.mechanics.event.PurchaseAction.name" href="#settlersPy.mechanics.event.PurchaseAction.name">name</a></code></li>
-</ul>
 </li>
 </ul>
 </li>

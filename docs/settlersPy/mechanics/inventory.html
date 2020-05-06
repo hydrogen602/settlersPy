@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.7.5" />
-<title>settlersPy.gameMap API documentation</title>
+<title>settlersPy.mechanics.inventory API documentation</title>
 <meta name="description" content="" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
@@ -17,59 +17,44 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>settlersPy.gameMap</code></h1>
+<h1 class="title">Module <code>settlersPy.mechanics.inventory</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">import json
+<pre><code class="python">from typing import Dict
 
-from typing import List
-from tools import typeCheck, customJsonEncoder
-from tile import Tile
-from habitation import Habitation
-from point import HexPoint
+import biome
+from tools import typeCheck
 
+class Inventory:
 
-class GameMap:
-
-    def __init__(self, size: int = 3):
-        self.__size: int = size
-        self.tiles: List[Tile] = []
-        self.settlements: List[Habitation] = []
-
-        nP: int = (size - 1) / 2
-        nP2: int = (size - 2) / 2
-
-        for j in range(size):
-            addition: int = int(-abs(j - nP) + nP)
-
-            for i in range(-addition, size + addition):
-                self.tiles.append(Tile.generate(HexPoint(2*j, 2*i)))
-                # print(2*j, 2*i)
-
-        for j in range(size - 1):
-            addition: int = int(-abs(j - nP2) + nP2)
-
-            for i in range(-addition, size + addition + 1):
-                self.tiles.append(Tile.generate(HexPoint(2*j + 1, 2*i - 1)))
-                # print(2*j + 1, 2*i - 1)
-
-    def addTile(self, t: Tile):
-        typeCheck(t, Tile)
-        self.tiles.append(t)
-
-    def addSettlement(self, s: Habitation):
-        typeCheck(s, Habitation)
-        self.settlements.append(s)
-
-    def getAsJson(self):
-        return json.dumps(self, cls=customJsonEncoder)
-
-# m = GameMap()
-# print(json.dumps(m, cls=customJsonEncoder, indent=4))</code></pre>
+    def __init__(self):
+        self.__inventory: Dict[biome.Resource, int] = dict([(r, 0) for r in biome.Resource])
+        self.addResource(biome.Resource.Brick, 1)
+        self.addResource(biome.Resource.Lumber, 1)
+    
+    def getCount(self, resourceType: biome.Resource) -&gt; int:
+        typeCheck(resourceType, biome.Resource)
+        return self.__inventory[resourceType]
+    
+    def hasResource(self, resourceType: biome.Resource, minimum: int) -&gt; bool:
+        return self.getCount(resourceType) &gt;= minimum
+    
+    def addResource(self, resourceType: biome.Resource, count: int):
+        typeCheck(resourceType, biome.Resource)
+        self.__inventory[resourceType] += count
+    
+    def removeResource(self, resourceType: biome.Resource, count: int):
+        typeCheck(resourceType, biome.Resource)
+        self.__inventory[resourceType] -= count
+        if self.__inventory[resourceType] &lt; 0:
+            raise ValueError(&#39;negative value in inventory&#39;)
+    
+    def totalResourceCount(self) -&gt; int:
+        return sum(self.__inventory.values())</code></pre>
 </details>
 </section>
 <section>
@@ -81,9 +66,8 @@ class GameMap:
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="settlersPy.gameMap.GameMap"><code class="flex name class">
-<span>class <span class="ident">GameMap</span></span>
-<span>(</span><span>size=3)</span>
+<dt id="settlersPy.mechanics.inventory.Inventory"><code class="flex name class">
+<span>class <span class="ident">Inventory</span></span>
 </code></dt>
 <dd>
 <section class="desc"></section>
@@ -91,45 +75,37 @@ class GameMap:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class GameMap:
+<pre><code class="python">class Inventory:
 
-    def __init__(self, size: int = 3):
-        self.__size: int = size
-        self.tiles: List[Tile] = []
-        self.settlements: List[Habitation] = []
-
-        nP: int = (size - 1) / 2
-        nP2: int = (size - 2) / 2
-
-        for j in range(size):
-            addition: int = int(-abs(j - nP) + nP)
-
-            for i in range(-addition, size + addition):
-                self.tiles.append(Tile.generate(HexPoint(2*j, 2*i)))
-                # print(2*j, 2*i)
-
-        for j in range(size - 1):
-            addition: int = int(-abs(j - nP2) + nP2)
-
-            for i in range(-addition, size + addition + 1):
-                self.tiles.append(Tile.generate(HexPoint(2*j + 1, 2*i - 1)))
-                # print(2*j + 1, 2*i - 1)
-
-    def addTile(self, t: Tile):
-        typeCheck(t, Tile)
-        self.tiles.append(t)
-
-    def addSettlement(self, s: Habitation):
-        typeCheck(s, Habitation)
-        self.settlements.append(s)
-
-    def getAsJson(self):
-        return json.dumps(self, cls=customJsonEncoder)</code></pre>
+    def __init__(self):
+        self.__inventory: Dict[biome.Resource, int] = dict([(r, 0) for r in biome.Resource])
+        self.addResource(biome.Resource.Brick, 1)
+        self.addResource(biome.Resource.Lumber, 1)
+    
+    def getCount(self, resourceType: biome.Resource) -&gt; int:
+        typeCheck(resourceType, biome.Resource)
+        return self.__inventory[resourceType]
+    
+    def hasResource(self, resourceType: biome.Resource, minimum: int) -&gt; bool:
+        return self.getCount(resourceType) &gt;= minimum
+    
+    def addResource(self, resourceType: biome.Resource, count: int):
+        typeCheck(resourceType, biome.Resource)
+        self.__inventory[resourceType] += count
+    
+    def removeResource(self, resourceType: biome.Resource, count: int):
+        typeCheck(resourceType, biome.Resource)
+        self.__inventory[resourceType] -= count
+        if self.__inventory[resourceType] &lt; 0:
+            raise ValueError(&#39;negative value in inventory&#39;)
+    
+    def totalResourceCount(self) -&gt; int:
+        return sum(self.__inventory.values())</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
-<dt id="settlersPy.gameMap.GameMap.addSettlement"><code class="name flex">
-<span>def <span class="ident">addSettlement</span></span>(<span>self, s)</span>
+<dt id="settlersPy.mechanics.inventory.Inventory.addResource"><code class="name flex">
+<span>def <span class="ident">addResource</span></span>(<span>self, resourceType, count)</span>
 </code></dt>
 <dd>
 <section class="desc"></section>
@@ -137,13 +113,13 @@ class GameMap:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def addSettlement(self, s: Habitation):
-    typeCheck(s, Habitation)
-    self.settlements.append(s)</code></pre>
+<pre><code class="python">def addResource(self, resourceType: biome.Resource, count: int):
+    typeCheck(resourceType, biome.Resource)
+    self.__inventory[resourceType] += count</code></pre>
 </details>
 </dd>
-<dt id="settlersPy.gameMap.GameMap.addTile"><code class="name flex">
-<span>def <span class="ident">addTile</span></span>(<span>self, t)</span>
+<dt id="settlersPy.mechanics.inventory.Inventory.getCount"><code class="name flex">
+<span>def <span class="ident">getCount</span></span>(<span>self, resourceType)</span>
 </code></dt>
 <dd>
 <section class="desc"></section>
@@ -151,13 +127,13 @@ class GameMap:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def addTile(self, t: Tile):
-    typeCheck(t, Tile)
-    self.tiles.append(t)</code></pre>
+<pre><code class="python">def getCount(self, resourceType: biome.Resource) -&gt; int:
+    typeCheck(resourceType, biome.Resource)
+    return self.__inventory[resourceType]</code></pre>
 </details>
 </dd>
-<dt id="settlersPy.gameMap.GameMap.getAsJson"><code class="name flex">
-<span>def <span class="ident">getAsJson</span></span>(<span>self)</span>
+<dt id="settlersPy.mechanics.inventory.Inventory.hasResource"><code class="name flex">
+<span>def <span class="ident">hasResource</span></span>(<span>self, resourceType, minimum)</span>
 </code></dt>
 <dd>
 <section class="desc"></section>
@@ -165,8 +141,37 @@ class GameMap:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def getAsJson(self):
-    return json.dumps(self, cls=customJsonEncoder)</code></pre>
+<pre><code class="python">def hasResource(self, resourceType: biome.Resource, minimum: int) -&gt; bool:
+    return self.getCount(resourceType) &gt;= minimum</code></pre>
+</details>
+</dd>
+<dt id="settlersPy.mechanics.inventory.Inventory.removeResource"><code class="name flex">
+<span>def <span class="ident">removeResource</span></span>(<span>self, resourceType, count)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def removeResource(self, resourceType: biome.Resource, count: int):
+    typeCheck(resourceType, biome.Resource)
+    self.__inventory[resourceType] -= count
+    if self.__inventory[resourceType] &lt; 0:
+        raise ValueError(&#39;negative value in inventory&#39;)</code></pre>
+</details>
+</dd>
+<dt id="settlersPy.mechanics.inventory.Inventory.totalResourceCount"><code class="name flex">
+<span>def <span class="ident">totalResourceCount</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def totalResourceCount(self) -&gt; int:
+    return sum(self.__inventory.values())</code></pre>
 </details>
 </dd>
 </dl>
@@ -182,17 +187,19 @@ class GameMap:
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="settlersPy" href="index.html">settlersPy</a></code></li>
+<li><code><a title="settlersPy.mechanics" href="index.html">settlersPy.mechanics</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="settlersPy.gameMap.GameMap" href="#settlersPy.gameMap.GameMap">GameMap</a></code></h4>
+<h4><code><a title="settlersPy.mechanics.inventory.Inventory" href="#settlersPy.mechanics.inventory.Inventory">Inventory</a></code></h4>
 <ul class="">
-<li><code><a title="settlersPy.gameMap.GameMap.addSettlement" href="#settlersPy.gameMap.GameMap.addSettlement">addSettlement</a></code></li>
-<li><code><a title="settlersPy.gameMap.GameMap.addTile" href="#settlersPy.gameMap.GameMap.addTile">addTile</a></code></li>
-<li><code><a title="settlersPy.gameMap.GameMap.getAsJson" href="#settlersPy.gameMap.GameMap.getAsJson">getAsJson</a></code></li>
+<li><code><a title="settlersPy.mechanics.inventory.Inventory.addResource" href="#settlersPy.mechanics.inventory.Inventory.addResource">addResource</a></code></li>
+<li><code><a title="settlersPy.mechanics.inventory.Inventory.getCount" href="#settlersPy.mechanics.inventory.Inventory.getCount">getCount</a></code></li>
+<li><code><a title="settlersPy.mechanics.inventory.Inventory.hasResource" href="#settlersPy.mechanics.inventory.Inventory.hasResource">hasResource</a></code></li>
+<li><code><a title="settlersPy.mechanics.inventory.Inventory.removeResource" href="#settlersPy.mechanics.inventory.Inventory.removeResource">removeResource</a></code></li>
+<li><code><a title="settlersPy.mechanics.inventory.Inventory.totalResourceCount" href="#settlersPy.mechanics.inventory.Inventory.totalResourceCount">totalResourceCount</a></code></li>
 </ul>
 </li>
 </ul>

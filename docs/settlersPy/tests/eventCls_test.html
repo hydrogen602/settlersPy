@@ -60,8 +60,10 @@ class TestFaultySubClsExceptions:
         import mechanics.event as event
 
         with pytest.raises(AttributeError):
+            @event.eventSystemSetup(&#39;typeName_testFaultySubCls3&#39;, buildFromJsonMethod=False)
             class FaultyNoFromJson(event.Event):
                 typeName = &#34;faulty&#34;
+            print(FaultyNoFromJson.fromJson)
 
     def testFaultySubCls4(self):
         import mechanics.event as event
@@ -84,7 +86,51 @@ class TestFaultySubClsExceptions:
 @pytest.mark.incremental
 class TestParsingSubCls:
     def testImporting(self):
-        import mechanics.event as event</code></pre>
+        import mechanics.event as event
+
+    def testSubClass(self):
+        import mechanics.event as event
+
+        @event.eventSystemSetup(&#39;actionTest&#39;, buildFromJsonMethod=True)
+        class BasicSubCls(event.Event):
+            typeName = &#39;testType_testSubClass&#39;
+    
+    def testSubClass2(self):
+        import mechanics.event as event
+
+        global called
+        called = False
+
+        @event.eventSystemSetup(&#39;basicSubCls&#39;, buildFromJsonMethod=True)
+        class BasicSubCls(event.Event):
+            typeName = &#39;testType_testSubClass2&#39;
+        
+        @event.eventSystemSetup(&#39;actionSubCls&#39;, buildFromJsonMethod=False)
+        class ActionSubCls(BasicSubCls):
+            basicSubCls = &#39;actionName&#39;
+        
+            @classmethod
+            def fromJson(cls, data):
+                global called
+                called = True
+                return &#39;&#39;
+        
+        event.Event.fromJson({&#39;typeName&#39;: &#39;testType_testSubClass2&#39;, &#39;basicSubCls&#39;: &#39;actionName&#39;})
+
+        assert called
+
+
+# @pytest.mark.incremental
+# class TestFeatureClasses:
+#     def testImporting(self):
+#         import mechanics.event as event
+#         import features.purchaseAction as purchaseModule
+    
+#     def testModule(self):
+#         import mechanics.event as event
+#         import features.purchaseAction as purchaseModule
+
+#         cls = purchaseModule.PurchaseAction</code></pre>
 </details>
 </section>
 <section>
@@ -127,8 +173,10 @@ class TestParsingSubCls:
         import mechanics.event as event
 
         with pytest.raises(AttributeError):
+            @event.eventSystemSetup(&#39;typeName_testFaultySubCls3&#39;, buildFromJsonMethod=False)
             class FaultyNoFromJson(event.Event):
                 typeName = &#34;faulty&#34;
+            print(FaultyNoFromJson.fromJson)
 
     def testFaultySubCls4(self):
         import mechanics.event as event
@@ -204,8 +252,10 @@ class TestParsingSubCls:
     import mechanics.event as event
 
     with pytest.raises(AttributeError):
+        @event.eventSystemSetup(&#39;typeName_testFaultySubCls3&#39;, buildFromJsonMethod=False)
         class FaultyNoFromJson(event.Event):
-            typeName = &#34;faulty&#34;</code></pre>
+            typeName = &#34;faulty&#34;
+        print(FaultyNoFromJson.fromJson)</code></pre>
 </details>
 </dd>
 <dt id="settlersPy.tests.eventCls_test.TestFaultySubClsExceptions.testFaultySubCls4"><code class="name flex">
@@ -272,7 +322,38 @@ class TestParsingSubCls:
 </summary>
 <pre><code class="python">class TestParsingSubCls:
     def testImporting(self):
-        import mechanics.event as event</code></pre>
+        import mechanics.event as event
+
+    def testSubClass(self):
+        import mechanics.event as event
+
+        @event.eventSystemSetup(&#39;actionTest&#39;, buildFromJsonMethod=True)
+        class BasicSubCls(event.Event):
+            typeName = &#39;testType_testSubClass&#39;
+    
+    def testSubClass2(self):
+        import mechanics.event as event
+
+        global called
+        called = False
+
+        @event.eventSystemSetup(&#39;basicSubCls&#39;, buildFromJsonMethod=True)
+        class BasicSubCls(event.Event):
+            typeName = &#39;testType_testSubClass2&#39;
+        
+        @event.eventSystemSetup(&#39;actionSubCls&#39;, buildFromJsonMethod=False)
+        class ActionSubCls(BasicSubCls):
+            basicSubCls = &#39;actionName&#39;
+        
+            @classmethod
+            def fromJson(cls, data):
+                global called
+                called = True
+                return &#39;&#39;
+        
+        event.Event.fromJson({&#39;typeName&#39;: &#39;testType_testSubClass2&#39;, &#39;basicSubCls&#39;: &#39;actionName&#39;})
+
+        assert called</code></pre>
 </details>
 <h3>Class variables</h3>
 <dl>
@@ -294,6 +375,57 @@ class TestParsingSubCls:
 </summary>
 <pre><code class="python">def testImporting(self):
     import mechanics.event as event</code></pre>
+</details>
+</dd>
+<dt id="settlersPy.tests.eventCls_test.TestParsingSubCls.testSubClass"><code class="name flex">
+<span>def <span class="ident">testSubClass</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def testSubClass(self):
+    import mechanics.event as event
+
+    @event.eventSystemSetup(&#39;actionTest&#39;, buildFromJsonMethod=True)
+    class BasicSubCls(event.Event):
+        typeName = &#39;testType_testSubClass&#39;</code></pre>
+</details>
+</dd>
+<dt id="settlersPy.tests.eventCls_test.TestParsingSubCls.testSubClass2"><code class="name flex">
+<span>def <span class="ident">testSubClass2</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def testSubClass2(self):
+    import mechanics.event as event
+
+    global called
+    called = False
+
+    @event.eventSystemSetup(&#39;basicSubCls&#39;, buildFromJsonMethod=True)
+    class BasicSubCls(event.Event):
+        typeName = &#39;testType_testSubClass2&#39;
+    
+    @event.eventSystemSetup(&#39;actionSubCls&#39;, buildFromJsonMethod=False)
+    class ActionSubCls(BasicSubCls):
+        basicSubCls = &#39;actionName&#39;
+    
+        @classmethod
+        def fromJson(cls, data):
+            global called
+            called = True
+            return &#39;&#39;
+    
+    event.Event.fromJson({&#39;typeName&#39;: &#39;testType_testSubClass2&#39;, &#39;basicSubCls&#39;: &#39;actionName&#39;})
+
+    assert called</code></pre>
 </details>
 </dd>
 </dl>
@@ -331,6 +463,8 @@ class TestParsingSubCls:
 <ul class="">
 <li><code><a title="settlersPy.tests.eventCls_test.TestParsingSubCls.pytestmark" href="#settlersPy.tests.eventCls_test.TestParsingSubCls.pytestmark">pytestmark</a></code></li>
 <li><code><a title="settlersPy.tests.eventCls_test.TestParsingSubCls.testImporting" href="#settlersPy.tests.eventCls_test.TestParsingSubCls.testImporting">testImporting</a></code></li>
+<li><code><a title="settlersPy.tests.eventCls_test.TestParsingSubCls.testSubClass" href="#settlersPy.tests.eventCls_test.TestParsingSubCls.testSubClass">testSubClass</a></code></li>
+<li><code><a title="settlersPy.tests.eventCls_test.TestParsingSubCls.testSubClass2" href="#settlersPy.tests.eventCls_test.TestParsingSubCls.testSubClass2">testSubClass2</a></code></li>
 </ul>
 </li>
 </ul>

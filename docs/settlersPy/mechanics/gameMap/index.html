@@ -4,8 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.7.5" />
-<title>settlersPy API documentation</title>
-<meta name="description" content="" />
+<title>settlersPy.mechanics.gameMap API documentation</title>
+<meta name="description" content="For the abstract super classes of map elements
+and the gameMap class that stores and manages
+the parts of the map" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
@@ -17,76 +19,24 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>settlersPy</code></h1>
+<h1 class="title">Module <code>settlersPy.mechanics.gameMap</code></h1>
 </header>
 <section id="section-intro">
+<p>For the abstract super classes of map elements
+and the gameMap class that stores and manages
+the parts of the map</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">import os
-p = os.path.dirname(__file__)
-from sys import path
-path.append(p)</code></pre>
+<pre><code class="python">&#39;&#39;&#39;
+For the abstract super classes of map elements
+and the gameMap class that stores and manages
+the parts of the map
+&#39;&#39;&#39;</code></pre>
 </details>
 </section>
 <section>
-<h2 class="section-title" id="header-submodules">Sub-modules</h2>
-<dl>
-<dt><code class="name"><a title="settlersPy.biome" href="biome.html">settlersPy.biome</a></code></dt>
-<dd>
-<section class="desc"></section>
-</dd>
-<dt><code class="name"><a title="settlersPy.features" href="features/index.html">settlersPy.features</a></code></dt>
-<dd>
-<section class="desc"><p>Specific game rules and features should be written in here,
-using the code of the <a title="settlersPy.mechanics" href="mechanics/index.html"><code>settlersPy.mechanics</code></a> module</p></section>
-</dd>
-<dt><code class="name"><a title="settlersPy.gameMap" href="gameMap.html">settlersPy.gameMap</a></code></dt>
-<dd>
-<section class="desc"></section>
-</dd>
-<dt><code class="name"><a title="settlersPy.habitation" href="habitation.html">settlersPy.habitation</a></code></dt>
-<dd>
-<section class="desc"></section>
-</dd>
-<dt><code class="name"><a title="settlersPy.mechanics" href="mechanics/index.html">settlersPy.mechanics</a></code></dt>
-<dd>
-<section class="desc"><p>Mechanics should be the core systems of the game, generalized.
-Game rules or features should not be found in here, just an API
-that supports the …</p></section>
-</dd>
-<dt><code class="name"><a title="settlersPy.message" href="message.html">settlersPy.message</a></code></dt>
-<dd>
-<section class="desc"></section>
-</dd>
-<dt><code class="name"><a title="settlersPy.point" href="point.html">settlersPy.point</a></code></dt>
-<dd>
-<section class="desc"></section>
-</dd>
-<dt><code class="name"><a title="settlersPy.runner" href="runner.html">settlersPy.runner</a></code></dt>
-<dd>
-<section class="desc"></section>
-</dd>
-<dt><code class="name"><a title="settlersPy.server" href="server.html">settlersPy.server</a></code></dt>
-<dd>
-<section class="desc"><p>Server code for setting up a WebSocket server, handling connections, and verifying
-connection details …</p></section>
-</dd>
-<dt><code class="name"><a title="settlersPy.tests" href="tests/index.html">settlersPy.tests</a></code></dt>
-<dd>
-<section class="desc"></section>
-</dd>
-<dt><code class="name"><a title="settlersPy.tile" href="tile.html">settlersPy.tile</a></code></dt>
-<dd>
-<section class="desc"></section>
-</dd>
-<dt><code class="name"><a title="settlersPy.tools" href="tools/index.html">settlersPy.tools</a></code></dt>
-<dd>
-<section class="desc"><p>The tools module is for enforcing interfaces on classes
-and verifying that functions expect the right arguments and types …</p></section>
-</dd>
-</dl>
 </section>
 <section>
 </section>
@@ -101,20 +51,9 @@ and verifying that functions expect the right arguments and types …</p></secti
 <ul></ul>
 </div>
 <ul id="index">
-<li><h3><a href="#header-submodules">Sub-modules</a></h3>
+<li><h3>Super-module</h3>
 <ul>
-<li><code><a title="settlersPy.biome" href="biome.html">settlersPy.biome</a></code></li>
-<li><code><a title="settlersPy.features" href="features/index.html">settlersPy.features</a></code></li>
-<li><code><a title="settlersPy.gameMap" href="gameMap.html">settlersPy.gameMap</a></code></li>
-<li><code><a title="settlersPy.habitation" href="habitation.html">settlersPy.habitation</a></code></li>
-<li><code><a title="settlersPy.mechanics" href="mechanics/index.html">settlersPy.mechanics</a></code></li>
-<li><code><a title="settlersPy.message" href="message.html">settlersPy.message</a></code></li>
-<li><code><a title="settlersPy.point" href="point.html">settlersPy.point</a></code></li>
-<li><code><a title="settlersPy.runner" href="runner.html">settlersPy.runner</a></code></li>
-<li><code><a title="settlersPy.server" href="server.html">settlersPy.server</a></code></li>
-<li><code><a title="settlersPy.tests" href="tests/index.html">settlersPy.tests</a></code></li>
-<li><code><a title="settlersPy.tile" href="tile.html">settlersPy.tile</a></code></li>
-<li><code><a title="settlersPy.tools" href="tools/index.html">settlersPy.tools</a></code></li>
+<li><code><a title="settlersPy.mechanics" href="../index.html">settlersPy.mechanics</a></code></li>
 </ul>
 </li>
 </ul>

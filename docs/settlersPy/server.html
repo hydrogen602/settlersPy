@@ -61,6 +61,7 @@ from typing import Callable, Tuple, Union, List
 
 from tools import typeCheck
 import mechanics
+from message import Message
 
 class ServerProtocol(WebSocketServerProtocol):
     &#39;&#39;&#39;
@@ -119,7 +120,9 @@ class ServerProtocol(WebSocketServerProtocol):
                 if type(obj) == &#39;str&#39;:
                     raise json.decoder.JSONDecodeError
 
-                self.factory.callbackHandler(obj, self)   
+                m = Message(mechanics.PlayerManager.instance.getPlayer(self.token), obj, self.factory)
+
+                self.factory.callbackHandler(m, self)   
             except json.decoder.JSONDecodeError:
                 print(&#34;Error: Invalid JSON:&#34;, msg)
 
@@ -141,7 +144,7 @@ class ServerFactory(WebSocketServerFactory):
         &#39;&#39;&#39;
         typeCheck(playerManage, mechanics.PlayerManager)
 
-        self.pm: mechanics.PlayerManager = playerManage
+        self.playerManager: mechanics.PlayerManager = playerManage
 
         self.file = f
 
@@ -151,12 +154,12 @@ class ServerFactory(WebSocketServerFactory):
 
         WebSocketServerFactory.__init__(self, url)
     
-    def callbackHandler(self, msg: dict, client: ServerProtocol):
+    def callbackHandler(self, msg: Message, client: ServerProtocol):
         &#39;&#39;&#39;
         call the callbackFunc to notify the game manager of a new
         message
         &#39;&#39;&#39;
-        jsonMsg = self.callbackFunc(client.token, msg)
+        jsonMsg = self.callbackFunc(msg)
         self.broadcastToAll(jsonMsg)
     
     def getToken(self, client: ServerProtocol) -&gt; str:
@@ -211,12 +214,12 @@ class ServerFactory(WebSocketServerFactory):
         if token is None:
             p = mechanics.Player(name, client)
             print(&#34;New player:&#34;, p.token)
-            self.pm.addPlayer(p)
+            self.playerManager.addPlayer(p)
 
         if token is not None:
-            if token in self.pm:
+            if token in self.playerManager:
                 print(&#34;Reconnecting player:&#34;, token)
-                p = self.pm.getPlayer(token)
+                p = self.playerManager.getPlayer(token)
                 p.reconnect(client)
             else:
                 print(&#34;Unknown token:&#34;, token)
@@ -230,9 +233,9 @@ class ServerFactory(WebSocketServerFactory):
 
     def unregister(self, client):
         token = client.token
-        if token in self.pm:
+        if token in self.playerManager:
             print(&#34;Disconnected player:&#34;, token)
-            self.pm[token].disconnect()
+            self.playerManager[token].disconnect()
         elif token is None:
             print(&#34;Player disconnected before assigned token:&#34;, token)
         else:
@@ -249,7 +252,7 @@ class ServerFactory(WebSocketServerFactory):
 
         encoded = msg.encode()
 
-        for p in self.pm:
+        for p in self.playerManager:
             if p.isConnected():
                 p.connection.sendMessage(encoded)
     
@@ -268,15 +271,14 @@ class ServerFactory(WebSocketServerFactory):
         encoded = msg.encode()
         
         for token in tokenList:
-            p = self.pm.getPlayer(token)
+            p = self.playerManager.getPlayer(token)
             if p is not None and p.isConnected():
                 p.connection.sendMessage(encoded)
-
         
 
 class Server:
 
-    def __init__(self, ip: str = &#39;127.0.0.1&#39;, port: int = 5000, callbackFunc: Callable[[str, dict], str] = None, 
+    def __init__(self, ip: str = &#39;127.0.0.1&#39;, port: int = 5000, callbackFunc: Callable[[Message], str] = None, 
                  init_msgs: Tuple[str] = (), playerManage: mechanics.PlayerManager = None):
         &#39;&#39;&#39;
         A class for managing the code for running the server.
@@ -365,7 +367,7 @@ and the message from that player as a <code>dict</code></p></section>
 </summary>
 <pre><code class="python">class Server:
 
-    def __init__(self, ip: str = &#39;127.0.0.1&#39;, port: int = 5000, callbackFunc: Callable[[str, dict], str] = None, 
+    def __init__(self, ip: str = &#39;127.0.0.1&#39;, port: int = 5000, callbackFunc: Callable[[Message], str] = None, 
                  init_msgs: Tuple[str] = (), playerManage: mechanics.PlayerManager = None):
         &#39;&#39;&#39;
         A class for managing the code for running the server.
@@ -494,7 +496,7 @@ immediately, like the game map for example.</p></section>
         &#39;&#39;&#39;
         typeCheck(playerManage, mechanics.PlayerManager)
 
-        self.pm: mechanics.PlayerManager = playerManage
+        self.playerManager: mechanics.PlayerManager = playerManage
 
         self.file = f
 
@@ -504,12 +506,12 @@ immediately, like the game map for example.</p></section>
 
         WebSocketServerFactory.__init__(self, url)
     
-    def callbackHandler(self, msg: dict, client: ServerProtocol):
+    def callbackHandler(self, msg: Message, client: ServerProtocol):
         &#39;&#39;&#39;
         call the callbackFunc to notify the game manager of a new
         message
         &#39;&#39;&#39;
-        jsonMsg = self.callbackFunc(client.token, msg)
+        jsonMsg = self.callbackFunc(msg)
         self.broadcastToAll(jsonMsg)
     
     def getToken(self, client: ServerProtocol) -&gt; str:
@@ -564,12 +566,12 @@ immediately, like the game map for example.</p></section>
         if token is None:
             p = mechanics.Player(name, client)
             print(&#34;New player:&#34;, p.token)
-            self.pm.addPlayer(p)
+            self.playerManager.addPlayer(p)
 
         if token is not None:
-            if token in self.pm:
+            if token in self.playerManager:
                 print(&#34;Reconnecting player:&#34;, token)
-                p = self.pm.getPlayer(token)
+                p = self.playerManager.getPlayer(token)
                 p.reconnect(client)
             else:
                 print(&#34;Unknown token:&#34;, token)
@@ -583,9 +585,9 @@ immediately, like the game map for example.</p></section>
 
     def unregister(self, client):
         token = client.token
-        if token in self.pm:
+        if token in self.playerManager:
             print(&#34;Disconnected player:&#34;, token)
-            self.pm[token].disconnect()
+            self.playerManager[token].disconnect()
         elif token is None:
             print(&#34;Player disconnected before assigned token:&#34;, token)
         else:
@@ -602,7 +604,7 @@ immediately, like the game map for example.</p></section>
 
         encoded = msg.encode()
 
-        for p in self.pm:
+        for p in self.playerManager:
             if p.isConnected():
                 p.connection.sendMessage(encoded)
     
@@ -621,7 +623,7 @@ immediately, like the game map for example.</p></section>
         encoded = msg.encode()
         
         for token in tokenList:
-            p = self.pm.getPlayer(token)
+            p = self.playerManager.getPlayer(token)
             if p is not None and p.isConnected():
                 p.connection.sendMessage(encoded)</code></pre>
 </details>
@@ -657,7 +659,7 @@ players</p></section>
 
     encoded = msg.encode()
 
-    for p in self.pm:
+    for p in self.playerManager:
         if p.isConnected():
             p.connection.sendMessage(encoded)</code></pre>
 </details>
@@ -690,7 +692,7 @@ be included in the history.</p></section>
     encoded = msg.encode()
     
     for token in tokenList:
-        p = self.pm.getPlayer(token)
+        p = self.playerManager.getPlayer(token)
         if p is not None and p.isConnected():
             p.connection.sendMessage(encoded)</code></pre>
 </details>
@@ -705,12 +707,12 @@ message</p></section>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def callbackHandler(self, msg: dict, client: ServerProtocol):
+<pre><code class="python">def callbackHandler(self, msg: Message, client: ServerProtocol):
     &#39;&#39;&#39;
     call the callbackFunc to notify the game manager of a new
     message
     &#39;&#39;&#39;
-    jsonMsg = self.callbackFunc(client.token, msg)
+    jsonMsg = self.callbackFunc(msg)
     self.broadcastToAll(jsonMsg)</code></pre>
 </details>
 </dd>
@@ -787,12 +789,12 @@ a token is given that the server does not know.</p></section>
     if token is None:
         p = mechanics.Player(name, client)
         print(&#34;New player:&#34;, p.token)
-        self.pm.addPlayer(p)
+        self.playerManager.addPlayer(p)
 
     if token is not None:
-        if token in self.pm:
+        if token in self.playerManager:
             print(&#34;Reconnecting player:&#34;, token)
-            p = self.pm.getPlayer(token)
+            p = self.playerManager.getPlayer(token)
             p.reconnect(client)
         else:
             print(&#34;Unknown token:&#34;, token)
@@ -830,9 +832,9 @@ a token is given that the server does not know.</p></section>
 </summary>
 <pre><code class="python">def unregister(self, client):
     token = client.token
-    if token in self.pm:
+    if token in self.playerManager:
         print(&#34;Disconnected player:&#34;, token)
-        self.pm[token].disconnect()
+        self.playerManager[token].disconnect()
     elif token is None:
         print(&#34;Player disconnected before assigned token:&#34;, token)
     else:
@@ -909,7 +911,9 @@ that is {'token': token}</p>
                 if type(obj) == &#39;str&#39;:
                     raise json.decoder.JSONDecodeError
 
-                self.factory.callbackHandler(obj, self)   
+                m = Message(mechanics.PlayerManager.instance.getPlayer(self.token), obj, self.factory)
+
+                self.factory.callbackHandler(m, self)   
             except json.decoder.JSONDecodeError:
                 print(&#34;Error: Invalid JSON:&#34;, msg)</code></pre>
 </details>
@@ -1021,7 +1025,9 @@ to accept the WebSocket connection request.</p>
             if type(obj) == &#39;str&#39;:
                 raise json.decoder.JSONDecodeError
 
-            self.factory.callbackHandler(obj, self)   
+            m = Message(mechanics.PlayerManager.instance.getPlayer(self.token), obj, self.factory)
+
+            self.factory.callbackHandler(m, self)   
         except json.decoder.JSONDecodeError:
             print(&#34;Error: Invalid JSON:&#34;, msg)</code></pre>
 </details>

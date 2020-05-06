@@ -26,18 +26,17 @@
 </summary>
 <pre><code class="python">from enum import Enum
 
-class Resource(Enum):
-    pass
 
-class PrimaryResource(Resource):
+class Resource(Enum):
     Wheat = 0
     Sheepie = 1
     Lumber = 2
     Ore = 3
     Brick = 4
 
+
 class Biome:
-    primaryRes: PrimaryResource = None
+    primaryRes: Resource = None
     color: str = None
 
     biomeList: list = []
@@ -54,33 +53,37 @@ class Biome:
 
     def __init_subclass__(cls):
         assert hasattr(cls, &#39;primaryRes&#39;)
-        assert isinstance(getattr(cls, &#39;primaryRes&#39;), PrimaryResource)
+        assert isinstance(getattr(cls, &#39;primaryRes&#39;), Resource)
 
         assert hasattr(cls, &#39;color&#39;)
         assert isinstance(getattr(cls, &#39;color&#39;), str)
 
-        Biome.biomeList.append(cls) # add new biome to list of biomes
+        Biome.biomeList.append(cls)  # add new biome to list of biomes
 
 
 class Farmland(Biome):
-    primaryRes: PrimaryResource = PrimaryResource.Wheat
-    color = &#39;goldenrod&#39;
+    primaryRes: Resource = Resource.Wheat
+    color: str = &#39;goldenrod&#39;
+
 
 class Grassland(Biome):
-    primaryRes: PrimaryResource = PrimaryResource.Sheepie
-    color = &#39;limegreen&#39;
+    primaryRes: Resource = Resource.Sheepie
+    color: str = &#39;limegreen&#39;
+
 
 class Forest(Biome):
-    primaryRes: PrimaryResource = PrimaryResource.Lumber
-    color = &#39;forestgreen&#39;
+    primaryRes: Resource = Resource.Lumber
+    color: str = &#39;forestgreen&#39;
+
 
 class Mountain(Biome):
-    primaryRes: PrimaryResource = PrimaryResource.Ore
-    color = &#39;dimgray&#39;
+    primaryRes: Resource = Resource.Ore
+    color: str = &#39;dimgray&#39;
+
 
 class Quarry(Biome):
-    primaryRes: PrimaryResource = PrimaryResource.Brick
-    color = &#39;firebrick&#39;</code></pre>
+    primaryRes: Resource = Resource.Brick
+    color: str = &#39;firebrick&#39;</code></pre>
 </details>
 </section>
 <section>
@@ -104,7 +107,7 @@ instantiated.</p></section>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Biome:
-    primaryRes: PrimaryResource = None
+    primaryRes: Resource = None
     color: str = None
 
     biomeList: list = []
@@ -121,12 +124,12 @@ instantiated.</p></section>
 
     def __init_subclass__(cls):
         assert hasattr(cls, &#39;primaryRes&#39;)
-        assert isinstance(getattr(cls, &#39;primaryRes&#39;), PrimaryResource)
+        assert isinstance(getattr(cls, &#39;primaryRes&#39;), Resource)
 
         assert hasattr(cls, &#39;color&#39;)
         assert isinstance(getattr(cls, &#39;color&#39;), str)
 
-        Biome.biomeList.append(cls) # add new biome to list of biomes</code></pre>
+        Biome.biomeList.append(cls)  # add new biome to list of biomes</code></pre>
 </details>
 <h3>Subclasses</h3>
 <ul class="hlist">
@@ -164,8 +167,8 @@ instantiated.</p></section>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Farmland(Biome):
-    primaryRes: PrimaryResource = PrimaryResource.Wheat
-    color = &#39;goldenrod&#39;</code></pre>
+    primaryRes: Resource = Resource.Wheat
+    color: str = &#39;goldenrod&#39;</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -203,8 +206,8 @@ instantiated.</p></section>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Forest(Biome):
-    primaryRes: PrimaryResource = PrimaryResource.Lumber
-    color = &#39;forestgreen&#39;</code></pre>
+    primaryRes: Resource = Resource.Lumber
+    color: str = &#39;forestgreen&#39;</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -242,8 +245,8 @@ instantiated.</p></section>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Grassland(Biome):
-    primaryRes: PrimaryResource = PrimaryResource.Sheepie
-    color = &#39;limegreen&#39;</code></pre>
+    primaryRes: Resource = Resource.Sheepie
+    color: str = &#39;limegreen&#39;</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -281,8 +284,8 @@ instantiated.</p></section>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Mountain(Biome):
-    primaryRes: PrimaryResource = PrimaryResource.Ore
-    color = &#39;dimgray&#39;</code></pre>
+    primaryRes: Resource = Resource.Ore
+    color: str = &#39;dimgray&#39;</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -308,52 +311,6 @@ instantiated.</p></section>
 </li>
 </ul>
 </dd>
-<dt id="settlersPy.biome.PrimaryResource"><code class="flex name class">
-<span>class <span class="ident">PrimaryResource</span></span>
-<span>(</span><span>value, names=None, *, module=None, qualname=None, type=None, start=1)</span>
-</code></dt>
-<dd>
-<section class="desc"><p>An enumeration.</p></section>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class PrimaryResource(Resource):
-    Wheat = 0
-    Sheepie = 1
-    Lumber = 2
-    Ore = 3
-    Brick = 4</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="settlersPy.biome.Resource" href="#settlersPy.biome.Resource">Resource</a></li>
-<li>enum.Enum</li>
-</ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="settlersPy.biome.PrimaryResource.Brick"><code class="name">var <span class="ident">Brick</span></code></dt>
-<dd>
-<section class="desc"></section>
-</dd>
-<dt id="settlersPy.biome.PrimaryResource.Lumber"><code class="name">var <span class="ident">Lumber</span></code></dt>
-<dd>
-<section class="desc"></section>
-</dd>
-<dt id="settlersPy.biome.PrimaryResource.Ore"><code class="name">var <span class="ident">Ore</span></code></dt>
-<dd>
-<section class="desc"></section>
-</dd>
-<dt id="settlersPy.biome.PrimaryResource.Sheepie"><code class="name">var <span class="ident">Sheepie</span></code></dt>
-<dd>
-<section class="desc"></section>
-</dd>
-<dt id="settlersPy.biome.PrimaryResource.Wheat"><code class="name">var <span class="ident">Wheat</span></code></dt>
-<dd>
-<section class="desc"></section>
-</dd>
-</dl>
-</dd>
 <dt id="settlersPy.biome.Quarry"><code class="flex name class">
 <span>class <span class="ident">Quarry</span></span>
 <span>(</span><span>*args, **kwargs)</span>
@@ -366,8 +323,8 @@ instantiated.</p></section>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Quarry(Biome):
-    primaryRes: PrimaryResource = PrimaryResource.Brick
-    color = &#39;firebrick&#39;</code></pre>
+    primaryRes: Resource = Resource.Brick
+    color: str = &#39;firebrick&#39;</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -404,16 +361,39 @@ instantiated.</p></section>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Resource(Enum):
-    pass</code></pre>
+    Wheat = 0
+    Sheepie = 1
+    Lumber = 2
+    Ore = 3
+    Brick = 4</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li>enum.Enum</li>
 </ul>
-<h3>Subclasses</h3>
-<ul class="hlist">
-<li><a title="settlersPy.biome.PrimaryResource" href="#settlersPy.biome.PrimaryResource">PrimaryResource</a></li>
-</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="settlersPy.biome.Resource.Brick"><code class="name">var <span class="ident">Brick</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="settlersPy.biome.Resource.Lumber"><code class="name">var <span class="ident">Lumber</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="settlersPy.biome.Resource.Ore"><code class="name">var <span class="ident">Ore</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="settlersPy.biome.Resource.Sheepie"><code class="name">var <span class="ident">Sheepie</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="settlersPy.biome.Resource.Wheat"><code class="name">var <span class="ident">Wheat</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+</dl>
 </dd>
 </dl>
 </section>
@@ -468,16 +448,6 @@ instantiated.</p></section>
 </ul>
 </li>
 <li>
-<h4><code><a title="settlersPy.biome.PrimaryResource" href="#settlersPy.biome.PrimaryResource">PrimaryResource</a></code></h4>
-<ul class="">
-<li><code><a title="settlersPy.biome.PrimaryResource.Brick" href="#settlersPy.biome.PrimaryResource.Brick">Brick</a></code></li>
-<li><code><a title="settlersPy.biome.PrimaryResource.Lumber" href="#settlersPy.biome.PrimaryResource.Lumber">Lumber</a></code></li>
-<li><code><a title="settlersPy.biome.PrimaryResource.Ore" href="#settlersPy.biome.PrimaryResource.Ore">Ore</a></code></li>
-<li><code><a title="settlersPy.biome.PrimaryResource.Sheepie" href="#settlersPy.biome.PrimaryResource.Sheepie">Sheepie</a></code></li>
-<li><code><a title="settlersPy.biome.PrimaryResource.Wheat" href="#settlersPy.biome.PrimaryResource.Wheat">Wheat</a></code></li>
-</ul>
-</li>
-<li>
 <h4><code><a title="settlersPy.biome.Quarry" href="#settlersPy.biome.Quarry">Quarry</a></code></h4>
 <ul class="">
 <li><code><a title="settlersPy.biome.Quarry.color" href="#settlersPy.biome.Quarry.color">color</a></code></li>
@@ -486,6 +456,13 @@ instantiated.</p></section>
 </li>
 <li>
 <h4><code><a title="settlersPy.biome.Resource" href="#settlersPy.biome.Resource">Resource</a></code></h4>
+<ul class="">
+<li><code><a title="settlersPy.biome.Resource.Brick" href="#settlersPy.biome.Resource.Brick">Brick</a></code></li>
+<li><code><a title="settlersPy.biome.Resource.Lumber" href="#settlersPy.biome.Resource.Lumber">Lumber</a></code></li>
+<li><code><a title="settlersPy.biome.Resource.Ore" href="#settlersPy.biome.Resource.Ore">Ore</a></code></li>
+<li><code><a title="settlersPy.biome.Resource.Sheepie" href="#settlersPy.biome.Resource.Sheepie">Sheepie</a></code></li>
+<li><code><a title="settlersPy.biome.Resource.Wheat" href="#settlersPy.biome.Resource.Wheat">Wheat</a></code></li>
+</ul>
 </li>
 </ul>
 </li>

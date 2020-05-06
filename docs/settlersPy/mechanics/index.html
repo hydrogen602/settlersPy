@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.7.5" />
 <title>settlersPy.mechanics API documentation</title>
-<meta name="description" content="" />
+<meta name="description" content="Mechanics should be the core systems of the game, generalized.
+Game rules or features should not be found in here, just an API
+that supports the …" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
@@ -20,11 +22,20 @@
 <h1 class="title">Module <code>settlersPy.mechanics</code></h1>
 </header>
 <section id="section-intro">
+<p>Mechanics should be the core systems of the game, generalized.
+Game rules or features should not be found in here, just an API
+that supports the addition of game rules</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from .player import Player
+<pre><code class="python">&#39;&#39;&#39;
+Mechanics should be the core systems of the game, generalized.
+Game rules or features should not be found in here, just an API
+that supports the addition of game rules
+&#39;&#39;&#39;
+
+from .player import Player
 from .playerManager import PlayerManager
 
 from .event import Event, ActionEvent</code></pre>
@@ -33,15 +44,21 @@ from .event import Event, ActionEvent</code></pre>
 <section>
 <h2 class="section-title" id="header-submodules">Sub-modules</h2>
 <dl>
-<dt><code class="name"><a title="settlersPy.mechanics.actionManager" href="actionManager.html">settlersPy.mechanics.actionManager</a></code></dt>
-<dd>
-<section class="desc"><p>Action Manager module</p></section>
-</dd>
 <dt><code class="name"><a title="settlersPy.mechanics.event" href="event.html">settlersPy.mechanics.event</a></code></dt>
 <dd>
 <section class="desc"><p>The event system is to turn received json messages into
 an understandable and known structure and verifying
 that all necessary tags are there.</p></section>
+</dd>
+<dt><code class="name"><a title="settlersPy.mechanics.gameMap" href="gameMap/index.html">settlersPy.mechanics.gameMap</a></code></dt>
+<dd>
+<section class="desc"><p>For the abstract super classes of map elements
+and the gameMap class that stores and manages
+the parts of the map</p></section>
+</dd>
+<dt><code class="name"><a title="settlersPy.mechanics.inventory" href="inventory.html">settlersPy.mechanics.inventory</a></code></dt>
+<dd>
+<section class="desc"></section>
 </dd>
 <dt><code class="name"><a title="settlersPy.mechanics.player" href="player.html">settlersPy.mechanics.player</a></code></dt>
 <dd>
@@ -73,8 +90,9 @@ that all necessary tags are there.</p></section>
 </li>
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>
 <ul>
-<li><code><a title="settlersPy.mechanics.actionManager" href="actionManager.html">settlersPy.mechanics.actionManager</a></code></li>
 <li><code><a title="settlersPy.mechanics.event" href="event.html">settlersPy.mechanics.event</a></code></li>
+<li><code><a title="settlersPy.mechanics.gameMap" href="gameMap/index.html">settlersPy.mechanics.gameMap</a></code></li>
+<li><code><a title="settlersPy.mechanics.inventory" href="inventory.html">settlersPy.mechanics.inventory</a></code></li>
 <li><code><a title="settlersPy.mechanics.player" href="player.html">settlersPy.mechanics.player</a></code></li>
 <li><code><a title="settlersPy.mechanics.playerManager" href="playerManager.html">settlersPy.mechanics.playerManager</a></code></li>
 </ul>

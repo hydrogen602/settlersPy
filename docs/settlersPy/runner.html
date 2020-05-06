@@ -38,6 +38,9 @@ from tools import typeCheck, customJsonEncoder
 from gameMap import GameMap
 
 import mechanics
+from message import Message
+
+import features
 
 import json
 
@@ -49,7 +52,7 @@ class GameManager:
 
         self.serv = Server(ip=&#39;localhost&#39;, port=5000, callbackFunc=self.event, init_msgs=(self.m.getAsJson(),), playerManage=self.pm)
     
-    def event(self, player: mechanics.Player, data: dict):
+    def event(self, messageObject: Message):
         &#39;&#39;&#39;
         event should be called by the `ServerFactory` when
         a new message has come from a client
@@ -58,19 +61,9 @@ class GameManager:
         {&#34;type&#34;: &#34;action&#34;, &#34;group&#34;: groupName, &#34;name&#34;: actionName, &#34;data&#34;: extraData }
         where the &#34;data&#34; tag is optional
         &#39;&#39;&#39;
-        typeCheck(data, dict)
-        print(player, data)
+        print(messageObject.player.name, messageObject.msg_raw)
 
-        if &#39;action&#39; in data:
-            if data[&#39;action&#39;] == &#39;purchase&#39;:
-                if &#39;name&#39; not in data:
-                    print(&#39;Malformed JSON: missing name tag in player action&#39;)
-                    print(&#39;-&gt;&#39;,player, data)
-                    return json.dumps({&#34;Test&#34;: True})
-                
-                print(f&#39;Player {player} would like to buy a {data[&#34;name&#34;]}&#39;)
-                # isValid?
-                pass
+        messageObject.doAction()
 
         return json.dumps({&#34;Test&#34;: True})
     
@@ -112,7 +105,7 @@ if __name__ == &#39;__main__&#39;:
 
         self.serv = Server(ip=&#39;localhost&#39;, port=5000, callbackFunc=self.event, init_msgs=(self.m.getAsJson(),), playerManage=self.pm)
     
-    def event(self, player: mechanics.Player, data: dict):
+    def event(self, messageObject: Message):
         &#39;&#39;&#39;
         event should be called by the `ServerFactory` when
         a new message has come from a client
@@ -121,19 +114,9 @@ if __name__ == &#39;__main__&#39;:
         {&#34;type&#34;: &#34;action&#34;, &#34;group&#34;: groupName, &#34;name&#34;: actionName, &#34;data&#34;: extraData }
         where the &#34;data&#34; tag is optional
         &#39;&#39;&#39;
-        typeCheck(data, dict)
-        print(player, data)
+        print(messageObject.player.name, messageObject.msg_raw)
 
-        if &#39;action&#39; in data:
-            if data[&#39;action&#39;] == &#39;purchase&#39;:
-                if &#39;name&#39; not in data:
-                    print(&#39;Malformed JSON: missing name tag in player action&#39;)
-                    print(&#39;-&gt;&#39;,player, data)
-                    return json.dumps({&#34;Test&#34;: True})
-                
-                print(f&#39;Player {player} would like to buy a {data[&#34;name&#34;]}&#39;)
-                # isValid?
-                pass
+        messageObject.doAction()
 
         return json.dumps({&#34;Test&#34;: True})
     
@@ -147,7 +130,7 @@ if __name__ == &#39;__main__&#39;:
 <h3>Methods</h3>
 <dl>
 <dt id="settlersPy.runner.GameManager.event"><code class="name flex">
-<span>def <span class="ident">event</span></span>(<span>self, player, data)</span>
+<span>def <span class="ident">event</span></span>(<span>self, messageObject)</span>
 </code></dt>
 <dd>
 <section class="desc"><p>event should be called by the <code>ServerFactory</code> when
@@ -159,7 +142,7 @@ where the "data" tag is optional</p></section>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def event(self, player: mechanics.Player, data: dict):
+<pre><code class="python">def event(self, messageObject: Message):
     &#39;&#39;&#39;
     event should be called by the `ServerFactory` when
     a new message has come from a client
@@ -168,19 +151,9 @@ where the "data" tag is optional</p></section>
     {&#34;type&#34;: &#34;action&#34;, &#34;group&#34;: groupName, &#34;name&#34;: actionName, &#34;data&#34;: extraData }
     where the &#34;data&#34; tag is optional
     &#39;&#39;&#39;
-    typeCheck(data, dict)
-    print(player, data)
+    print(messageObject.player.name, messageObject.msg_raw)
 
-    if &#39;action&#39; in data:
-        if data[&#39;action&#39;] == &#39;purchase&#39;:
-            if &#39;name&#39; not in data:
-                print(&#39;Malformed JSON: missing name tag in player action&#39;)
-                print(&#39;-&gt;&#39;,player, data)
-                return json.dumps({&#34;Test&#34;: True})
-            
-            print(f&#39;Player {player} would like to buy a {data[&#34;name&#34;]}&#39;)
-            # isValid?
-            pass
+    messageObject.doAction()
 
     return json.dumps({&#34;Test&#34;: True})</code></pre>
 </details>

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.7.5" />
-<title>settlersPy.gameMap API documentation</title>
+<title>settlersPy.message API documentation</title>
 <meta name="description" content="" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
@@ -17,59 +17,62 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>settlersPy.gameMap</code></h1>
+<h1 class="title">Module <code>settlersPy.message</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">import json
+<pre><code class="python">from __future__ import annotations
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from mechanics.player import Player
+    from server import ServerFactory
 
-from typing import List
-from tools import typeCheck, customJsonEncoder
-from tile import Tile
-from habitation import Habitation
-from point import HexPoint
+from mechanics.event import Event
+from tools import typeCheck
 
+class Message:
 
-class GameMap:
+    def __init__(self, fromPlayer: Player, msg: dict, serverFactoryInstance: ServerFactory):
+        # serverFactoryInstance is of type ServerFactory
+        #typeCheck(fromPlayer, Player)
+        #typeCheck(msg, dict)
 
-    def __init__(self, size: int = 3):
-        self.__size: int = size
-        self.tiles: List[Tile] = []
-        self.settlements: List[Habitation] = []
+        self.__player: Player = fromPlayer 
+        self.__msg_raw: dict = msg
+        self.__serverFactoryInstance: ServerFactory = serverFactoryInstance
 
-        nP: int = (size - 1) / 2
-        nP2: int = (size - 2) / 2
+        self.__msgProcessed: Event = None
 
-        for j in range(size):
-            addition: int = int(-abs(j - nP) + nP)
+        try:
+            self.__msgProcessed = Event.fromJson(msg)
+        except Exception as e:
+            print(&#34;Event JSON parsing failed&#34;)
+            print(e)
 
-            for i in range(-addition, size + addition):
-                self.tiles.append(Tile.generate(HexPoint(2*j, 2*i)))
-                # print(2*j, 2*i)
-
-        for j in range(size - 1):
-            addition: int = int(-abs(j - nP2) + nP2)
-
-            for i in range(-addition, size + addition + 1):
-                self.tiles.append(Tile.generate(HexPoint(2*j + 1, 2*i - 1)))
-                # print(2*j + 1, 2*i - 1)
-
-    def addTile(self, t: Tile):
-        typeCheck(t, Tile)
-        self.tiles.append(t)
-
-    def addSettlement(self, s: Habitation):
-        typeCheck(s, Habitation)
-        self.settlements.append(s)
-
-    def getAsJson(self):
-        return json.dumps(self, cls=customJsonEncoder)
-
-# m = GameMap()
-# print(json.dumps(m, cls=customJsonEncoder, indent=4))</code></pre>
+    @property
+    def player(self) -&gt; Player:
+        return self.__player
+    
+    @property
+    def msg(self) -&gt; Event:
+        return self.__msgProcessed
+    
+    @property
+    def msg_raw(self) -&gt; dict:
+        return self.__msg_raw
+    
+    @property
+    def serverFactoryInstance(self) -&gt; ServerFactory:
+        return self.__serverFactoryInstance
+    
+    def doAction(self):
+        if self.__msgProcessed is None:
+            print(&#34;Invalid Json caused doAction to be null&#34;)
+        else:
+            return self.__msgProcessed.doAction(self)</code></pre>
 </details>
 </section>
 <section>
@@ -81,9 +84,9 @@ class GameMap:
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="settlersPy.gameMap.GameMap"><code class="flex name class">
-<span>class <span class="ident">GameMap</span></span>
-<span>(</span><span>size=3)</span>
+<dt id="settlersPy.message.Message"><code class="flex name class">
+<span>class <span class="ident">Message</span></span>
+<span>(</span><span>fromPlayer, msg, serverFactoryInstance)</span>
 </code></dt>
 <dd>
 <section class="desc"></section>
@@ -91,45 +94,102 @@ class GameMap:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class GameMap:
+<pre><code class="python">class Message:
 
-    def __init__(self, size: int = 3):
-        self.__size: int = size
-        self.tiles: List[Tile] = []
-        self.settlements: List[Habitation] = []
+    def __init__(self, fromPlayer: Player, msg: dict, serverFactoryInstance: ServerFactory):
+        # serverFactoryInstance is of type ServerFactory
+        #typeCheck(fromPlayer, Player)
+        #typeCheck(msg, dict)
 
-        nP: int = (size - 1) / 2
-        nP2: int = (size - 2) / 2
+        self.__player: Player = fromPlayer 
+        self.__msg_raw: dict = msg
+        self.__serverFactoryInstance: ServerFactory = serverFactoryInstance
 
-        for j in range(size):
-            addition: int = int(-abs(j - nP) + nP)
+        self.__msgProcessed: Event = None
 
-            for i in range(-addition, size + addition):
-                self.tiles.append(Tile.generate(HexPoint(2*j, 2*i)))
-                # print(2*j, 2*i)
+        try:
+            self.__msgProcessed = Event.fromJson(msg)
+        except Exception as e:
+            print(&#34;Event JSON parsing failed&#34;)
+            print(e)
 
-        for j in range(size - 1):
-            addition: int = int(-abs(j - nP2) + nP2)
-
-            for i in range(-addition, size + addition + 1):
-                self.tiles.append(Tile.generate(HexPoint(2*j + 1, 2*i - 1)))
-                # print(2*j + 1, 2*i - 1)
-
-    def addTile(self, t: Tile):
-        typeCheck(t, Tile)
-        self.tiles.append(t)
-
-    def addSettlement(self, s: Habitation):
-        typeCheck(s, Habitation)
-        self.settlements.append(s)
-
-    def getAsJson(self):
-        return json.dumps(self, cls=customJsonEncoder)</code></pre>
+    @property
+    def player(self) -&gt; Player:
+        return self.__player
+    
+    @property
+    def msg(self) -&gt; Event:
+        return self.__msgProcessed
+    
+    @property
+    def msg_raw(self) -&gt; dict:
+        return self.__msg_raw
+    
+    @property
+    def serverFactoryInstance(self) -&gt; ServerFactory:
+        return self.__serverFactoryInstance
+    
+    def doAction(self):
+        if self.__msgProcessed is None:
+            print(&#34;Invalid Json caused doAction to be null&#34;)
+        else:
+            return self.__msgProcessed.doAction(self)</code></pre>
 </details>
+<h3>Instance variables</h3>
+<dl>
+<dt id="settlersPy.message.Message.msg"><code class="name">var <span class="ident">msg</span></code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def msg(self) -&gt; Event:
+    return self.__msgProcessed</code></pre>
+</details>
+</dd>
+<dt id="settlersPy.message.Message.msg_raw"><code class="name">var <span class="ident">msg_raw</span></code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def msg_raw(self) -&gt; dict:
+    return self.__msg_raw</code></pre>
+</details>
+</dd>
+<dt id="settlersPy.message.Message.player"><code class="name">var <span class="ident">player</span></code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def player(self) -&gt; Player:
+    return self.__player</code></pre>
+</details>
+</dd>
+<dt id="settlersPy.message.Message.serverFactoryInstance"><code class="name">var <span class="ident">serverFactoryInstance</span></code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def serverFactoryInstance(self) -&gt; ServerFactory:
+    return self.__serverFactoryInstance</code></pre>
+</details>
+</dd>
+</dl>
 <h3>Methods</h3>
 <dl>
-<dt id="settlersPy.gameMap.GameMap.addSettlement"><code class="name flex">
-<span>def <span class="ident">addSettlement</span></span>(<span>self, s)</span>
+<dt id="settlersPy.message.Message.doAction"><code class="name flex">
+<span>def <span class="ident">doAction</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <section class="desc"></section>
@@ -137,36 +197,11 @@ class GameMap:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def addSettlement(self, s: Habitation):
-    typeCheck(s, Habitation)
-    self.settlements.append(s)</code></pre>
-</details>
-</dd>
-<dt id="settlersPy.gameMap.GameMap.addTile"><code class="name flex">
-<span>def <span class="ident">addTile</span></span>(<span>self, t)</span>
-</code></dt>
-<dd>
-<section class="desc"></section>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def addTile(self, t: Tile):
-    typeCheck(t, Tile)
-    self.tiles.append(t)</code></pre>
-</details>
-</dd>
-<dt id="settlersPy.gameMap.GameMap.getAsJson"><code class="name flex">
-<span>def <span class="ident">getAsJson</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<section class="desc"></section>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def getAsJson(self):
-    return json.dumps(self, cls=customJsonEncoder)</code></pre>
+<pre><code class="python">def doAction(self):
+    if self.__msgProcessed is None:
+        print(&#34;Invalid Json caused doAction to be null&#34;)
+    else:
+        return self.__msgProcessed.doAction(self)</code></pre>
 </details>
 </dd>
 </dl>
@@ -188,11 +223,13 @@ class GameMap:
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="settlersPy.gameMap.GameMap" href="#settlersPy.gameMap.GameMap">GameMap</a></code></h4>
+<h4><code><a title="settlersPy.message.Message" href="#settlersPy.message.Message">Message</a></code></h4>
 <ul class="">
-<li><code><a title="settlersPy.gameMap.GameMap.addSettlement" href="#settlersPy.gameMap.GameMap.addSettlement">addSettlement</a></code></li>
-<li><code><a title="settlersPy.gameMap.GameMap.addTile" href="#settlersPy.gameMap.GameMap.addTile">addTile</a></code></li>
-<li><code><a title="settlersPy.gameMap.GameMap.getAsJson" href="#settlersPy.gameMap.GameMap.getAsJson">getAsJson</a></code></li>
+<li><code><a title="settlersPy.message.Message.doAction" href="#settlersPy.message.Message.doAction">doAction</a></code></li>
+<li><code><a title="settlersPy.message.Message.msg" href="#settlersPy.message.Message.msg">msg</a></code></li>
+<li><code><a title="settlersPy.message.Message.msg_raw" href="#settlersPy.message.Message.msg_raw">msg_raw</a></code></li>
+<li><code><a title="settlersPy.message.Message.player" href="#settlersPy.message.Message.player">player</a></code></li>
+<li><code><a title="settlersPy.message.Message.serverFactoryInstance" href="#settlersPy.message.Message.serverFactoryInstance">serverFactoryInstance</a></code></li>
 </ul>
 </li>
 </ul>

@@ -28,6 +28,8 @@
 
 from secrets import token_urlsafe
 
+from .inventory import Inventory
+
 class Player:
 
     __usedTokens: Set[str] = set()
@@ -51,6 +53,8 @@ class Player:
         self.__name: str = name
         self.__token: str = token
         self.__connection = connection
+
+        self.__inventory: Inventory = Inventory()
     
     @property
     def connection(self):
@@ -91,6 +95,10 @@ class Player:
         The token used to uniquely identify the player
         &#39;&#39;&#39;
         return self.__token
+    
+    @property
+    def inventory(self) -&gt; Inventory:
+        return self.__inventory
     
     def __eq__(self, other: object) -&gt; bool:
         &#39;&#39;&#39;
@@ -173,6 +181,8 @@ player.
         self.__name: str = name
         self.__token: str = token
         self.__connection = connection
+
+        self.__inventory: Inventory = Inventory()
     
     @property
     def connection(self):
@@ -213,6 +223,10 @@ player.
         The token used to uniquely identify the player
         &#39;&#39;&#39;
         return self.__token
+    
+    @property
+    def inventory(self) -&gt; Inventory:
+        return self.__inventory
     
     def __eq__(self, other: object) -&gt; bool:
         &#39;&#39;&#39;
@@ -262,6 +276,18 @@ def connection(self):
     The instance of `ServerProtocol` that this player has
     &#39;&#39;&#39;
     return self.__connection</code></pre>
+</details>
+</dd>
+<dt id="settlersPy.mechanics.player.Player.inventory"><code class="name">var <span class="ident">inventory</span></code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def inventory(self) -&gt; Inventory:
+    return self.__inventory</code></pre>
 </details>
 </dd>
 <dt id="settlersPy.mechanics.player.Player.name"><code class="name">var <span class="ident">name</span></code></dt>
@@ -370,6 +396,7 @@ Equivalent to foo.connection is not None</p></section>
 <ul class="two-column">
 <li><code><a title="settlersPy.mechanics.player.Player.connection" href="#settlersPy.mechanics.player.Player.connection">connection</a></code></li>
 <li><code><a title="settlersPy.mechanics.player.Player.disconnect" href="#settlersPy.mechanics.player.Player.disconnect">disconnect</a></code></li>
+<li><code><a title="settlersPy.mechanics.player.Player.inventory" href="#settlersPy.mechanics.player.Player.inventory">inventory</a></code></li>
 <li><code><a title="settlersPy.mechanics.player.Player.isConnected" href="#settlersPy.mechanics.player.Player.isConnected">isConnected</a></code></li>
 <li><code><a title="settlersPy.mechanics.player.Player.name" href="#settlersPy.mechanics.player.Player.name">name</a></code></li>
 <li><code><a title="settlersPy.mechanics.player.Player.reconnect" href="#settlersPy.mechanics.player.Player.reconnect">reconnect</a></code></li>
