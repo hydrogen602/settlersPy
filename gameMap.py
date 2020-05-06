@@ -10,7 +10,7 @@ from point import HexPoint
 class GameMap:
 
     def __init__(self, size: int = 3):
-        self.__size = size
+        self.__size: int = size
         self.tiles: List[Tile] = []
         self.settlements: List[Habitation] = []
 

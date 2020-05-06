@@ -37,24 +37,24 @@ class Biome:
 
 class Farmland(Biome):
     primaryRes: Resource = Resource.Wheat
-    color = 'goldenrod'
+    color: str = 'goldenrod'
 
 
 class Grassland(Biome):
     primaryRes: Resource = Resource.Sheepie
-    color = 'limegreen'
+    color: str = 'limegreen'
 
 
 class Forest(Biome):
     primaryRes: Resource = Resource.Lumber
-    color = 'forestgreen'
+    color: str = 'forestgreen'
 
 
 class Mountain(Biome):
     primaryRes: Resource = Resource.Ore
-    color = 'dimgray'
+    color: str = 'dimgray'
 
 
 class Quarry(Biome):
     primaryRes: Resource = Resource.Brick
-    color = 'firebrick'
+    color: str = 'firebrick'
