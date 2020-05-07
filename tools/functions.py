@@ -10,6 +10,10 @@ def subclassCheck(subCls: type, superCls: type):
     if not issubclass(subCls, superCls):
         raise TypeError(f'Expected subclass of {superCls.__name__}, but {subCls.__name__} is not')
 
+def requireNotNone(obj: object):
+    if obj is None:
+        raise TypeError(f'Object may not be None')
+
 # def enforceType(func):
 #     assert callable(func)
 #     assert hasattr(func, '__annotations__')

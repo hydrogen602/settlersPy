@@ -6,7 +6,7 @@ Also has a custom json encoder for objects
 '''
 
 from .interface2 import InterfaceSuperType, interface
-from .functions import typeCheck, subclassCheck
+from .functions import typeCheck, subclassCheck, requireNotNone
 from .customJson import customJsonEncoder
 
 if __name__ == '__main__':
