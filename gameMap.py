@@ -2,8 +2,8 @@ import json
 
 from typing import List
 from tools import typeCheck, customJsonEncoder
-from tile import Tile
-from habitation import Habitation
+from features.tile import Tile
+from mechanics.gameMap import ProducingOutpost
 from point import HexPoint
 
 
@@ -12,7 +12,7 @@ class GameMap:
     def __init__(self, size: int = 3):
         self.__size: int = size
         self.tiles: List[Tile] = []
-        self.settlements: List[Habitation] = []
+        self.settlements: List[ProducingOutpost] = []
 
         nP: int = (size - 1) / 2
         nP2: int = (size - 2) / 2
@@ -35,8 +35,8 @@ class GameMap:
         typeCheck(t, Tile)
         self.tiles.append(t)
 
-    def addSettlement(self, s: Habitation):
-        typeCheck(s, Habitation)
+    def addSettlement(self, s: ProducingOutpost):
+        typeCheck(s, ProducingOutpost)
         self.settlements.append(s)
 
     def getAsJson(self):

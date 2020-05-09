@@ -29,6 +29,10 @@ class ProducingOutpost(CornerMapFeature):
     def owner(self) -> Player:
         return self.__owner
     
+    @property
+    def color(self) -> str:
+        return self.__owner.color
+    
     @abstractmethod
     def harvestResource(self, biome: Biome):
         '''

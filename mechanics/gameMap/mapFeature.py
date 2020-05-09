@@ -19,6 +19,11 @@ class MapFeature(ABC):
     @abstractmethod
     def point(self) -> HexPoint:
         ...
+    
+    @property
+    @abstractmethod
+    def color(self) -> str:
+        ...
 
 
 class CornerMapFeature(MapFeature):

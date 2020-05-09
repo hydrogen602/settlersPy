@@ -5,6 +5,8 @@ from secrets import token_urlsafe
 
 from .inventory import Inventory
 
+from biome import Resource
+
 class Player:
 
     __usedTokens: Set[str] = set()
@@ -74,6 +76,13 @@ class Player:
     @property
     def inventory(self) -> Inventory:
         return self.__inventory
+    
+    def giveResource(self, resource: Resource, count: int = 1):
+        self.__inventory.addResource(resource, count)
+    
+    @property
+    def color(self) -> str:
+        return 'blue' # TODO: make this chooseable by user
     
     def __eq__(self, other: object) -> bool:
         '''
