@@ -1,7 +1,9 @@
 
 from .player import Player
 
-from typing import Dict, Union
+from typing import Dict, Union, List, Iterator
+from random import shuffle
+
 from tools import typeCheck
 
 class PlayerManager:
@@ -23,12 +25,66 @@ class PlayerManager:
         PlayerManager.instance = self
 
         self.__players: Dict[str, Player] = {}
+
+        self.__gameStarted: bool = False
+        self.__playerTurnOrder: List[str] = []
+
+        self.__playerTurnOrderIterator: Iterator[str] = None
+    
+    def startGame(self):
+        '''
+        Call once the game has started. This locks the player list
+        and creates a random turn order from the current list of players
+        '''
+        if self.__gameStarted:
+            raise Exception('Game has already started')
+
+        self.__gameStarted = True
+        self.__playerTurnOrder = list(self.__players.keys())
+        shuffle(self.__playerTurnOrder)
+    
+    # def getPlayerTurnOrderIterator(self) -> Iterator[Player]:
+    #     if not self.__gameStarted:
+    #         raise Exception('Game hasn\'t started yet')
+        
+    #     for key in self.__playerTurnOrder:
+    #         yield self.__players[key]
+    
+    def nextPlayer(self) -> Player:
+        '''
+        Returns whose player's turn the next turn is
+        '''
+        if not self.__gameStarted:
+            raise Exception('Game hasn\'t started yet')
+
+        if self.__playerTurnOrderIterator is None:
+            self.__playerTurnOrderIterator = iter(self.__playerTurnOrder)
+        
+        try:
+            return next(self.__playerTurnOrderIterator)
+        except StopIteration:
+            self.__playerTurnOrderIterator = iter(self.__playerTurnOrder)
+            return next(self.__playerTurnOrderIterator)
+    
+    # def __next__(self) -> Player:
+    #     '''
+    #     PlayerManager has a next function, which makes it an iterator, but this
+    #     iterator goes in circles and follows turn order
+    #     '''
+    #     if not self.__gameStarted:
+    #         raise Exception('Game hasn\'t started yet')
+
+    #     return self.nextPlayer()
     
     def addPlayer(self, p: Player):
         '''
-        Add a new player to the playerManager
+        Add a new player to the playerManager.
+        Cannot be done once the game has started
         '''
         typeCheck(p, Player)
+
+        if self.__gameStarted:
+            raise Exception('Cannot add player after game has started')
 
         self.__players[p.token] = p
         # players should always have unique tokens
@@ -61,7 +117,12 @@ class PlayerManager:
     
     def __iter__(self):
         '''
-        Returns an iterator over the player list
+        Returns an iterator over the player list.
+        Call this if the order of players does not matter.
+        If order matters, like in determining the next person to play,
+        use getPlayerTurnOrderIterator
         '''
         return iter(self.__players.values())
     
+
+PlayerManager() # instantiate the one player manager instance
