@@ -30,6 +30,12 @@ class GameMap:
             for i in range(-addition, size + addition + 1):
                 self.tiles.append(Tile.generate(HexPoint(2*j + 1, 2*i - 1)))
                 # print(2*j + 1, 2*i - 1)
+    
+    def getTiles(self) -> List[Tile]:
+        return self.tiles
+    
+    def getProducingOutposts(self) -> List[ProducingOutpost]:
+        return self.settlements
 
     def addTile(self, t: Tile):
         typeCheck(t, Tile)

@@ -43,28 +43,28 @@ class PlayerManager:
         self.__playerTurnOrder = list(self.__players.keys())
         shuffle(self.__playerTurnOrder)
     
-    # def getPlayerTurnOrderIterator(self) -> Iterator[Player]:
-    #     if not self.__gameStarted:
-    #         raise Exception('Game hasn\'t started yet')
-        
-    #     for key in self.__playerTurnOrder:
-    #         yield self.__players[key]
-    
-    def nextPlayer(self) -> Player:
-        '''
-        Returns whose player's turn the next turn is
-        '''
+    def getPlayerTurnOrderIterator(self) -> Iterator[Player]:
         if not self.__gameStarted:
             raise Exception('Game hasn\'t started yet')
-
-        if self.__playerTurnOrderIterator is None:
-            self.__playerTurnOrderIterator = iter(self.__playerTurnOrder)
         
-        try:
-            return next(self.__playerTurnOrderIterator)
-        except StopIteration:
-            self.__playerTurnOrderIterator = iter(self.__playerTurnOrder)
-            return next(self.__playerTurnOrderIterator)
+        for key in self.__playerTurnOrder:
+            yield self.__players[key]
+    
+    # def nextPlayer(self) -> Player:
+    #     '''
+    #     Returns whose player's turn the next turn is
+    #     '''
+    #     if not self.__gameStarted:
+    #         raise Exception('Game hasn\'t started yet')
+
+    #     if self.__playerTurnOrderIterator is None:
+    #         self.__playerTurnOrderIterator = iter(self.__playerTurnOrder)
+        
+    #     try:
+    #         return next(self.__playerTurnOrderIterator)
+    #     except StopIteration:
+    #         self.__playerTurnOrderIterator = iter(self.__playerTurnOrder)
+    #         return next(self.__playerTurnOrderIterator)
     
     # def __next__(self) -> Player:
     #     '''

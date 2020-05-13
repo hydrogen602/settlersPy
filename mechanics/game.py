@@ -16,14 +16,34 @@ class Game:
     '''
 
     def __init__(self, map_: GameMap):
+        '''
+        Initializing this class starts the game!.
+        '''
         self.__playerManager: PlayerManager = PlayerManager.instance
+        self.__playerManager.startGame()
+
         self.__map: GameMap = map_
 
-        self.turnNum = 0
+        self.__turnNum: int = 0
+        self.__roundNum: int = 0
+
+        self.__playerTurnOrderIt: Iterator[Player] = None
+    
+    def __getNextPlayer(self) -> Player:
+        if self.__playerTurnOrderIt is None:
+            self.__roundNum += 1
+            self.__playerTurnOrderIt = self.__playerManager.getPlayerTurnOrderIterator()
+        
+        try:
+            return next(self.__playerTurnOrderIt)
+        except StopIteration:
+            self.__playerTurnOrderIt = self.__playerManager.getPlayerTurnOrderIterator()
+            self.__roundNum += 1
+            return next(self.__playerTurnOrderIt)
 
     def nextTurn(self) -> Turn:
-        self.turnNum += 1
-        return Turn(self.turnNum, self.__map, self.__playerManager.nextPlayer())
+        self.__turnNum += 1
+        return Turn(self.__turnNum, self.__roundNum, self.__map, self.__getNextPlayer())
 
     @property
     def players(self) -> PlayerManager:
@@ -41,8 +61,9 @@ class Turn:
     Stores things like which player's turn it is 
     '''
 
-    def __init__(self, turnNum: int, gameMap: GameMap, currentPlayer: Player):
+    def __init__(self, turnNum: int, roundNum: int, gameMap: GameMap, currentPlayer: Player):
         self.__turnNum: int = turnNum
+        self.__roundNum: int = roundNum
         self.__gameMap: GameMap = gameMap
         self.__player: Player = currentPlayer
         self.__current2DieRoll: int = roll2Die()
@@ -50,6 +71,10 @@ class Turn:
     @property
     def turnNum(self) -> int:
         return self.__turnNum
+    
+    @property
+    def roundNum(self) -> int:
+        return self.__roundNum
 
     @property
     def gameMap(self) -> GameMap:

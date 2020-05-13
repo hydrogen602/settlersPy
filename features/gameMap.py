@@ -34,12 +34,6 @@ class GameMap:
     
     def addTileElem(self, elem: gameMap.TileMapFeature):
         self.__tileElems.append(elem)
-    
-    def preRound(self):
-        d = util.roll2Die()
-
-        
-
 
     # def getAsJson(self):
     #     return json.dumps(self, cls=customJsonEncoder)
