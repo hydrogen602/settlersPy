@@ -2,10 +2,13 @@ from __future__ import annotations
 
 from typing import Iterator, TYPE_CHECKING
 
+from mechanics.util.die import roll2Die
+
 if TYPE_CHECKING:
     from mechanics.playerManager import PlayerManager
     from mechanics.player import Player
     from mechanics.gameMap.gameMap import GameMap
+
 
 class Game:
     '''
@@ -42,6 +45,7 @@ class Turn:
         self.__turnNum: int = turnNum
         self.__gameMap: GameMap = gameMap
         self.__player: Player = currentPlayer
+        self.__current2DieRoll: int = roll2Die()
 
     @property
     def turnNum(self) -> int:
@@ -54,4 +58,8 @@ class Turn:
     @property
     def currentPlayer(self) -> Player:
         return self.__player
+    
+    @property
+    def twoDieRoll(self) -> int:
+        return self.__current2DieRoll
 
