@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Dict, List, Iterable
+from typing import Dict, List, Iterable, Tuple
 from enum import Enum
 
 
@@ -18,6 +18,9 @@ class HexPoint:
     @property
     def col(self) -> int:
         return self.__col
+    
+    def getAsTuple(self) -> Tuple[int, int]:
+        return (self.__row, self.__col)
 
 
 class Resource(Enum):

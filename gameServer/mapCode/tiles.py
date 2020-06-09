@@ -34,6 +34,14 @@ class Tile:
         self.__diceValue: int = dieValue 
 
         self.__settlementList: List[Settlement] = []
+    
+    @property
+    def position(self) -> HexPoint:
+        return self._position
+    
+    @property
+    def biome(self) -> Biome:
+        return self._biome
 
     @classmethod
     def generate(cls, position: HexPoint) -> Tile:
