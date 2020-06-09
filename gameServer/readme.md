@@ -23,6 +23,8 @@ Notes:
      - \[C\] Tile: The board tiles
    - \[M\] lineMapFeatures
      - \[C\] Road
+   - \[M\] baseMapFeatures:
+     - \[C\] Placeable: superclass of all that can be placed on the map by a player
 
 ### Player
 

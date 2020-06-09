@@ -2,13 +2,15 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Dict
 
+from .baseMapFeatures import Placeable
+
 if TYPE_CHECKING:
     from .util import HexPoint, Biome
     # from mechanics.player import Player
     Player = None
 
 
-class Settlement:
+class Settlement(Placeable):
 
     def __init__(self, pos: HexPoint, owner: Player):
         self._pos: HexPoint = pos

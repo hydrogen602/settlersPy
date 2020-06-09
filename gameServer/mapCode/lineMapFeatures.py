@@ -2,8 +2,9 @@
 from typing import Dict
 
 from .util import HexPoint
+from .baseMapFeatures import Placeable
 
-class Road:
+class Road(Placeable):
 
     def __init__(self, point1: HexPoint, point2: HexPoint):
         self.__point1: HexPoint = point1
@@ -16,13 +17,6 @@ class Road:
     @property
     def point2(self) -> HexPoint: 
         return self.__point2
-    
-    @property
-    def point(self) -> HexPoint:
-        '''Lines have two points
-        so the first will be what point returns
-        '''
-        return self.__point1
     
     def toJsonSerializable(self) -> Dict[str, object]:
         return {
