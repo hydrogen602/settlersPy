@@ -23,3 +23,14 @@ Notes:
      - \[C\] Tile: The board tiles
    - \[M\] lineMapFeatures
      - \[C\] Road
+
+### Player
+
+ - \[F\] playerCode
+   - \[M\] playerManager
+     - \[C\] PlayerManager
+   - \[M\] player
+     - \[C\] Player
+   - \[M\] inventory
+     - \[C\] Inventory
+ 

@@ -25,6 +25,23 @@ class GameMap:
 
         self.__robberPosition: Union[HexPoint, None] = None
     
+    def generateHexagonalArea(self, size: int):
+        nP: int = (size - 1) / 2
+        nP2: int = (size - 2) / 2
+
+        for j in range(size):
+            addition: int = int(-abs(j - nP) + nP)
+
+            for i in range(-addition, size + addition):
+                self.addTile(Tile.generate(HexPoint(2*j, 2*i)))
+                # print(2*j, 2*i)
+
+        for j in range(size - 1):
+            addition: int = int(-abs(j - nP2) + nP2)
+
+            for i in range(-addition, size + addition + 1):
+                self.addTile(Tile.generate(HexPoint(2*j + 1, 2*i - 1)))
+    
     def moveRobber(self, position: HexPoint):
         # this can cause a crash if there is no tile at (0, 0)
 

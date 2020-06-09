@@ -5,7 +5,7 @@ from secrets import token_urlsafe
 
 from .inventory import Inventory
 
-from biome import Resource
+from ..mapCode.util import Resource
 
 class Player:
 

@@ -4,7 +4,6 @@ from .player import Player
 from typing import Dict, Union, List, Iterator
 from random import shuffle
 
-from tools import typeCheck
 
 class PlayerManager:
 
@@ -44,6 +43,10 @@ class PlayerManager:
         shuffle(self.__playerTurnOrder)
     
     def getPlayerTurnOrderIterator(self) -> Iterator[Player]:
+        '''
+        Returns a generator that will yield the players
+        in their turn order.
+        '''
         if not self.__gameStarted:
             raise Exception('Game hasn\'t started yet')
         
@@ -75,14 +78,21 @@ class PlayerManager:
     #         raise Exception('Game hasn\'t started yet')
 
     #     return self.nextPlayer()
+
+    def isGameStarted(self) -> bool:
+        '''
+        Returns whether or not the game has started yet
+        '''
+        return self.__gameStarted
     
     def addPlayer(self, p: Player):
         '''
         Add a new player to the playerManager.
         Cannot be done once the game has started
         '''
-        typeCheck(p, Player)
-
+        if not isinstance(p, Player):
+            raise TypeError(f"Expected type Player but got type {type(p)}")
+    
         if self.__gameStarted:
             raise Exception('Cannot add player after game has started')
 
