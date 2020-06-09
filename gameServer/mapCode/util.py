@@ -4,7 +4,7 @@ from enum import Enum
 
 
 class HexPoint:
-    def __init__(self, col: int, row: int):
+    def __init__(self, row: int, col: int):
         self.__row: int = row
         self.__col: int = col
     
@@ -21,7 +21,22 @@ class HexPoint:
     
     def getAsTuple(self) -> Tuple[int, int]:
         return (self.__row, self.__col)
+    
+    def __add__(self, other: HexPoint) -> HexPoint:
+        return HexPoint(self.row + other.row, self.col + other.col)
 
+    def __sub__(self, other: HexPoint) -> HexPoint:
+        return HexPoint(self.row - other.row, self.col - other.col)
+    
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, HexPoint):
+            return False
+        return self.row == other.row and self.col == other.col
+    
+    def __ne__(self, other: object) -> bool:
+        if not isinstance(other, HexPoint):
+            return True
+        return self.row != other.row or self.col != other.col
 
 class Resource(Enum):
     Wheat = 0

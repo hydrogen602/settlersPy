@@ -5,3 +5,4 @@ test.json
 web/built/**
 web/libraries/*
 *.log*
+.mypy_cache/
