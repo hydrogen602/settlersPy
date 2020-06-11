@@ -4,7 +4,7 @@ from enum import Enum
 
 
 class HexPoint:
-    def __init__(self, row: int, col: int):
+    def __init__(self, row: int, col: int) -> None:
         self.__row: int = row
         self.__col: int = col
     
@@ -47,7 +47,7 @@ class Resource(Enum):
 
 
 class IterableCls(type):
-    def __init__(cls, name, bases, dct):
+    def __init__(cls, name, bases, dct) -> None:
         if not hasattr(cls, 'getIterable'):
             raise TypeError(f'IterableCls {name} must have method getIterable')
 
@@ -61,7 +61,7 @@ class IterableCls(type):
 class Biome(metaclass=IterableCls):
     __biomeList: Dict[str, Biome] = {}
 
-    def __init__(self, name: str, primaryResource: Resource, color: str):
+    def __init__(self, name: str, primaryResource: Resource, color: str) -> None:
         '''
         Create a new biome. The instance doesn't have to be kept track
         of as the class will remember its instances

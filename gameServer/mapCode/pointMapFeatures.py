@@ -6,27 +6,26 @@ from .baseMapFeatures import Placeable
 
 if TYPE_CHECKING:
     from .util import HexPoint, Biome
-    # from mechanics.player import Player
-    Player = None
+    from ..playerCode.player import Player
 
 
 class Settlement(Placeable):
 
-    def __init__(self, pos: HexPoint, owner: Player):
+    def __init__(self, pos: HexPoint, owner: Player) -> None:
         self._pos: HexPoint = pos
         self._owner: Player = owner
-    
+
     @property
     def position(self) -> HexPoint:
         return self._pos
-    
+
     @property
     def owner(self) -> Player:
         return self._owner
-    
+
     def harvestResource(self, biome: Biome):
         self._owner.giveResource(biome.primaryResource)
-    
+
     def toJsonSerializable(self) -> Dict[str, object]:
         return {
             'position': self._pos,
@@ -36,8 +35,8 @@ class Settlement(Placeable):
 
 class City(Settlement):
 
-    def __init__(self, pos: HexPoint, owner: Player):
+    def __init__(self, pos: HexPoint, owner: Player) -> None:
         super().__init__(pos, owner)
-    
+
     def harvestResource(self, biome: Biome):
         self._owner.giveResource(biome.primaryResource, count=2)

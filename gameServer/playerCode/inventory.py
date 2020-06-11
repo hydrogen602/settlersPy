@@ -1,7 +1,7 @@
 
-from typing import Dict
+from typing import Dict, List
 
-from ..mapCode.util import Biome, Resource
+from ..mapCode import Settlement, Road, Biome, Resource
 
 class Inventory:
 
@@ -37,3 +37,36 @@ class Inventory:
     def totalResourceCount(self) -> int:
         return sum(self.__inventory.values())
 
+
+class ExpandedInventory(Inventory):
+    '''
+    Inventory that also keeps track of
+    purchased roads, settlements, etc.
+    that haven't been placed yet
+    '''
+
+    def __init__(self):
+        super().__init__()
+
+        self.__ownedPointFeatures: List[Settlement] = []
+        self.__ownedLineFeatures: List[Road] = []
+
+    def addPointFeature(self, s: Settlement):
+        self.__ownedPointFeatures.append(s)
+    
+    def addLineFeature(self, r: Road):
+        self.__ownedLineFeatures.append(r)
+    
+    @property
+    def ownedPointFeatures(self) -> List[Settlement]:
+        return self.__ownedPointFeatures
+    
+    @property
+    def ownedLineFeatures(self) -> List[Road]:
+        return self.__ownedLineFeatures
+    
+    def placePointFeature(self, index: int):
+        self.__ownedPointFeatures.pop(index)
+    
+    def placeLineFeature(self, index: int):
+        self.__ownedLineFeatures.pop(index)

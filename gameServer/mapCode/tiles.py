@@ -12,7 +12,7 @@ import random
 class Tile:
     __diceValueChoices = [2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 9, 10, 10, 11, 11, 12]
 
-    def __init__(self, biome: Biome, dieValue: int, position: HexPoint):
+    def __init__(self, biome: Biome, dieValue: int, position: HexPoint) -> None:
         '''
         Represents one tile on the map.
         diceValue is the number that needs to be rolled for

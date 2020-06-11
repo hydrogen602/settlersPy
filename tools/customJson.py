@@ -20,8 +20,9 @@ class customJsonEncoder(json.JSONEncoder):
         if hasattr(obj, 'toJsonSerializable'):
             dictData = getattr(obj, 'toJsonSerializable')()
             typeCheck(dictData, dict)
-        else:            
-            dictData = dict(obj.__dict__)
+        else:
+            raise TypeError(f"Type {type(obj)} is not JSON Serializable, missing method toJsonSerializable()")         
+            # dictData = dict(obj.__dict__)
         
         dictData['__name__'] = type(obj).__name__
         return dictData

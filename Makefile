@@ -14,3 +14,6 @@ all-docs:
 
 remove-docs:
 	rm -rf docs
+
+check:
+	mypy gameServer

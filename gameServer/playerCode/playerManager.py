@@ -11,7 +11,7 @@ class PlayerManager:
 
     instance = None
 
-    def __init__(self):
+    def __init__(self) -> None:
         '''
         Manages instances of the `Player` class.
         Keeps a dict of all players and allows for
@@ -28,7 +28,7 @@ class PlayerManager:
         self.__gameStarted: bool = False
         self.__playerTurnOrder: List[str] = []
 
-        self.__playerTurnOrderIterator: Iterator[str] = None
+        self.__playerTurnOrderIterator: Union[Iterator[str], None] = None
     
     def startGame(self):
         '''

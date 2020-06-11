@@ -3,7 +3,7 @@ from typing import Set
 
 from secrets import token_urlsafe
 
-from .inventory import Inventory
+from .inventory import ExpandedInventory
 
 from ..mapCode.util import Resource
 
@@ -11,7 +11,7 @@ class Player:
 
     __usedTokens: Set[str] = set()
 
-    def __init__(self, name: str, connection):
+    def __init__(self, name: str, connection) -> None:
         '''
         `Player` is meant to represent one player uniquely.
         `name` is the name visible to other players and
@@ -31,7 +31,7 @@ class Player:
         self.__token: str = token
         self.__connection = connection
 
-        self.__inventory: Inventory = Inventory()
+        self.__inventory: ExpandedInventory = ExpandedInventory()
     
     @property
     def connection(self):
@@ -74,7 +74,7 @@ class Player:
         return self.__token
     
     @property
-    def inventory(self) -> Inventory:
+    def inventory(self) -> ExpandedInventory:
         return self.__inventory
     
     def giveResource(self, resource: Resource, count: int = 1):
