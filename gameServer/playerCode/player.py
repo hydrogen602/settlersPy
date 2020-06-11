@@ -80,6 +80,12 @@ class Player:
     def giveResource(self, resource: Resource, count: int = 1):
         self.__inventory.addResource(resource, count)
     
+    def takeResource(self, resource: Resource, count: int):
+        self.__inventory.removeResource(resource, count)
+    
+    def hasResource(self, resource: Resource, minimum: int) -> bool:
+        return self.__inventory.hasResource(resource, minimum)
+    
     @property
     def color(self) -> str:
         return 'blue' # TODO: make this chooseable by user
