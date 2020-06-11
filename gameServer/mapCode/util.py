@@ -19,7 +19,10 @@ class JsonSerializable:
     `toJsonSerializable` method but may
     also be part of multiple inheritance.
     Requires subclasses to override the 
-    `toJsonSerializable` method
+    `toJsonSerializable` method.
+    In the list of classes that a cls is inheriting
+    from, put JsonSerializable last for best results.
+    (aka it might crash otherwise but i'm not sure)
     '''
 
     def __init_subclass__(cls):

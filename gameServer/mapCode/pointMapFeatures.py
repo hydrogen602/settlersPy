@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Dict
 
-from .baseMapFeatures import Placeable
+from .baseMapFeatures import Placeable, Ownable
 from .util import isNotNone, JsonSerializable
 
 if TYPE_CHECKING:
@@ -10,21 +10,16 @@ if TYPE_CHECKING:
     from ..playerCode.player import Player
 
 
-class Settlement(Placeable, JsonSerializable):
+class Settlement(Placeable, Ownable, JsonSerializable):
 
-    def __init__(self, pos: HexPoint = None, owner: Player = None, **kwargs) -> None:
-        isNotNone('__init__', pos=pos, owner=owner)
+    def __init__(self, pos: HexPoint = None, **kwargs) -> None:
+        isNotNone('__init__', pos=pos)
         super().__init__(**kwargs)
         self._pos: HexPoint = pos
-        self._owner: Player = owner
 
     @property
     def position(self) -> HexPoint:
         return self._pos
-
-    @property
-    def owner(self) -> Player:
-        return self._owner
 
     def harvestResource(self, biome: Biome):
         self._owner.giveResource(biome.primaryResource)
@@ -32,7 +27,6 @@ class Settlement(Placeable, JsonSerializable):
     def toJsonSerializable(self) -> Dict[str, object]:
         return {
             'position': self._pos,
-            'owner': self._owner,
             **super().toJsonSerializable()
         }
 

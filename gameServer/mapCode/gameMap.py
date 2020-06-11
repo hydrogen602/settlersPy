@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Dict, Tuple, Union, TYPE_CHECKING
+from typing import List, Dict, Tuple, Optional, TYPE_CHECKING
 #from tools import customJsonEncoder
 
 if TYPE_CHECKING:
@@ -23,7 +23,7 @@ class GameMap(JsonSerializable):
         self.__pointFeatures: List[Settlement] = []
         self.__lineFeatures: List[Road] = []
 
-        self.__robberPosition: Union[HexPoint, None] = None
+        self.__robberPosition: Optional[HexPoint] = None
     
     def generateHexagonalArea(self, size: int, startPoint: HexPoint = HexPoint(0, 0)):
         nP: float = (size - 1) / 2

@@ -10,6 +10,9 @@ class Placeable:
     #     setattr(Placeable, cls.__name__, cls)
 
 class Ownable(JsonSerializable):
+    '''
+    A class for anything that can be owned.
+    '''
 
     def __init__(self, owner: Player = None, **kwargs) -> None:
         isNotNone('__init__', owner=owner)

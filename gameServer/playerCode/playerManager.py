@@ -1,7 +1,7 @@
 
 from .player import Player
 
-from typing import Dict, Union, List, Iterator
+from typing import Dict, Optional, List, Iterator
 from random import shuffle
 
 
@@ -28,7 +28,7 @@ class PlayerManager:
         self.__gameStarted: bool = False
         self.__playerTurnOrder: List[str] = []
 
-        self.__playerTurnOrderIterator: Union[Iterator[str], None] = None
+        self.__playerTurnOrderIterator: Optional[Iterator[str]] = None
     
     def startGame(self):
         '''
@@ -99,7 +99,7 @@ class PlayerManager:
         self.__players[p.token] = p
         # players should always have unique tokens
     
-    def getPlayer(self, token: str) -> Union[Player, None]:
+    def getPlayer(self, token: str) -> Optional[Player]:
         '''
         Looks for the player with the given token.
         Returns the Player instance if found and
