@@ -3,6 +3,35 @@ from typing import Dict, List, Iterable, Tuple
 from enum import Enum
 
 
+def isNotNone(methodName: str, **kwargs):
+    '''
+    Verifies that each keyword argument given is not null.
+    '''
+    for key in kwargs:
+        assert isinstance(key, str)
+        if kwargs[key] is None:
+            raise TypeError(f"{methodName}() missing required argument: '{key}'")
+
+
+class JsonSerializable:
+    '''
+    A superclass for classes that have a
+    `toJsonSerializable` method but may
+    also be part of multiple inheritance.
+    Requires subclasses to override the 
+    `toJsonSerializable` method
+    '''
+
+    def __init_subclass__(cls):
+        func = getattr(cls, 'toJsonSerializable')
+        if func is JsonSerializable.toJsonSerializable:
+            # didn't implement their own method
+            raise TypeError(f"{cls.__name__} did not implement its own 'toJsonSerializable' method")
+    
+    def toJsonSerializable(self) -> Dict[str, object]:
+        return {}
+
+
 class HexPoint:
     def __init__(self, row: int, col: int) -> None:
         self.__row: int = row
@@ -37,6 +66,7 @@ class HexPoint:
         if not isinstance(other, HexPoint):
             return True
         return self.row != other.row or self.col != other.col
+
 
 class Resource(Enum):
     Wheat = 0

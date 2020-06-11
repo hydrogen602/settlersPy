@@ -5,6 +5,7 @@ from ..mapCode import Resource, Road, Settlement, City
 class ActionError(Exception):
     pass
 
+
 class Actions:
 
     @staticmethod

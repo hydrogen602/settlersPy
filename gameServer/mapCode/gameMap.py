@@ -10,10 +10,10 @@ if TYPE_CHECKING:
     from .pointMapFeatures import Settlement
     from .lineMapFeatures import Road
 
-from .util import HexPoint
+from .util import HexPoint, JsonSerializable
 
 
-class GameMap:
+class GameMap(JsonSerializable):
 
     def __init__(self, tiles: List[Tile]) -> None:
         self.__tiles: Dict[Tuple[int, int], Tile] = {}
@@ -95,10 +95,9 @@ class GameMap:
         self.__lineFeatures.append(elem)
     
     def toJsonSerializable(self):
-        pass
-        r = {
+        return {
             'tiles': [t.toJsonSerializable() for t in self.__tiles.values()],
-
+            **super().toJsonSerializable()
         }
 
     # def getAsJson(self):

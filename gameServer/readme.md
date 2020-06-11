@@ -35,4 +35,41 @@ Notes:
      - \[C\] Player
    - \[M\] inventory
      - \[C\] Inventory
- 
+  
+
+---
+##  On Multiple Inheritance and Arguments in `__init__`
+
+When there is a change of multiple inheritance, `__init__`
+should always use only keyword arguments and then pass
+the remaining kwargs to `super().__init__`. This
+seems like the best way to deal with multiple parents
+that all need some argument.
+
+---
+## JsonSerializable system
+
+As the necessary data of an object may come from
+superclasses as well as the subclass,
+every class that has the `toJsonSerializable`
+method should inherit from `mapCode.util.JsonSerializable`.
+This superclass will ensure that all subclasses have
+implemented their own `toJsonSerializable` method
+as well as allowing for this pattern:
+```
+def toJsonSerializable(self) -> Dict[str, object]:
+  return {
+    'position': self._pos,
+    'owner': self._owner,
+    **super().toJsonSerializable()
+  }
+```
+Here the class makes a dict with its variables,
+but also calls `super().toJsonSerializable()`
+so that any of its parents can also add their own
+variables to the dictionary.
+The `JsonSerializable` class has a `toJsonSerializable`
+method that returns an empty dictionary, so that
+`super().toJsonSerializable()` can be called without
+worrying that none of the parents have the method,
+which would cause an exception. 
