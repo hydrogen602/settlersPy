@@ -1,7 +1,7 @@
-
 from typing import Dict, List
 
-from ..mapCode import Settlement, Road, Biome, Resource
+from ..mapCode import Settlement, Road
+from ..extraCode.location import Biome, Resource
 
 class Inventory:
 

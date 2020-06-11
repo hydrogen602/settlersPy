@@ -1,16 +1,14 @@
 from __future__ import annotations
 
 from typing import List, Dict, Tuple, Optional, TYPE_CHECKING
-#from tools import customJsonEncoder
 
 if TYPE_CHECKING:
-    # from mechanics.player import Player
-    Player = None
+    from ..playerCode.player import Player
     from .tiles import Tile
     from .pointMapFeatures import Settlement
     from .lineMapFeatures import Road
 
-from .util import HexPoint, JsonSerializable
+from ..extraCode import HexPoint, JsonSerializable
 
 
 class GameMap(JsonSerializable):

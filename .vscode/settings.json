@@ -18,5 +18,6 @@
     "python.testing.pytestArgs": [
         "tests"
     ],
-    "python.linting.flake8Enabled": false
+    "python.linting.flake8Enabled": false,
+    "python.linting.mypyEnabled": true
 }

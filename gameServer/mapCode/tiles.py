@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 from typing import List, TYPE_CHECKING
+import random
+
 if TYPE_CHECKING:
     from .pointMapFeatures import Settlement
 
-from .util import Biome, HexPoint
+from ..extraCode.location import Biome, HexPoint
 
-import random
+
 
 
 class Tile:

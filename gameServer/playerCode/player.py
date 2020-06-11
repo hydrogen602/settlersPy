@@ -1,11 +1,8 @@
-
 from typing import Set
-
 from secrets import token_urlsafe
 
 from .inventory import ExpandedInventory
-
-from ..mapCode.util import Resource
+from ..extraCode.location import Resource
 
 class Player:
 

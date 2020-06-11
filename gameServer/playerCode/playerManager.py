@@ -1,8 +1,7 @@
-
-from .player import Player
-
 from typing import Dict, Optional, List, Iterator
 from random import shuffle
+
+from .player import Player
 
 
 class PlayerManager:

@@ -2,15 +2,17 @@
 # Organization
 
 Notes:
- - \[F\] Folder
+ - \[D\] Directory
  - \[M\] Module (File)
  - \[C\] Class
+ - \[MC\] MetaClass
+ - \[F\] Function
 ---
 ## Modules & Outline
 ---
 ### Map
 
- - \[F\] mapCode: GameMap, map features, etc.
+ - \[D\] mapCode: GameMap, map features, etc.
    - \[M\] util
      - \[C\] HexPoint
      - \[C\] Biome
@@ -28,13 +30,32 @@ Notes:
 
 ### Player
 
- - \[F\] playerCode
+ - \[D\] playerCode
    - \[M\] playerManager
      - \[C\] PlayerManager
    - \[M\] player
      - \[C\] Player
    - \[M\] inventory
      - \[C\] Inventory
+     - \[C\] ExpandedInventory
+
+### Extra Code
+
+ - \[D\] extraCode
+   - \[M\] util
+     - \[F\] isNotNone
+     - \[MC\] IterableCls
+     - \[C\] JsonSerializable
+     - \[C\] ActionError
+     - \[C\] NotSetupException
+   - \[M\] location
+     - \[C\] Biome
+     - \[C\] Resource
+     - \[C\] HexPoint
+   - \[M\] modifiers
+     - \[C\] Placeable
+     - \[C\] Ownable
+     - \[C\] Purchaseable
   
 
 ---

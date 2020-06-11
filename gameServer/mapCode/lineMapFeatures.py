@@ -1,10 +1,10 @@
 
 from typing import Dict
 
-from .util import HexPoint, isNotNone, JsonSerializable, Resource
-from .baseMapFeatures import Placeable, Ownable
+from ..extraCode.location import HexPoint, Resource
+from ..extraCode.util import isNotNone, JsonSerializable
+from ..extraCode.modifiers import Placeable, Ownable, Purchaseable
 from ..playerCode.player import Player
-from ..playerCode.playerAction import Purchaseable
 
 class Road(Placeable, Purchaseable, Ownable, JsonSerializable):
 
@@ -12,8 +12,8 @@ class Road(Placeable, Purchaseable, Ownable, JsonSerializable):
         isNotNone('__init__', point1=point1, point2=point2)
         super().__init__(**kwargs)
 
-        self.__point1: HexPoint = point1
-        self.__point2: HexPoint = point2
+        self.__point1: HexPoint = point1 # type: ignore
+        self.__point2: HexPoint = point2 # type: ignore
 
         self.setupPurchase(Road, {
             Resource.Lumber: 1,
