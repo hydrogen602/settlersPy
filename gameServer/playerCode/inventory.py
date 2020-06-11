@@ -23,6 +23,7 @@ class Inventory:
         return self.getCount(resourceType) >= minimum
     
     def addResource(self, resourceType: Resource, count: int):
+        assert count >= 0
         if not isinstance(resourceType, Resource):
             raise TypeError(f"Expected type Resource but got type {type(resourceType)}")
 

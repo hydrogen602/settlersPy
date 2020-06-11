@@ -12,6 +12,7 @@ class Placeable:
 class Ownable(JsonSerializable):
     '''
     A class for anything that can be owned.
+    It is a subclass of JsonSerializable.
     '''
 
     def __init__(self, owner: Player = None, **kwargs) -> None:
