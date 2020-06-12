@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.7.5" />
-<title>settlersPy.mechanics.playerManager API documentation</title>
+<title>gameServer.playerCode.playerManager API documentation</title>
 <meta name="description" content="" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
@@ -17,17 +17,18 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>settlersPy.mechanics.playerManager</code></h1>
+<h1 class="title">Module <code>gameServer.playerCode.playerManager</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from .player import Player
+<pre><code class="python">from typing import Dict, Optional, List, Iterator
+from random import shuffle
 
-from typing import Dict, Union
-from tools import typeCheck
+from .player import Player
+
 
 class PlayerManager:
 
@@ -35,7 +36,7 @@ class PlayerManager:
 
     instance = None
 
-    def __init__(self):
+    def __init__(self) -&gt; None:
         &#39;&#39;&#39;
         Manages instances of the `Player` class.
         Keeps a dict of all players and allows for
@@ -48,17 +49,82 @@ class PlayerManager:
         PlayerManager.instance = self
 
         self.__players: Dict[str, Player] = {}
+
+        self.__gameStarted: bool = False
+        self.__playerTurnOrder: List[str] = []
+
+        self.__playerTurnOrderIterator: Optional[Iterator[str]] = None
+    
+    def startGame(self):
+        &#39;&#39;&#39;
+        Call once the game has started. This locks the player list
+        and creates a random turn order from the current list of players
+        &#39;&#39;&#39;
+        if self.__gameStarted:
+            raise Exception(&#39;Game has already started&#39;)
+
+        self.__gameStarted = True
+        self.__playerTurnOrder = list(self.__players.keys())
+        shuffle(self.__playerTurnOrder)
+    
+    def getPlayerTurnOrderIterator(self) -&gt; Iterator[Player]:
+        &#39;&#39;&#39;
+        Returns a generator that will yield the players
+        in their turn order.
+        &#39;&#39;&#39;
+        if not self.__gameStarted:
+            raise Exception(&#39;Game hasn\&#39;t started yet&#39;)
+        
+        for key in self.__playerTurnOrder:
+            yield self.__players[key]
+    
+    # def nextPlayer(self) -&gt; Player:
+    #     &#39;&#39;&#39;
+    #     Returns whose player&#39;s turn the next turn is
+    #     &#39;&#39;&#39;
+    #     if not self.__gameStarted:
+    #         raise Exception(&#39;Game hasn\&#39;t started yet&#39;)
+
+    #     if self.__playerTurnOrderIterator is None:
+    #         self.__playerTurnOrderIterator = iter(self.__playerTurnOrder)
+        
+    #     try:
+    #         return next(self.__playerTurnOrderIterator)
+    #     except StopIteration:
+    #         self.__playerTurnOrderIterator = iter(self.__playerTurnOrder)
+    #         return next(self.__playerTurnOrderIterator)
+    
+    # def __next__(self) -&gt; Player:
+    #     &#39;&#39;&#39;
+    #     PlayerManager has a next function, which makes it an iterator, but this
+    #     iterator goes in circles and follows turn order
+    #     &#39;&#39;&#39;
+    #     if not self.__gameStarted:
+    #         raise Exception(&#39;Game hasn\&#39;t started yet&#39;)
+
+    #     return self.nextPlayer()
+
+    def isGameStarted(self) -&gt; bool:
+        &#39;&#39;&#39;
+        Returns whether or not the game has started yet
+        &#39;&#39;&#39;
+        return self.__gameStarted
     
     def addPlayer(self, p: Player):
         &#39;&#39;&#39;
-        Add a new player to the playerManager
+        Add a new player to the playerManager.
+        Cannot be done once the game has started
         &#39;&#39;&#39;
-        typeCheck(p, Player)
+        if not isinstance(p, Player):
+            raise TypeError(f&#34;Expected type Player but got type {type(p)}&#34;)
+    
+        if self.__gameStarted:
+            raise Exception(&#39;Cannot add player after game has started&#39;)
 
         self.__players[p.token] = p
         # players should always have unique tokens
     
-    def getPlayer(self, token: str) -&gt; Union[Player, None]:
+    def getPlayer(self, token: str) -&gt; Optional[Player]:
         &#39;&#39;&#39;
         Looks for the player with the given token.
         Returns the Player instance if found and
@@ -86,10 +152,15 @@ class PlayerManager:
     
     def __iter__(self):
         &#39;&#39;&#39;
-        Returns an iterator over the player list
+        Returns an iterator over the player list.
+        Call this if the order of players does not matter.
+        If order matters, like in determining the next person to play,
+        use getPlayerTurnOrderIterator
         &#39;&#39;&#39;
         return iter(self.__players.values())
-    </code></pre>
+    
+
+PlayerManager() # instantiate the one player manager instance</code></pre>
 </details>
 </section>
 <section>
@@ -101,7 +172,7 @@ class PlayerManager:
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="settlersPy.mechanics.playerManager.PlayerManager"><code class="flex name class">
+<dt id="gameServer.playerCode.playerManager.PlayerManager"><code class="flex name class">
 <span>class <span class="ident">PlayerManager</span></span>
 </code></dt>
 <dd>
@@ -119,7 +190,7 @@ and other player management related things.</p></section>
 
     instance = None
 
-    def __init__(self):
+    def __init__(self) -&gt; None:
         &#39;&#39;&#39;
         Manages instances of the `Player` class.
         Keeps a dict of all players and allows for
@@ -132,17 +203,82 @@ and other player management related things.</p></section>
         PlayerManager.instance = self
 
         self.__players: Dict[str, Player] = {}
+
+        self.__gameStarted: bool = False
+        self.__playerTurnOrder: List[str] = []
+
+        self.__playerTurnOrderIterator: Optional[Iterator[str]] = None
+    
+    def startGame(self):
+        &#39;&#39;&#39;
+        Call once the game has started. This locks the player list
+        and creates a random turn order from the current list of players
+        &#39;&#39;&#39;
+        if self.__gameStarted:
+            raise Exception(&#39;Game has already started&#39;)
+
+        self.__gameStarted = True
+        self.__playerTurnOrder = list(self.__players.keys())
+        shuffle(self.__playerTurnOrder)
+    
+    def getPlayerTurnOrderIterator(self) -&gt; Iterator[Player]:
+        &#39;&#39;&#39;
+        Returns a generator that will yield the players
+        in their turn order.
+        &#39;&#39;&#39;
+        if not self.__gameStarted:
+            raise Exception(&#39;Game hasn\&#39;t started yet&#39;)
+        
+        for key in self.__playerTurnOrder:
+            yield self.__players[key]
+    
+    # def nextPlayer(self) -&gt; Player:
+    #     &#39;&#39;&#39;
+    #     Returns whose player&#39;s turn the next turn is
+    #     &#39;&#39;&#39;
+    #     if not self.__gameStarted:
+    #         raise Exception(&#39;Game hasn\&#39;t started yet&#39;)
+
+    #     if self.__playerTurnOrderIterator is None:
+    #         self.__playerTurnOrderIterator = iter(self.__playerTurnOrder)
+        
+    #     try:
+    #         return next(self.__playerTurnOrderIterator)
+    #     except StopIteration:
+    #         self.__playerTurnOrderIterator = iter(self.__playerTurnOrder)
+    #         return next(self.__playerTurnOrderIterator)
+    
+    # def __next__(self) -&gt; Player:
+    #     &#39;&#39;&#39;
+    #     PlayerManager has a next function, which makes it an iterator, but this
+    #     iterator goes in circles and follows turn order
+    #     &#39;&#39;&#39;
+    #     if not self.__gameStarted:
+    #         raise Exception(&#39;Game hasn\&#39;t started yet&#39;)
+
+    #     return self.nextPlayer()
+
+    def isGameStarted(self) -&gt; bool:
+        &#39;&#39;&#39;
+        Returns whether or not the game has started yet
+        &#39;&#39;&#39;
+        return self.__gameStarted
     
     def addPlayer(self, p: Player):
         &#39;&#39;&#39;
-        Add a new player to the playerManager
+        Add a new player to the playerManager.
+        Cannot be done once the game has started
         &#39;&#39;&#39;
-        typeCheck(p, Player)
+        if not isinstance(p, Player):
+            raise TypeError(f&#34;Expected type Player but got type {type(p)}&#34;)
+    
+        if self.__gameStarted:
+            raise Exception(&#39;Cannot add player after game has started&#39;)
 
         self.__players[p.token] = p
         # players should always have unique tokens
     
-    def getPlayer(self, token: str) -&gt; Union[Player, None]:
+    def getPlayer(self, token: str) -&gt; Optional[Player]:
         &#39;&#39;&#39;
         Looks for the player with the given token.
         Returns the Player instance if found and
@@ -170,38 +306,47 @@ and other player management related things.</p></section>
     
     def __iter__(self):
         &#39;&#39;&#39;
-        Returns an iterator over the player list
+        Returns an iterator over the player list.
+        Call this if the order of players does not matter.
+        If order matters, like in determining the next person to play,
+        use getPlayerTurnOrderIterator
         &#39;&#39;&#39;
         return iter(self.__players.values())</code></pre>
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="settlersPy.mechanics.playerManager.PlayerManager.instance"><code class="name">var <span class="ident">instance</span></code></dt>
+<dt id="gameServer.playerCode.playerManager.PlayerManager.instance"><code class="name">var <span class="ident">instance</span></code></dt>
 <dd>
 <section class="desc"></section>
 </dd>
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="settlersPy.mechanics.playerManager.PlayerManager.addPlayer"><code class="name flex">
+<dt id="gameServer.playerCode.playerManager.PlayerManager.addPlayer"><code class="name flex">
 <span>def <span class="ident">addPlayer</span></span>(<span>self, p)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Add a new player to the playerManager</p></section>
+<section class="desc"><p>Add a new player to the playerManager.
+Cannot be done once the game has started</p></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def addPlayer(self, p: Player):
     &#39;&#39;&#39;
-    Add a new player to the playerManager
+    Add a new player to the playerManager.
+    Cannot be done once the game has started
     &#39;&#39;&#39;
-    typeCheck(p, Player)
+    if not isinstance(p, Player):
+        raise TypeError(f&#34;Expected type Player but got type {type(p)}&#34;)
+
+    if self.__gameStarted:
+        raise Exception(&#39;Cannot add player after game has started&#39;)
 
     self.__players[p.token] = p</code></pre>
 </details>
 </dd>
-<dt id="settlersPy.mechanics.playerManager.PlayerManager.getPlayer"><code class="name flex">
+<dt id="gameServer.playerCode.playerManager.PlayerManager.getPlayer"><code class="name flex">
 <span>def <span class="ident">getPlayer</span></span>(<span>self, token)</span>
 </code></dt>
 <dd>
@@ -213,7 +358,7 @@ Thus this method doesn't raise a <code>KeyError</code></p></section>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def getPlayer(self, token: str) -&gt; Union[Player, None]:
+<pre><code class="python">def getPlayer(self, token: str) -&gt; Optional[Player]:
     &#39;&#39;&#39;
     Looks for the player with the given token.
     Returns the Player instance if found and
@@ -221,6 +366,67 @@ Thus this method doesn't raise a <code>KeyError</code></p></section>
     Thus this method doesn&#39;t raise a `KeyError`
     &#39;&#39;&#39;
     return self.__players.get(token)</code></pre>
+</details>
+</dd>
+<dt id="gameServer.playerCode.playerManager.PlayerManager.getPlayerTurnOrderIterator"><code class="name flex">
+<span>def <span class="ident">getPlayerTurnOrderIterator</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Returns a generator that will yield the players
+in their turn order.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def getPlayerTurnOrderIterator(self) -&gt; Iterator[Player]:
+    &#39;&#39;&#39;
+    Returns a generator that will yield the players
+    in their turn order.
+    &#39;&#39;&#39;
+    if not self.__gameStarted:
+        raise Exception(&#39;Game hasn\&#39;t started yet&#39;)
+    
+    for key in self.__playerTurnOrder:
+        yield self.__players[key]</code></pre>
+</details>
+</dd>
+<dt id="gameServer.playerCode.playerManager.PlayerManager.isGameStarted"><code class="name flex">
+<span>def <span class="ident">isGameStarted</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Returns whether or not the game has started yet</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def isGameStarted(self) -&gt; bool:
+    &#39;&#39;&#39;
+    Returns whether or not the game has started yet
+    &#39;&#39;&#39;
+    return self.__gameStarted</code></pre>
+</details>
+</dd>
+<dt id="gameServer.playerCode.playerManager.PlayerManager.startGame"><code class="name flex">
+<span>def <span class="ident">startGame</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Call once the game has started. This locks the player list
+and creates a random turn order from the current list of players</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def startGame(self):
+    &#39;&#39;&#39;
+    Call once the game has started. This locks the player list
+    and creates a random turn order from the current list of players
+    &#39;&#39;&#39;
+    if self.__gameStarted:
+        raise Exception(&#39;Game has already started&#39;)
+
+    self.__gameStarted = True
+    self.__playerTurnOrder = list(self.__players.keys())
+    shuffle(self.__playerTurnOrder)</code></pre>
 </details>
 </dd>
 </dl>
@@ -236,17 +442,20 @@ Thus this method doesn't raise a <code>KeyError</code></p></section>
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="settlersPy.mechanics" href="index.html">settlersPy.mechanics</a></code></li>
+<li><code><a title="gameServer.playerCode" href="index.html">gameServer.playerCode</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="settlersPy.mechanics.playerManager.PlayerManager" href="#settlersPy.mechanics.playerManager.PlayerManager">PlayerManager</a></code></h4>
+<h4><code><a title="gameServer.playerCode.playerManager.PlayerManager" href="#gameServer.playerCode.playerManager.PlayerManager">PlayerManager</a></code></h4>
 <ul class="">
-<li><code><a title="settlersPy.mechanics.playerManager.PlayerManager.addPlayer" href="#settlersPy.mechanics.playerManager.PlayerManager.addPlayer">addPlayer</a></code></li>
-<li><code><a title="settlersPy.mechanics.playerManager.PlayerManager.getPlayer" href="#settlersPy.mechanics.playerManager.PlayerManager.getPlayer">getPlayer</a></code></li>
-<li><code><a title="settlersPy.mechanics.playerManager.PlayerManager.instance" href="#settlersPy.mechanics.playerManager.PlayerManager.instance">instance</a></code></li>
+<li><code><a title="gameServer.playerCode.playerManager.PlayerManager.addPlayer" href="#gameServer.playerCode.playerManager.PlayerManager.addPlayer">addPlayer</a></code></li>
+<li><code><a title="gameServer.playerCode.playerManager.PlayerManager.getPlayer" href="#gameServer.playerCode.playerManager.PlayerManager.getPlayer">getPlayer</a></code></li>
+<li><code><a title="gameServer.playerCode.playerManager.PlayerManager.getPlayerTurnOrderIterator" href="#gameServer.playerCode.playerManager.PlayerManager.getPlayerTurnOrderIterator">getPlayerTurnOrderIterator</a></code></li>
+<li><code><a title="gameServer.playerCode.playerManager.PlayerManager.instance" href="#gameServer.playerCode.playerManager.PlayerManager.instance">instance</a></code></li>
+<li><code><a title="gameServer.playerCode.playerManager.PlayerManager.isGameStarted" href="#gameServer.playerCode.playerManager.PlayerManager.isGameStarted">isGameStarted</a></code></li>
+<li><code><a title="gameServer.playerCode.playerManager.PlayerManager.startGame" href="#gameServer.playerCode.playerManager.PlayerManager.startGame">startGame</a></code></li>
 </ul>
 </li>
 </ul>

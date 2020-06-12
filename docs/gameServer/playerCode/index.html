@@ -4,9 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.7.5" />
-<title>settlersPy.features API documentation</title>
-<meta name="description" content="Specific game rules and features should be written in here,
-using the code of the `mechanics` module" />
+<title>gameServer.playerCode API documentation</title>
+<meta name="description" content="" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
@@ -18,27 +17,34 @@ using the code of the `mechanics` module" />
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>settlersPy.features</code></h1>
+<h1 class="title">Module <code>gameServer.playerCode</code></h1>
 </header>
 <section id="section-intro">
-<p>Specific game rules and features should be written in here,
-using the code of the <code>mechanics</code> module</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">&#39;&#39;&#39;
-Specific game rules and features should be written in here,
-using the code of the `mechanics` module
-&#39;&#39;&#39;
-
-#from .eventParsers.purchaseAction import *</code></pre>
+<pre><code class="python">from .player import Player
+from .inventory import ExpandedInventory
+from .playerManager import PlayerManager</code></pre>
 </details>
 </section>
 <section>
 <h2 class="section-title" id="header-submodules">Sub-modules</h2>
 <dl>
-<dt><code class="name"><a title="settlersPy.features.eventParsers" href="eventParsers/index.html">settlersPy.features.eventParsers</a></code></dt>
+<dt><code class="name"><a title="gameServer.playerCode.inventory" href="inventory.html">gameServer.playerCode.inventory</a></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt><code class="name"><a title="gameServer.playerCode.player" href="player.html">gameServer.playerCode.player</a></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt><code class="name"><a title="gameServer.playerCode.playerAction" href="playerAction.html">gameServer.playerCode.playerAction</a></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt><code class="name"><a title="gameServer.playerCode.playerManager" href="playerManager.html">gameServer.playerCode.playerManager</a></code></dt>
 <dd>
 <section class="desc"></section>
 </dd>
@@ -59,12 +65,15 @@ using the code of the `mechanics` module
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="settlersPy" href="../index.html">settlersPy</a></code></li>
+<li><code><a title="gameServer" href="../index.html">gameServer</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>
 <ul>
-<li><code><a title="settlersPy.features.eventParsers" href="eventParsers/index.html">settlersPy.features.eventParsers</a></code></li>
+<li><code><a title="gameServer.playerCode.inventory" href="inventory.html">gameServer.playerCode.inventory</a></code></li>
+<li><code><a title="gameServer.playerCode.player" href="player.html">gameServer.playerCode.player</a></code></li>
+<li><code><a title="gameServer.playerCode.playerAction" href="playerAction.html">gameServer.playerCode.playerAction</a></code></li>
+<li><code><a title="gameServer.playerCode.playerManager" href="playerManager.html">gameServer.playerCode.playerManager</a></code></li>
 </ul>
 </li>
 </ul>

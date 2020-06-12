@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.7.5" />
-<title>settlersPy.tests.conftest API documentation</title>
+<title>gameServer.extraCode API documentation</title>
 <meta name="description" content="" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
@@ -17,130 +17,38 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>settlersPy.tests.conftest</code></h1>
+<h1 class="title">Module <code>gameServer.extraCode</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python"># content of conftest.py
-
-# https://docs.pytest.org/en/latest/example/simple.html
-
-from typing import Dict, Tuple
-import pytest
-
-# store history of failures per test class name and per index in parametrize (if parametrize used)
-_test_failed_incremental: Dict[str, Dict[Tuple[int, ...], str]] = {}
-
-
-def pytest_runtest_makereport(item, call):
-    if &#34;incremental&#34; in item.keywords:
-        # incremental marker is used
-        if call.excinfo is not None:
-            # the test has failed
-            # retrieve the class name of the test
-            cls_name = str(item.cls)
-            # retrieve the index of the test (if parametrize is used in combination with incremental)
-            parametrize_index = (
-                tuple(item.callspec.indices.values())
-                if hasattr(item, &#34;callspec&#34;)
-                else ()
-            )
-            # retrieve the name of the test function
-            test_name = item.originalname or item.name
-            # store in _test_failed_incremental the original name of the failed test
-            _test_failed_incremental.setdefault(cls_name, {}).setdefault(
-                parametrize_index, test_name
-            )
-
-
-def pytest_runtest_setup(item):
-    if &#34;incremental&#34; in item.keywords:
-        # retrieve the class name of the test
-        cls_name = str(item.cls)
-        # check if a previous test has failed for this class
-        if cls_name in _test_failed_incremental:
-            # retrieve the index of the test (if parametrize is used in combination with incremental)
-            parametrize_index = (
-                tuple(item.callspec.indices.values())
-                if hasattr(item, &#34;callspec&#34;)
-                else ()
-            )
-            # retrieve the name of the first test function to fail for this class name and index
-            test_name = _test_failed_incremental[cls_name].get(parametrize_index, None)
-            # if name found, test has failed for the combination of class name &amp; test name
-            if test_name is not None:
-                pytest.xfail(&#34;previous test failed ({})&#34;.format(test_name))</code></pre>
+<pre><code class="python">from .location import Biome, Resource, HexPoint
+from .modifiers import Placeable, Purchaseable, Ownable
+from .util import JsonSerializable, isNotNone, NotSetupException, ActionError, ArgumentMissingError, AlreadySetupException</code></pre>
 </details>
 </section>
 <section>
-</section>
-<section>
-</section>
-<section>
-<h2 class="section-title" id="header-functions">Functions</h2>
+<h2 class="section-title" id="header-submodules">Sub-modules</h2>
 <dl>
-<dt id="settlersPy.tests.conftest.pytest_runtest_makereport"><code class="name flex">
-<span>def <span class="ident">pytest_runtest_makereport</span></span>(<span>item, call)</span>
-</code></dt>
+<dt><code class="name"><a title="gameServer.extraCode.location" href="location.html">gameServer.extraCode.location</a></code></dt>
 <dd>
 <section class="desc"></section>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def pytest_runtest_makereport(item, call):
-    if &#34;incremental&#34; in item.keywords:
-        # incremental marker is used
-        if call.excinfo is not None:
-            # the test has failed
-            # retrieve the class name of the test
-            cls_name = str(item.cls)
-            # retrieve the index of the test (if parametrize is used in combination with incremental)
-            parametrize_index = (
-                tuple(item.callspec.indices.values())
-                if hasattr(item, &#34;callspec&#34;)
-                else ()
-            )
-            # retrieve the name of the test function
-            test_name = item.originalname or item.name
-            # store in _test_failed_incremental the original name of the failed test
-            _test_failed_incremental.setdefault(cls_name, {}).setdefault(
-                parametrize_index, test_name
-            )</code></pre>
-</details>
 </dd>
-<dt id="settlersPy.tests.conftest.pytest_runtest_setup"><code class="name flex">
-<span>def <span class="ident">pytest_runtest_setup</span></span>(<span>item)</span>
-</code></dt>
+<dt><code class="name"><a title="gameServer.extraCode.modifiers" href="modifiers.html">gameServer.extraCode.modifiers</a></code></dt>
 <dd>
 <section class="desc"></section>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def pytest_runtest_setup(item):
-    if &#34;incremental&#34; in item.keywords:
-        # retrieve the class name of the test
-        cls_name = str(item.cls)
-        # check if a previous test has failed for this class
-        if cls_name in _test_failed_incremental:
-            # retrieve the index of the test (if parametrize is used in combination with incremental)
-            parametrize_index = (
-                tuple(item.callspec.indices.values())
-                if hasattr(item, &#34;callspec&#34;)
-                else ()
-            )
-            # retrieve the name of the first test function to fail for this class name and index
-            test_name = _test_failed_incremental[cls_name].get(parametrize_index, None)
-            # if name found, test has failed for the combination of class name &amp; test name
-            if test_name is not None:
-                pytest.xfail(&#34;previous test failed ({})&#34;.format(test_name))</code></pre>
-</details>
+</dd>
+<dt><code class="name"><a title="gameServer.extraCode.util" href="util.html">gameServer.extraCode.util</a></code></dt>
+<dd>
+<section class="desc"></section>
 </dd>
 </dl>
+</section>
+<section>
+</section>
+<section>
 </section>
 <section>
 </section>
@@ -153,13 +61,14 @@ def pytest_runtest_setup(item):
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="settlersPy.tests" href="index.html">settlersPy.tests</a></code></li>
+<li><code><a title="gameServer" href="../index.html">gameServer</a></code></li>
 </ul>
 </li>
-<li><h3><a href="#header-functions">Functions</a></h3>
-<ul class="">
-<li><code><a title="settlersPy.tests.conftest.pytest_runtest_makereport" href="#settlersPy.tests.conftest.pytest_runtest_makereport">pytest_runtest_makereport</a></code></li>
-<li><code><a title="settlersPy.tests.conftest.pytest_runtest_setup" href="#settlersPy.tests.conftest.pytest_runtest_setup">pytest_runtest_setup</a></code></li>
+<li><h3><a href="#header-submodules">Sub-modules</a></h3>
+<ul>
+<li><code><a title="gameServer.extraCode.location" href="location.html">gameServer.extraCode.location</a></code></li>
+<li><code><a title="gameServer.extraCode.modifiers" href="modifiers.html">gameServer.extraCode.modifiers</a></code></li>
+<li><code><a title="gameServer.extraCode.util" href="util.html">gameServer.extraCode.util</a></code></li>
 </ul>
 </li>
 </ul>

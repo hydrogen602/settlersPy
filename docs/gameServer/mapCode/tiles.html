@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.7.5" />
-<title>settlersPy.tile API documentation</title>
+<title>gameServer.mapCode.tiles API documentation</title>
 <meta name="description" content="" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
@@ -17,7 +17,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>settlersPy.tile</code></h1>
+<h1 class="title">Module <code>gameServer.mapCode.tiles</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -26,52 +26,65 @@
 </summary>
 <pre><code class="python">from __future__ import annotations
 
-from biome import Biome
-from habitation import Habitation
-from point import HexPoint
-
+from typing import List, TYPE_CHECKING
 import random
 
-from tools import typeCheck, subclassCheck
-from typing import List
+if TYPE_CHECKING:
+    from .pointMapFeatures import Settlement
+
+from ..extraCode.location import Biome, HexPoint
+
+
+
 
 class Tile:
+    __diceValueChoices = [2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 9, 10, 10, 11, 11, 12]
 
-    def __init__(self, biome: Biome, dieValue: int, location: HexPoint):
+    def __init__(self, biome: Biome, dieValue: int, position: HexPoint) -&gt; None:
         &#39;&#39;&#39;
         Represents one tile on the map.
         diceValue is the number that needs to be rolled for
-        resources to be harvested
+        resources to be harvested and should be within 2 to 12, inclusive
         &#39;&#39;&#39;
-        subclassCheck(biome, Biome)
-        self.biome: Biome = biome
+
+        self._biome: Biome = biome
+        self._position: HexPoint = position
+        
         #checks that the dice value is an instance of an Int 
-        typeCheck(dieValue, int)
+        if not isinstance(dieValue, int):
+            raise TypeError(f&#39;Expected type int but got {type(dieValue)} in argument dieValue&#39;)
         #checks that the diceValue is between 2-12
-        assert dieValue &gt;= 2 and dieValue &lt;= 12
+        if not dieValue &gt;= 2 and dieValue &lt;= 12:
+            raise ValueError(f&#39;Invalid dieValue, got {dieValue} but expected in range [2, 12], inclusive&#39;)
 
-        self.isBlockedByRobber: bool = False
+        self.__isBlockedByRobber: bool = False
 
-        self.diceValue: int = dieValue 
-        self.settlementList: List[Habitation] = []
+        self.__diceValue: int = dieValue 
 
-        typeCheck(location, HexPoint)
-        self.location = location
+        self.__settlementList: List[Settlement] = []
+    
+    @property
+    def position(self) -&gt; HexPoint:
+        return self._position
+    
+    @property
+    def biome(self) -&gt; Biome:
+        return self._biome
 
     @classmethod
-    def generate(cls, location: HexPoint) -&gt; Tile:
-        dieValue: int = random.randint(2, 12)
-        biome: Biome = random.choice(Biome.biomeList)
-        return cls(biome, dieValue, location)
+    def generate(cls, position: HexPoint) -&gt; Tile:
+        dieValue: int = random.choice(cls.__diceValueChoices)
+        biome: Biome = random.choice(Biome.getBiomeList())
+        return cls(biome, dieValue, position)
     
     def toJsonSerializable(self):
         return {
-            &#39;biome&#39;: self.biome.__name__,
-            &#39;diceValue&#39;: self.diceValue,
-            &#39;location&#39;: self.location
+            &#39;biome&#39;: self._biome.name,
+            &#39;diceValue&#39;: self.__diceValue,
+            &#39;location&#39;: self._position
         }
 
-    def addSettlement(self, settlement: Habitation):
+    def addSettlement(self, settlement: Settlement):
         &#39;&#39;&#39;
         Adds a settlement to the tile.
         If a settlement is placed, then this method
@@ -79,32 +92,37 @@ class Tile:
         so that when the die are rolled the tiles
         know who to give resources to.
         &#39;&#39;&#39;
-        typeCheck(settlement, Habitation)
-        self.settlementList.append(settlement)
+        self.__settlementList.append(settlement)
 
     def robberArrives(self):
-        self.isBlockedByRobber = True
+        self.__isBlockedByRobber = True
 
     def robberDeparts(self):
-        self.isBlockedByRobber = False
+        self.__isBlockedByRobber = False
 
     def isRobberHere(self) -&gt; bool:
-        return self.isBlockedByRobber
+        return self.__isBlockedByRobber
 
     def diceRolled(self, valueRolled: int):
         &#39;&#39;&#39;
         Call this method on all tiles when the die
         are rolled for giving resources.
         &#39;&#39;&#39;
-        # diceValueChoices = [2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 9, 10, 10, 11, 11, 12]
-        typeCheck(valueRolled, int)
+        raise NotImplementedError(&#34;Needs a player class first&#34;)
 
-        if self.isBlockedByRobber:
-            return
+        # if not isinstance(valueRolled, int):
+        #     raise TypeError(f&#39;Expected int but got {type(valueRolled)} in argument valueRolled&#39;)
+        
+        # if valueRolled &lt; 2 or valueRolled &gt; 12:
+        #     raise ValueError(f&#39;Invalid dieValue, got {valueRolled} but expected in range [2, 12], inclusive&#39;)
 
-        if valueRolled == self.diceValue:
-            for s in self.settlementList:
-                s.giveResource(self.biome)</code></pre>
+        # if self.__isBlockedByRobber:
+        #     # nothing is produced if robbers are here
+        #     return
+
+        # if valueRolled == self.__diceValue:
+        #     for s in self.__settlementList:
+        #         s.harvestResource(self._biome)</code></pre>
 </details>
 </section>
 <section>
@@ -116,55 +134,66 @@ class Tile:
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="settlersPy.tile.Tile"><code class="flex name class">
+<dt id="gameServer.mapCode.tiles.Tile"><code class="flex name class">
 <span>class <span class="ident">Tile</span></span>
-<span>(</span><span>biome, dieValue, location)</span>
+<span>(</span><span>biome, dieValue, position)</span>
 </code></dt>
 <dd>
 <section class="desc"><p>Represents one tile on the map.
 diceValue is the number that needs to be rolled for
-resources to be harvested</p></section>
+resources to be harvested and should be within 2 to 12, inclusive</p></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Tile:
+    __diceValueChoices = [2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 9, 10, 10, 11, 11, 12]
 
-    def __init__(self, biome: Biome, dieValue: int, location: HexPoint):
+    def __init__(self, biome: Biome, dieValue: int, position: HexPoint) -&gt; None:
         &#39;&#39;&#39;
         Represents one tile on the map.
         diceValue is the number that needs to be rolled for
-        resources to be harvested
+        resources to be harvested and should be within 2 to 12, inclusive
         &#39;&#39;&#39;
-        subclassCheck(biome, Biome)
-        self.biome: Biome = biome
+
+        self._biome: Biome = biome
+        self._position: HexPoint = position
+        
         #checks that the dice value is an instance of an Int 
-        typeCheck(dieValue, int)
+        if not isinstance(dieValue, int):
+            raise TypeError(f&#39;Expected type int but got {type(dieValue)} in argument dieValue&#39;)
         #checks that the diceValue is between 2-12
-        assert dieValue &gt;= 2 and dieValue &lt;= 12
+        if not dieValue &gt;= 2 and dieValue &lt;= 12:
+            raise ValueError(f&#39;Invalid dieValue, got {dieValue} but expected in range [2, 12], inclusive&#39;)
 
-        self.isBlockedByRobber: bool = False
+        self.__isBlockedByRobber: bool = False
 
-        self.diceValue: int = dieValue 
-        self.settlementList: List[Habitation] = []
+        self.__diceValue: int = dieValue 
 
-        typeCheck(location, HexPoint)
-        self.location = location
+        self.__settlementList: List[Settlement] = []
+    
+    @property
+    def position(self) -&gt; HexPoint:
+        return self._position
+    
+    @property
+    def biome(self) -&gt; Biome:
+        return self._biome
 
     @classmethod
-    def generate(cls, location: HexPoint) -&gt; Tile:
-        dieValue: int = random.randint(2, 12)
-        biome: Biome = random.choice(Biome.biomeList)
-        return cls(biome, dieValue, location)
+    def generate(cls, position: HexPoint) -&gt; Tile:
+        dieValue: int = random.choice(cls.__diceValueChoices)
+        biome: Biome = random.choice(Biome.getBiomeList())
+        return cls(biome, dieValue, position)
     
     def toJsonSerializable(self):
         return {
-            &#39;biome&#39;: self.biome.__name__,
-            &#39;diceValue&#39;: self.diceValue,
-            &#39;location&#39;: self.location
+            &#39;biome&#39;: self._biome.name,
+            &#39;diceValue&#39;: self.__diceValue,
+            &#39;location&#39;: self._position
         }
 
-    def addSettlement(self, settlement: Habitation):
+    def addSettlement(self, settlement: Settlement):
         &#39;&#39;&#39;
         Adds a settlement to the tile.
         If a settlement is placed, then this method
@@ -172,37 +201,28 @@ resources to be harvested</p></section>
         so that when the die are rolled the tiles
         know who to give resources to.
         &#39;&#39;&#39;
-        typeCheck(settlement, Habitation)
-        self.settlementList.append(settlement)
+        self.__settlementList.append(settlement)
 
     def robberArrives(self):
-        self.isBlockedByRobber = True
+        self.__isBlockedByRobber = True
 
     def robberDeparts(self):
-        self.isBlockedByRobber = False
+        self.__isBlockedByRobber = False
 
     def isRobberHere(self) -&gt; bool:
-        return self.isBlockedByRobber
+        return self.__isBlockedByRobber
 
     def diceRolled(self, valueRolled: int):
         &#39;&#39;&#39;
         Call this method on all tiles when the die
         are rolled for giving resources.
         &#39;&#39;&#39;
-        # diceValueChoices = [2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 9, 10, 10, 11, 11, 12]
-        typeCheck(valueRolled, int)
-
-        if self.isBlockedByRobber:
-            return
-
-        if valueRolled == self.diceValue:
-            for s in self.settlementList:
-                s.giveResource(self.biome)</code></pre>
+        raise NotImplementedError(&#34;Needs a player class first&#34;)</code></pre>
 </details>
 <h3>Static methods</h3>
 <dl>
-<dt id="settlersPy.tile.Tile.generate"><code class="name flex">
-<span>def <span class="ident">generate</span></span>(<span>location)</span>
+<dt id="gameServer.mapCode.tiles.Tile.generate"><code class="name flex">
+<span>def <span class="ident">generate</span></span>(<span>position)</span>
 </code></dt>
 <dd>
 <section class="desc"></section>
@@ -211,16 +231,43 @@ resources to be harvested</p></section>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@classmethod
-def generate(cls, location: HexPoint) -&gt; Tile:
-    dieValue: int = random.randint(2, 12)
-    biome: Biome = random.choice(Biome.biomeList)
-    return cls(biome, dieValue, location)</code></pre>
+def generate(cls, position: HexPoint) -&gt; Tile:
+    dieValue: int = random.choice(cls.__diceValueChoices)
+    biome: Biome = random.choice(Biome.getBiomeList())
+    return cls(biome, dieValue, position)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="gameServer.mapCode.tiles.Tile.biome"><code class="name">var <span class="ident">biome</span></code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def biome(self) -&gt; Biome:
+    return self._biome</code></pre>
+</details>
+</dd>
+<dt id="gameServer.mapCode.tiles.Tile.position"><code class="name">var <span class="ident">position</span></code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def position(self) -&gt; HexPoint:
+    return self._position</code></pre>
 </details>
 </dd>
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="settlersPy.tile.Tile.addSettlement"><code class="name flex">
+<dt id="gameServer.mapCode.tiles.Tile.addSettlement"><code class="name flex">
 <span>def <span class="ident">addSettlement</span></span>(<span>self, settlement)</span>
 </code></dt>
 <dd>
@@ -233,7 +280,7 @@ know who to give resources to.</p></section>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def addSettlement(self, settlement: Habitation):
+<pre><code class="python">def addSettlement(self, settlement: Settlement):
     &#39;&#39;&#39;
     Adds a settlement to the tile.
     If a settlement is placed, then this method
@@ -241,11 +288,10 @@ know who to give resources to.</p></section>
     so that when the die are rolled the tiles
     know who to give resources to.
     &#39;&#39;&#39;
-    typeCheck(settlement, Habitation)
-    self.settlementList.append(settlement)</code></pre>
+    self.__settlementList.append(settlement)</code></pre>
 </details>
 </dd>
-<dt id="settlersPy.tile.Tile.diceRolled"><code class="name flex">
+<dt id="gameServer.mapCode.tiles.Tile.diceRolled"><code class="name flex">
 <span>def <span class="ident">diceRolled</span></span>(<span>self, valueRolled)</span>
 </code></dt>
 <dd>
@@ -260,18 +306,10 @@ are rolled for giving resources.</p></section>
     Call this method on all tiles when the die
     are rolled for giving resources.
     &#39;&#39;&#39;
-    # diceValueChoices = [2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 9, 10, 10, 11, 11, 12]
-    typeCheck(valueRolled, int)
-
-    if self.isBlockedByRobber:
-        return
-
-    if valueRolled == self.diceValue:
-        for s in self.settlementList:
-            s.giveResource(self.biome)</code></pre>
+    raise NotImplementedError(&#34;Needs a player class first&#34;)</code></pre>
 </details>
 </dd>
-<dt id="settlersPy.tile.Tile.isRobberHere"><code class="name flex">
+<dt id="gameServer.mapCode.tiles.Tile.isRobberHere"><code class="name flex">
 <span>def <span class="ident">isRobberHere</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -281,10 +319,10 @@ are rolled for giving resources.</p></section>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def isRobberHere(self) -&gt; bool:
-    return self.isBlockedByRobber</code></pre>
+    return self.__isBlockedByRobber</code></pre>
 </details>
 </dd>
-<dt id="settlersPy.tile.Tile.robberArrives"><code class="name flex">
+<dt id="gameServer.mapCode.tiles.Tile.robberArrives"><code class="name flex">
 <span>def <span class="ident">robberArrives</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -294,10 +332,10 @@ are rolled for giving resources.</p></section>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def robberArrives(self):
-    self.isBlockedByRobber = True</code></pre>
+    self.__isBlockedByRobber = True</code></pre>
 </details>
 </dd>
-<dt id="settlersPy.tile.Tile.robberDeparts"><code class="name flex">
+<dt id="gameServer.mapCode.tiles.Tile.robberDeparts"><code class="name flex">
 <span>def <span class="ident">robberDeparts</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -307,10 +345,10 @@ are rolled for giving resources.</p></section>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def robberDeparts(self):
-    self.isBlockedByRobber = False</code></pre>
+    self.__isBlockedByRobber = False</code></pre>
 </details>
 </dd>
-<dt id="settlersPy.tile.Tile.toJsonSerializable"><code class="name flex">
+<dt id="gameServer.mapCode.tiles.Tile.toJsonSerializable"><code class="name flex">
 <span>def <span class="ident">toJsonSerializable</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -321,9 +359,9 @@ are rolled for giving resources.</p></section>
 </summary>
 <pre><code class="python">def toJsonSerializable(self):
     return {
-        &#39;biome&#39;: self.biome.__name__,
-        &#39;diceValue&#39;: self.diceValue,
-        &#39;location&#39;: self.location
+        &#39;biome&#39;: self._biome.name,
+        &#39;diceValue&#39;: self.__diceValue,
+        &#39;location&#39;: self._position
     }</code></pre>
 </details>
 </dd>
@@ -340,21 +378,23 @@ are rolled for giving resources.</p></section>
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="settlersPy" href="index.html">settlersPy</a></code></li>
+<li><code><a title="gameServer.mapCode" href="index.html">gameServer.mapCode</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="settlersPy.tile.Tile" href="#settlersPy.tile.Tile">Tile</a></code></h4>
+<h4><code><a title="gameServer.mapCode.tiles.Tile" href="#gameServer.mapCode.tiles.Tile">Tile</a></code></h4>
 <ul class="two-column">
-<li><code><a title="settlersPy.tile.Tile.addSettlement" href="#settlersPy.tile.Tile.addSettlement">addSettlement</a></code></li>
-<li><code><a title="settlersPy.tile.Tile.diceRolled" href="#settlersPy.tile.Tile.diceRolled">diceRolled</a></code></li>
-<li><code><a title="settlersPy.tile.Tile.generate" href="#settlersPy.tile.Tile.generate">generate</a></code></li>
-<li><code><a title="settlersPy.tile.Tile.isRobberHere" href="#settlersPy.tile.Tile.isRobberHere">isRobberHere</a></code></li>
-<li><code><a title="settlersPy.tile.Tile.robberArrives" href="#settlersPy.tile.Tile.robberArrives">robberArrives</a></code></li>
-<li><code><a title="settlersPy.tile.Tile.robberDeparts" href="#settlersPy.tile.Tile.robberDeparts">robberDeparts</a></code></li>
-<li><code><a title="settlersPy.tile.Tile.toJsonSerializable" href="#settlersPy.tile.Tile.toJsonSerializable">toJsonSerializable</a></code></li>
+<li><code><a title="gameServer.mapCode.tiles.Tile.addSettlement" href="#gameServer.mapCode.tiles.Tile.addSettlement">addSettlement</a></code></li>
+<li><code><a title="gameServer.mapCode.tiles.Tile.biome" href="#gameServer.mapCode.tiles.Tile.biome">biome</a></code></li>
+<li><code><a title="gameServer.mapCode.tiles.Tile.diceRolled" href="#gameServer.mapCode.tiles.Tile.diceRolled">diceRolled</a></code></li>
+<li><code><a title="gameServer.mapCode.tiles.Tile.generate" href="#gameServer.mapCode.tiles.Tile.generate">generate</a></code></li>
+<li><code><a title="gameServer.mapCode.tiles.Tile.isRobberHere" href="#gameServer.mapCode.tiles.Tile.isRobberHere">isRobberHere</a></code></li>
+<li><code><a title="gameServer.mapCode.tiles.Tile.position" href="#gameServer.mapCode.tiles.Tile.position">position</a></code></li>
+<li><code><a title="gameServer.mapCode.tiles.Tile.robberArrives" href="#gameServer.mapCode.tiles.Tile.robberArrives">robberArrives</a></code></li>
+<li><code><a title="gameServer.mapCode.tiles.Tile.robberDeparts" href="#gameServer.mapCode.tiles.Tile.robberDeparts">robberDeparts</a></code></li>
+<li><code><a title="gameServer.mapCode.tiles.Tile.toJsonSerializable" href="#gameServer.mapCode.tiles.Tile.toJsonSerializable">toJsonSerializable</a></code></li>
 </ul>
 </li>
 </ul>
