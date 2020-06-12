@@ -40,6 +40,27 @@ class HexPoint:
         if not isinstance(other, HexPoint):
             return True
         return self.row != other.row or self.col != other.col
+    
+    def isNeighbor(self, other: HexPoint) -> bool:
+        '''
+        If point other is a next to this point.
+        Taken from the typescript version, it worked there so I hope it works here
+        '''
+        if other.col == self.col and other.row == self.row + 1:
+            return True
+
+        if other.col == self.col and other.row == self.row - 1:
+            return True
+
+        if abs(self.col % 2) == abs(self.row % 2):
+            # check right
+            if other.col == self.col + 1 and other.row == self.row:
+                return True
+        else:
+            if other.col == self.col - 1 and other.row == self.row:
+                return True
+
+        return False
 
 
 class Resource(Enum):

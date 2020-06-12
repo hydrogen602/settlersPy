@@ -9,8 +9,11 @@ tools-docs:
 mechanics-docs:
 	pdoc3 --html -o docs mechanics
 
+#all-docs:
+#	cd ..; pdoc3 --html -o settlersPy/docs settlersPy
+
 all-docs:
-	cd ..; pdoc3 --html -o settlersPy/docs settlersPy
+	pdoc3 --html -o docs/ gameServer
 
 remove-docs:
 	rm -rf docs

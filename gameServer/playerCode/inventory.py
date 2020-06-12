@@ -1,7 +1,11 @@
-from typing import Dict, List
+from __future__ import annotations
+from typing import Dict, List, TYPE_CHECKING
 
-from ..mapCode import Settlement, Road
 from ..extraCode.location import Biome, Resource
+
+if TYPE_CHECKING:
+    from ..mapCode.pointMapFeatures import Settlement
+    from ..mapCode.lineMapFeatures import Road
 
 class Inventory:
 
