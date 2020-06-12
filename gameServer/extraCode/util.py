@@ -12,13 +12,17 @@ def isNotNone(methodName: str, **kwargs):
 
 
 class IterableCls(type):
+    '''   
+    Allows for classes themselves to be iterable
+    '''
+
     def __init__(cls, name, bases, dct) -> None:
         if not hasattr(cls, 'getIterable'):
             raise TypeError(f'IterableCls {name} must have method getIterable')
 
     def __iter__(cls):
         return iter(cls.getIterable())
-    
+
     def __getitem__(cls, key):
         return cls.getIterable()[key]
 
@@ -58,9 +62,43 @@ class ActionError(Exception):
 
 
 class NotSetupException(Exception):
-    # TODO: move to a util package
     '''
     For when something cannot be used yet
     because some setup action hasn't happened yet
     '''
     pass
+
+
+class AlreadySetupException(Exception):
+    '''
+    For when something is being setup
+    for a second time that should only be set once
+    '''
+    pass
+
+
+class ArgumentMissingError(TypeError):
+    '''
+    When an argument is missing or is None
+    when it should be something
+    '''
+
+    def __init__(self, func: str, *varNames) -> None:
+        count = len(varNames)
+        pluralS = 's' if count > 1 else ''
+
+        varNamesComposite = ''
+        if count == 1:
+            varNamesComposite = f"'{varNames[0]}'"
+        elif count == 2:
+            a, b = varNames
+            varNamesComposite = f"'{a}' and '{b}'"
+        else:
+            *start, end = varNames
+            for varName in start:
+                varNamesComposite += f"'{varName}', "
+
+            varNamesComposite += f"and '{end}'"
+
+        super().__init__(f'{func}() missing {count} required argument{pluralS}: {varNamesComposite}')
+

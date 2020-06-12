@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
-from .util import ActionError, NotSetupException, isNotNone, JsonSerializable
+from .util import ActionError, NotSetupException, isNotNone, JsonSerializable, ArgumentMissingError
 
 if TYPE_CHECKING:
     from typing import Optional, Dict
@@ -9,11 +9,39 @@ if TYPE_CHECKING:
     from ..playerCode.player import Player
 
 
-class Placeable:
+class Placeable(JsonSerializable):
     '''
-    For now it's just a tag
+    This is for objects which can be held by the player
+    in their inventory before being put on the map
     '''
-    pass
+    def __init__(self, isPlaced: bool = None, **kwargs) -> None:
+        '''
+        isPlaced does not need to be specified but
+        is instead determined by subclassed based
+        on whether they got their map position or not
+        '''
+        if isPlaced is None:
+            raise ArgumentMissingError('__init__', 'isPlaced')
+        super().__init__(**kwargs) # type: ignore
+
+        self._isPlaced: bool = isPlaced
+    
+    @property
+    def isPlaced(self) -> bool:
+        return self._isPlaced
+    
+    def _place(self):
+        '''
+        Call when something like a Settlement
+        instance is being placed on the map
+        '''
+        self._isPlaced = True
+    
+    def toJsonSerializable(self) -> Dict[str, object]:
+        return {
+            'isPlaced': self._isPlaced,
+            **super().toJsonSerializable()
+        }
 
 
 class Ownable(JsonSerializable):
@@ -68,10 +96,10 @@ class Purchaseable:
             p.takeResource(resource, qty)
 
         if self.__isLineFeature:
-            p.inventory.addLineFeature(self.__cls) # type: ignore
+            p.inventory.addLineFeature(self.__cls())
             return True
         if self.__isPointFeature:
-            p.inventory.addPointFeature(self.__cls) # type: ignore
+            p.inventory.addPointFeature(self.__cls())
             return True
         
         raise RuntimeError("This shouldn't happen")
