@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict
+from typing import TYPE_CHECKING, Dict, Optional
 
 from ..extraCode.modifiers import Placeable, Ownable, Purchaseable
-from ..extraCode.util import isNotNone, JsonSerializable
+from ..extraCode.util import isNotNone, JsonSerializable, ArgumentMissingError, NotSetupException, AlreadySetupException
 from ..extraCode.location import Resource
 
 if TYPE_CHECKING:
@@ -14,9 +14,14 @@ if TYPE_CHECKING:
 class Settlement(Placeable, Purchaseable, Ownable, JsonSerializable):
 
     def __init__(self, pos: HexPoint = None, **kwargs) -> None:
-        isNotNone('__init__', pos=pos)
-        super().__init__(**kwargs)
-        self._pos: HexPoint = pos # type: ignore
+        self._pos: Optional[HexPoint] = pos
+
+        hasLocation = False
+        if pos is not None:
+            hasLocation = True
+
+        super().__init__(isPlaced=hasLocation, **kwargs)
+        
 
         self.setupPurchase(Settlement, {
             Resource.Brick: 1,
@@ -24,9 +29,18 @@ class Settlement(Placeable, Purchaseable, Ownable, JsonSerializable):
             Resource.Sheepie: 1,
             Resource.Wheat: 1
         }, isPointFeature=True)
+    
+    def place(self, position: HexPoint):
+        if self._isPlaced:
+            raise AlreadySetupException("This settlement has already been placed")
+
+        self._pos = position
+        self._place()
 
     @property
     def position(self) -> HexPoint:
+        if self._pos is None:
+            raise NotSetupException("This settlement hasn't been given a location yet")
         return self._pos
 
     def harvestResource(self, biome: Biome):
