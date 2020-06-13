@@ -38,6 +38,8 @@ Notes:
    - \[M\] inventory
      - \[C\] Inventory
      - \[C\] ExpandedInventory
+   - \[M\] turn
+     - \[C\] Turn
 
 ### Extra Code
 

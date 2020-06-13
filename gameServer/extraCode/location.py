@@ -5,7 +5,6 @@ from typing import Dict, Iterable, Tuple, List
 from .util import IterableCls
 
 
-
 class HexPoint:
     def __init__(self, row: int, col: int) -> None:
         self.__row: int = row

@@ -1,4 +1,13 @@
 from typing import Dict
+import random
+
+
+def rollDice() -> int:
+    return random.randint(1,6)
+
+
+def roll2Die() -> int:
+    return random.randint(1,6) + random.randint(1,6)
 
 
 def isNotNone(methodName: str, **kwargs):
@@ -50,13 +59,16 @@ class JsonSerializable:
 
 
 class ActionError(Exception):
-    # TODO: move to a util package
     '''
     For when some action isn't allowed by
     game rules, like buying something
     the player can't afford or placing
     something where it is not allowed to
-    be placed
+    be placed.
+    The game should not crash from one
+    of these! These are to propegate
+    a rules error message to the player and
+    prevent rule-breaking actions.
     '''
     pass
 

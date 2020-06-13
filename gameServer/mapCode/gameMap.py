@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from typing import List, Dict, Tuple, Optional, TYPE_CHECKING
+from typing import List, Dict, Tuple, Optional, TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
     from ..playerCode.player import Player
     from .tiles import Tile
-    from .pointMapFeatures import Settlement
-    from .lineMapFeatures import Road
 
+from .pointMapFeatures import Settlement
+from .lineMapFeatures import Road
 from ..extraCode import HexPoint, JsonSerializable
 
 
@@ -47,6 +47,16 @@ class GameMap(JsonSerializable):
                     )
                 )
     
+    def isLegalPosition(self, thing: Union[Road, Settlement]):
+        if isinstance(thing, Road):
+            r: Road = thing
+
+        elif isinstance(thing, Settlement): # TODO
+            s: Settlement = thing
+        
+        else:
+            raise TypeError(f"Argument of wrong type, got {type(thing)}, but expected Union[Road, Settlement]")
+    
     def moveRobber(self, position: HexPoint):
         '''
         moves the robber from the last recorded postion
@@ -54,15 +64,18 @@ class GameMap(JsonSerializable):
         on the old tile and robberArrives() on the new
         tile. If the robber doesn't have a location yet,
         no attempt will be made to get the old tile
-        as that would result in a KeyError
+        as that would result in a KeyError.
+
+        Raises a `KeyError` if no tile exists at position. 
         '''
 
+        newTile = self.getTile(position) # raises KeyError
+        # if the tile does not exist, nothing else should change about the map
+
         if self.__robberPosition is not None:
-            oldTile = self.getTile(self.__robberPosition)
+            oldTile = self.getTile(self.__robberPosition) 
             oldTile.robberDeparts()
         
-
-        newTile = self.getTile(position)
         newTile.robberArrives()
 
         self.__robberPosition = position
@@ -71,6 +84,7 @@ class GameMap(JsonSerializable):
         '''
         Add a tile to the map. Tiles cannot
         be placed where there already is a tile.
+        Raises a `KeyError` if the tile already exists.
         '''
         key = elem.position.getAsTuple()
         if key in self.__tiles:
@@ -79,7 +93,8 @@ class GameMap(JsonSerializable):
 
     def getTile(self, position: HexPoint) -> Tile:
         '''
-        Fetches a tile from the map given the postion
+        Fetches a tile from the map given the postion.
+        Raises a `KeyError` if the tile does not exist.
         '''
         key = position.getAsTuple()
         if key not in self.__tiles:

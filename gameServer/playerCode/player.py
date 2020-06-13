@@ -1,8 +1,15 @@
-from typing import Set
+from __future__ import annotations
+
+from typing import Set, TYPE_CHECKING
 from secrets import token_urlsafe
 
-from .inventory import ExpandedInventory
-from ..extraCode.location import Resource
+from ..extraCode.util import ActionError
+
+if TYPE_CHECKING:
+    from .inventory import ExpandedInventory
+    from ..extraCode.location import Resource
+    from ..extraCode.location import HexPoint
+    from .turn import Turn
 
 class Player:
 
@@ -28,7 +35,43 @@ class Player:
         self.__token: str = token
         self.__connection = connection
 
+        self.__canMoveRobber: bool = False
+
         self.__inventory: ExpandedInventory = ExpandedInventory()
+    
+    def checkFinishTurn(self):
+        '''
+        Throws an `ActionError` if a player isn't
+        allowed to end their turn yet
+        '''
+        if len(self.__inventory.ownedLineFeatures) > 0:
+            raise ActionError("There are unplaced roads")
+        if len(self.__inventory.ownedPointFeatures) > 0:
+            raise ActionError("There are unplaced settlements or cities")
+        if self.__canMoveRobber:
+            raise ActionError("Robber needs to be moved")
+    
+    def canMoveRobber(self):
+        '''
+        Called whenever the player needs to move the robber.
+        Ex: if a 7 is rolled or a knight is played
+        '''
+        self.__canMoveRobber = True
+    
+    def moveRobber(self, point: HexPoint, turn: Turn):
+        '''
+        Call when a player wants to move the robber
+        '''
+        if not self.__canMoveRobber:
+            raise ActionError("Not allowed to move robber")
+        
+        try:
+            turn.gameMap.moveRobber(point)
+        except KeyError:
+            raise ActionError("No tile at given position")
+        else:
+            # no error
+            self.__canMoveRobber = False
     
     @property
     def connection(self):
