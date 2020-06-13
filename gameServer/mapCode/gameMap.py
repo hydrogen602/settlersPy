@@ -4,12 +4,12 @@ from typing import List, Dict, Tuple, Optional, TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
     from ..playerCode.player import Player
+    from ..playerCode.turn import Turn
     from .tiles import Tile
 
 from .pointMapFeatures import Settlement
 from .lineMapFeatures import Road
-from ..extraCode import HexPoint, JsonSerializable
-
+from ..extraCode import HexPoint, JsonSerializable, ActionError
 
 class GameMap(JsonSerializable):
 
@@ -18,8 +18,8 @@ class GameMap(JsonSerializable):
         for t in tiles:
             self.__tiles[t.position.getAsTuple()] = t
         
-        self.__pointFeatures: List[Settlement] = []
-        self.__lineFeatures: List[Road] = []
+        self.__pointFeatures: Dict[Tuple[int, int], Settlement] = {}
+        self.__lineFeatures: Dict[Tuple[Tuple[int, int], Tuple[int, int]], Road] = {}
 
         self.__robberPosition: Optional[HexPoint] = None
     
@@ -47,15 +47,15 @@ class GameMap(JsonSerializable):
                     )
                 )
     
-    def isLegalPosition(self, thing: Union[Road, Settlement]):
-        if isinstance(thing, Road):
-            r: Road = thing
+    # def isLegalPosition(self, thing: Union[Road, Settlement]):
+    #     if isinstance(thing, Road):
+    #         r: Road = thing
 
-        elif isinstance(thing, Settlement): # TODO
-            s: Settlement = thing
+    #     elif isinstance(thing, Settlement): # TODO
+    #         s: Settlement = thing
         
-        else:
-            raise TypeError(f"Argument of wrong type, got {type(thing)}, but expected Union[Road, Settlement]")
+    #     else:
+    #         raise TypeError(f"Argument of wrong type, got {type(thing)}, but expected Union[Road, Settlement]")
     
     def moveRobber(self, position: HexPoint):
         '''
@@ -101,11 +101,71 @@ class GameMap(JsonSerializable):
             raise KeyError(f'No tile found at postion {key}')
         return self.__tiles[position.getAsTuple()]
 
-    def addPointElement(self, elem: Settlement):
-        self.__pointFeatures.append(elem)
+    def addPointElement(self, elem: Settlement, turn: Turn):
+        point: Tuple[int, int] = elem.position.getAsTuple()
+
+        if elem.owner != turn.currentPlayer:
+            raise ActionError("Things may only be placed on your turn")
+
+        if point in self.__pointFeatures:
+            raise KeyError("A settlement exists here already")
+
+        # check neighbors -> there must be none
+        neighbors: List[Tuple[int, int]] = [p.getAsTuple() for p in elem.position.getNeighbors()]
+
+        for n in neighbors:
+            if n in self.__pointFeatures:
+                raise ActionError("Too close to other settlement, needs at least one space in between")
+
+        if turn.roundNum >= 2:
+            # check for roads -> there must be one of owner
+            foundOwnedRoad = False
+            for p in neighbors:
+                if (point, p) in self.__lineFeatures and self.__lineFeatures[(point, p)].owner == elem.owner:
+                    foundOwnedRoad = True
+                    break
+                if (p, point) in self.__lineFeatures and self.__lineFeatures[(p, point)].owner == elem.owner:
+                    foundOwnedRoad = True
+                    break
+            
+            if not foundOwnedRoad:
+                raise ActionError("Settlements must be connected to an owned road")
+                
+
+        self.__pointFeatures[point] = elem
     
     def addLineElement(self, elem: Road):
-        self.__lineFeatures.append(elem)
+        p1: Tuple[int, int] = elem.point1.getAsTuple()
+        p2: Tuple[int, int] = elem.point2.getAsTuple()
+
+        if (p1, p2) in self.__lineFeatures or (p2, p1) in self.__lineFeatures:
+            # remember to check both orders
+            raise KeyError("A road exists here already")
+
+        neighbors1: List[Tuple[int, int]] = [p.getAsTuple() for p in elem.point1.getNeighbors()]
+        neighbors2: List[Tuple[int, int]] = [p.getAsTuple() for p in elem.point2.getNeighbors()]
+
+        # check for connection to road or settlement
+        foundOwnedConnection = False
+        for nGroup, point in ((neighbors1, p1), (neighbors2, p2)):
+            if point in self.__pointFeatures and self.__pointFeatures[point].owner == elem.owner:
+                foundOwnedConnection = True
+                break
+
+            for n in nGroup:
+                if (point, n) in self.__lineFeatures and self.__lineFeatures[(point, n)].owner == elem.owner:
+                    foundOwnedConnection = True
+                    break
+                if (n, point) in self.__lineFeatures and self.__lineFeatures[(n, point)].owner == elem.owner:
+                    foundOwnedConnection = True
+                    break
+            if foundOwnedConnection:
+                break
+        
+        if not foundOwnedConnection:
+            raise ActionError("Roads must be connected to an owned road or settlement")
+
+        self.__lineFeatures[(p1, p2)] = elem
     
     def toJsonSerializable(self):
         return {

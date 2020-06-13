@@ -61,6 +61,23 @@ class HexPoint:
 
         return False
 
+    def getNeighbors(self) -> Tuple[HexPoint, HexPoint, HexPoint]:
+        '''
+        Gets all points adjacent to this point
+        '''
+        first = HexPoint(row=self.row + 1, col=self.col)
+        second = HexPoint(row=self.row - 1, col=self.col)
+
+
+        if abs(self.col % 2) == abs(self.row % 2):
+            # right
+            third = HexPoint(row=self.row, col=self.col + 1)
+        else:
+            # left
+            third = HexPoint(row=self.row, col=self.col - 1)
+        
+        return first, second, third
+
 
 class Resource(Enum):
     Wheat = 0

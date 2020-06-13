@@ -19,6 +19,10 @@ class Turn:
     
     @property
     def roundNum(self) -> int:
+        '''
+        Round number should start at 0,
+        so 0 -> 1st, 1 -> 2nd, etc.
+        '''
         return self.__roundNum
     
     @property
