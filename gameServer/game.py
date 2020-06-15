@@ -6,6 +6,8 @@ from .playerCode.playerManager import PlayerManager
 from .playerCode.player import Player
 from .playerCode.turn import Turn
 from .mapCode.gameMap import GameMap
+from .mapCode.lineMapFeatures import Road
+from .mapCode.pointMapFeatures import Settlement
 
 class Game:
 
@@ -35,8 +37,16 @@ class Game:
     def gameMap(self) -> GameMap:
         return self.__gameMap
 
-    def __newTurn(self):
-        pass
+    def __newTurn(self, currentPlayer: Player):
+        '''
+        For handling things that should happen when it becomes a player's
+        turn, like making a `Turn` instance or giving them a settlement and
+        road in the first two turns
+        '''
+        self.__currentTurn = Turn(self.__gameMap, self.__roundNum, currentPlayer)
+        if self.__roundNum < 2:
+            currentPlayer.inventory.addPointFeature(Settlement(owner=currentPlayer))
+            currentPlayer.inventory.addLineFeature(Road(owner=currentPlayer))
 
     def startGame(self):
         if self.__gameStarted:
@@ -46,7 +56,7 @@ class Game:
         self.__playerManager.startGame()
         self.__playerTurnOrderIterator = self.__playerManager.getPlayerTurnOrderIterator()
 
-        self.__currentTurn = Turn(self.__gameMap, self.__roundNum, next(self.__playerTurnOrderIterator))
+        self.__newTurn(next(self.__playerTurnOrderIterator))
         
     
     def addPlayer(self, p: Player):
@@ -61,8 +71,11 @@ class Game:
         self.__currentTurn.currentPlayer.checkFinishTurn()
 
         try:
-            self.__currentTurn = Turn(self.__gameMap, self.__roundNum, next(self.__playerTurnOrderIterator))
+            nextPlayer = next(self.__playerTurnOrderIterator)
         except StopIteration:
             self.__roundNum += 1
             self.__playerTurnOrderIterator = self.__playerManager.getPlayerTurnOrderIterator()
-            self.__currentTurn = Turn(self.__gameMap, self.__roundNum, next(self.__playerTurnOrderIterator))
+
+            nextPlayer = next(self.__playerTurnOrderIterator)
+        
+        self.__newTurn(nextPlayer)

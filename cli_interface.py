@@ -5,6 +5,7 @@ import curses
 
 from gameServer.game import Game
 from gameServer.extraCode.location import HexPoint
+from gameServer.extraCode.util import ActionError
 from gameServer.playerCode.playerManager import PlayerManager
 from gameServer.playerCode.player import Player
 from gameServer.mapCode.gameMap import GameMap
@@ -77,6 +78,7 @@ def drawMap(gameMap: GameMap, scr):
 
 
 def main(stdscr):
+    curses.nonl()
 
     gm = GameMap()
     gm.generateHexagonalArea(2)
@@ -111,8 +113,10 @@ def main(stdscr):
 
     while(True):
         drawMap(g.gameMap, stdscr)
-        stdscr.addstr(0, 0, f"Current Player: {g.currentTurn.currentPlayer.name}")
-        stdscr.addstr(1, 0, f"Round: {g.currentTurn.roundNum}")
+        stdscr.addstr(0, 0, f"SettlersPy")
+        stdscr.addstr(1, 0, f"Current Player: {g.currentTurn.currentPlayer.name}")
+        stdscr.addstr(2, 0, f"Round: {g.currentTurn.roundNum}")
+        stdscr.addstr(num_rows - 2, 0, str(g.currentTurn.currentPlayer.inventory))
 
         row, col = toRect(atPos)
         stdscr.move(row, col)
@@ -128,6 +132,38 @@ def main(stdscr):
             atPos = atPos + HexPoint(0, 1)
         elif key == ord('q'):
             break
+        elif key == ord('c'):
+            s = ""
+            stdscr.addstr(num_rows - 1, 0, f": ", curses.A_BLINK)
+            key = stdscr.getch()
+            while(key != curses.KEY_ENTER and key != 10 and key != 13):
+                if key == curses.KEY_BACKSPACE or key == ord('\b') or key == 127:
+                    s = s[:-1]
+                    stdscr.addstr(num_rows - 1, 2, f"{s} ")
+                    continue
+
+                s += chr(key)
+
+                stdscr.addstr(num_rows - 1, 2, f"{s}")
+                key = stdscr.getch()
+            
+            stdscr.addstr(num_rows - 1, 0, ' ' * (num_columns - 3))
+            s = s.strip().lower()
+
+            if s == 'next':
+                try:
+                    g.nextTurn()
+                except ActionError as e:
+                    stdscr.addstr(0, 0, f"SettlersPy: Problem: {e}")
+            elif s == 'place S':
+                try:
+                    # g.currentTurn.currentPlayer
+                    pass
+                except ActionError as e:
+                    stdscr.addstr(0, 0, f"SettlersPy: Problem: {e}")
+                
+
+
 
 
 if __name__ == '__main__':

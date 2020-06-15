@@ -33,6 +33,12 @@ class Road(Placeable, Purchaseable, Ownable, JsonSerializable):
             Resource.Lumber: 1,
             Resource.Brick: 1
         }, isLineFeature=True)
+
+    def __str__(self):
+        if self._isPlaced:
+            return f"Road({self.__point1, self.__point2})"
+        else:
+            return f"Road()"
     
     def place(self, point1: HexPoint, point2: HexPoint):
         if self._isPlaced:

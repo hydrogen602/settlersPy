@@ -13,8 +13,8 @@ class Inventory:
         self.__inventory: Dict[Resource, int] = dict([(r, 0) for r in Resource])
         
         # for debug
-        self.addResource(Resource.Brick, 1)
-        self.addResource(Resource.Lumber, 1)
+        # self.addResource(Resource.Brick, 1)
+        # self.addResource(Resource.Lumber, 1)
     
     def getCount(self, resourceType: Resource) -> int:
         if not isinstance(resourceType, Resource):
@@ -43,6 +43,9 @@ class Inventory:
     
     def totalResourceCount(self) -> int:
         return sum(self.__inventory.values())
+    
+    def __str__(self) -> str:
+        return "Inv: " + '; '.join([f"{resource.name}: {count}" for resource, count in self.__inventory.items()])
 
 
 class ExpandedInventory(Inventory):
@@ -77,3 +80,7 @@ class ExpandedInventory(Inventory):
     
     def placeLineFeature(self, index: int):
         self.__ownedLineFeatures.pop(index)
+    
+    def __str__(self) -> str:
+        s = super().__str__()
+        return s + f" | PointFeatures: [{', '.join([str(e) for e in self.__ownedPointFeatures])}]; LineFeatures: [{', '.join([str(e) for e in self.__ownedLineFeatures])}]"

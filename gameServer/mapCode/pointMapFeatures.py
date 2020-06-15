@@ -30,6 +30,12 @@ class Settlement(Placeable, Purchaseable, Ownable, JsonSerializable):
             Resource.Wheat: 1
         }, isPointFeature=True)
     
+    def __str__(self):
+        if self._isPlaced:
+            return f"Settlement({self._pos})"
+        else:
+            return f"Settlement()"
+    
     def place(self, position: HexPoint):
         if self._isPlaced:
             raise AlreadySetupException("This settlement has already been placed")
@@ -65,3 +71,9 @@ class City(Settlement):
 
     def harvestResource(self, biome: Biome):
         self._owner.giveResource(biome.primaryResource, count=2)
+    
+    def __str__(self):
+        if self._isPlaced:
+            return f"City({self._pos})"
+        else:
+            return f"City()"

@@ -76,7 +76,7 @@ class Purchaseable:
         self.__cls: Optional[type] = None
 
     def setupPurchase(self, clsOfObjectBeingPurchased: type, cost: Dict[Resource, int], isLineFeature: bool = False, isPointFeature: bool = False):
-        assert not isLineFeature and isPointFeature
+        assert not (isLineFeature and isPointFeature)
         assert isLineFeature or isPointFeature
         self.__cost = cost
         self.__cls = clsOfObjectBeingPurchased
