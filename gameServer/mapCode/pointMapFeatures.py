@@ -9,7 +9,7 @@ from ..extraCode.location import Resource
 if TYPE_CHECKING:
     from ..extraCode.location import HexPoint, Biome
     from ..playerCode.player import Player
-
+    from ..playerCode.turn import Turn
 
 class Settlement(Placeable, Purchaseable, Ownable, JsonSerializable):
 
@@ -21,7 +21,6 @@ class Settlement(Placeable, Purchaseable, Ownable, JsonSerializable):
             hasLocation = True
 
         super().__init__(isPlaced=hasLocation, **kwargs)
-        
 
         self.setupPurchase(Settlement, {
             Resource.Brick: 1,
@@ -36,11 +35,14 @@ class Settlement(Placeable, Purchaseable, Ownable, JsonSerializable):
         else:
             return f"Settlement()"
     
-    def place(self, position: HexPoint):
+    def place(self, position: HexPoint, turn: Turn):
         if self._isPlaced:
             raise AlreadySetupException("This settlement has already been placed")
 
-        self._pos = position
+        self._pos = position.copy()
+
+        turn.gameMap.addPointElement(self, turn) # raises ActionError
+
         self._place()
 
     @property

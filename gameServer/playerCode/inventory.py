@@ -6,6 +6,7 @@ from ..extraCode.location import Biome, Resource
 if TYPE_CHECKING:
     from ..mapCode.pointMapFeatures import Settlement
     from ..mapCode.lineMapFeatures import Road
+    from .turn import Turn
 
 class Inventory:
 

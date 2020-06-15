@@ -15,7 +15,7 @@ class Player:
 
     __usedTokens: Set[str] = set()
 
-    def __init__(self, name: str, connection) -> None:
+    def __init__(self, name: str, connection, color: str) -> None:
         '''
         `Player` is meant to represent one player uniquely.
         `name` is the name visible to other players and
@@ -34,6 +34,7 @@ class Player:
         self.__name: str = name
         self.__token: str = token
         self.__connection = connection
+        self.__color: str = color
 
         self.__canMoveRobber: bool = False
 
@@ -128,7 +129,7 @@ class Player:
     
     @property
     def color(self) -> str:
-        return 'blue' # TODO: make this chooseable by user
+        return self.__color
     
     def __eq__(self, other: object) -> bool:
         '''

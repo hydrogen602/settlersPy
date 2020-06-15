@@ -120,7 +120,7 @@ class GameMap(JsonSerializable):
             raise ActionError("Things may only be placed on your turn")
 
         if point in self.__pointFeatures:
-            raise KeyError("A settlement exists here already")
+            raise ActionError("A settlement exists here already")
 
         # check neighbors -> there must be none
         neighbors: List[Tuple[int, int]] = [p.getAsTuple() for p in elem.position.getNeighbors()]
@@ -146,13 +146,19 @@ class GameMap(JsonSerializable):
 
         self.__pointFeatures[point] = elem
     
-    def addLineElement(self, elem: Road):
+    def addLineElement(self, elem: Road, turn: Turn):
         p1: Tuple[int, int] = elem.point1.getAsTuple()
         p2: Tuple[int, int] = elem.point2.getAsTuple()
 
+        if elem.owner != turn.currentPlayer:
+            raise ActionError("Things may only be placed on your turn")
+
         if (p1, p2) in self.__lineFeatures or (p2, p1) in self.__lineFeatures:
             # remember to check both orders
-            raise KeyError("A road exists here already")
+            raise ActionError("A road exists here already")
+
+        if not elem.point1.isNeighbor(elem.point2):
+            raise ActionError("A road cannot be placed between these points")
 
         neighbors1: List[Tuple[int, int]] = [p.getAsTuple() for p in elem.point1.getNeighbors()]
         neighbors2: List[Tuple[int, int]] = [p.getAsTuple() for p in elem.point2.getNeighbors()]

@@ -1,6 +1,6 @@
 
 import os
-from typing import Tuple
+from typing import Tuple, Dict, Optional
 import curses
 
 from gameServer.game import Game
@@ -14,7 +14,7 @@ from gameServer.mapCode.gameMap import GameMap
      * --- *
     /       \\
    *         *
-    \       /
+    \\       /
      * --- *
 '''
 
@@ -59,7 +59,7 @@ def drawMap(gameMap: GameMap, scr):
             setPoint(row, col + index, char, *attr)
 
     for t in gameMap.tiles:
-        print(t, file=log)
+        # print(t, file=log)
 
         row, col = toRect(t.position)
 
@@ -73,12 +73,54 @@ def drawMap(gameMap: GameMap, scr):
 
         writeString(row+3, col-1, '\\{:^7}/'.format(t.diceValue))
         writeString(row+4, col, '* --- *')
+    
+    for s in gameMap.pointFeatures:
+        colorCode = colorLookup[s.owner.color]
+
+        row, col = toRect(s.position)
+
+        setPoint(row, col, 'S', curses.color_pair(colorCode))
+    
+    for r in gameMap.lineFeatures:
+        colorCode = colorLookup[r.owner.color]
+
+        row1, col1 = toRect(r.point1)
+        row2, col2 = toRect(r.point2)
+
+        if row1 - row2 == 0:
+            midCol = (col1 + col2) // 2
+            # --- segment
+            writeString(row1, midCol-1, '===', curses.color_pair(colorCode))
+        else:
+            midCol = (col1 + col2) // 2
+            # theres two between col1 and col2 so they're
+            # either both odd or both even, and so their sum is even
+            midRow = (row1 + row2) // 2
+            # same for row
+            setPoint(midRow, midCol, 'X', curses.color_pair(colorCode))
+
+    print(gameMap.toJsonSerializable(), file=log)
+        
+
 
     scr.refresh()
 
 
+colorLookup: Dict[str, int] = {
+    'red': 1,
+    'yellow': 2,
+    'green': 3
+}
+
+
 def main(stdscr):
     curses.nonl()
+
+    curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
+    curses.init_pair(2, curses.COLOR_YELLOW, curses.COLOR_BLACK)
+    curses.init_pair(3, curses.COLOR_GREEN, curses.COLOR_BLACK)
+
+
 
     gm = GameMap()
     gm.generateHexagonalArea(2)
@@ -87,9 +129,9 @@ def main(stdscr):
     p: PlayerManager = g.playerManager
 
     players = [
-        Player('alpha', None),
-        Player('beta', None),
-        Player('gamma', None)
+        Player('alpha', None, 'red'),
+        Player('beta', None, 'yellow'),
+        Player('gamma', None, 'green')
     ]
 
     for pl in players:
@@ -111,12 +153,20 @@ def main(stdscr):
 
     atPos = HexPoint(0, 0)
 
+    roadTmpPointHolder: Optional[HexPoint] = None
+
     while(True):
         drawMap(g.gameMap, stdscr)
         stdscr.addstr(0, 0, f"SettlersPy")
         stdscr.addstr(1, 0, f"Current Player: {g.currentTurn.currentPlayer.name}")
         stdscr.addstr(2, 0, f"Round: {g.currentTurn.roundNum}")
+        stdscr.addstr(num_rows - 2, 0, ' ' * (num_columns - 2))
         stdscr.addstr(num_rows - 2, 0, str(g.currentTurn.currentPlayer.inventory))
+
+        if roadTmpPointHolder is not None:
+            row, col = toRect(roadTmpPointHolder)
+            colorNum = colorLookup[g.currentTurn.currentPlayer.color]
+            stdscr.addch(row, col, 'R', curses.color_pair(colorNum))
 
         row, col = toRect(atPos)
         stdscr.move(row, col)
@@ -140,6 +190,7 @@ def main(stdscr):
                 if key == curses.KEY_BACKSPACE or key == ord('\b') or key == 127:
                     s = s[:-1]
                     stdscr.addstr(num_rows - 1, 2, f"{s} ")
+                    key = stdscr.getch()
                     continue
 
                 s += chr(key)
@@ -155,12 +206,31 @@ def main(stdscr):
                     g.nextTurn()
                 except ActionError as e:
                     stdscr.addstr(0, 0, f"SettlersPy: Problem: {e}")
-            elif s == 'place S':
+                stdscr.clear()
+            elif s == 'place s':
+                if len(g.currentTurn.currentPlayer.inventory.ownedPointFeatures) == 0:
+                    stdscr.addstr(0, 0, f"SettlersPy: Problem: You own no settlements or cities")
+                    continue
                 try:
-                    # g.currentTurn.currentPlayer
-                    pass
+                    g.currentTurn.currentPlayer.inventory.ownedPointFeatures[0].place(atPos, g.currentTurn)
+                    g.currentTurn.currentPlayer.inventory.placePointFeature(0)
                 except ActionError as e:
                     stdscr.addstr(0, 0, f"SettlersPy: Problem: {e}")
+            elif s == 'place r':
+                if len(g.currentTurn.currentPlayer.inventory.ownedLineFeatures) == 0:
+                    stdscr.addstr(0, 0, f"SettlersPy: Problem: You own no roads")
+                    continue
+
+                if roadTmpPointHolder is not None:
+                    try:
+                        g.currentTurn.currentPlayer.inventory.ownedLineFeatures[0].place(roadTmpPointHolder, atPos, g.currentTurn)
+                        g.currentTurn.currentPlayer.inventory.placeLineFeature(0)
+                        roadTmpPointHolder = None
+                    except ActionError as e:
+                        stdscr.addstr(0, 0, f"SettlersPy: Problem: {e}")
+                else:
+                    roadTmpPointHolder = atPos
+                
                 
 
 

@@ -5,6 +5,7 @@ from ..extraCode.location import HexPoint, Resource
 from ..extraCode.util import isNotNone, JsonSerializable, ArgumentMissingError, NotSetupException, AlreadySetupException
 from ..extraCode.modifiers import Placeable, Ownable, Purchaseable
 from ..playerCode.player import Player
+from ..playerCode.turn import Turn
 
 class Road(Placeable, Purchaseable, Ownable, JsonSerializable):
 
@@ -40,12 +41,15 @@ class Road(Placeable, Purchaseable, Ownable, JsonSerializable):
         else:
             return f"Road()"
     
-    def place(self, point1: HexPoint, point2: HexPoint):
+    def place(self, point1: HexPoint, point2: HexPoint, turn: Turn):
         if self._isPlaced:
             raise AlreadySetupException("This road has already been placed")
 
-        self.__point1 = point1
-        self.__point2 = point2
+        self.__point1 = point1.copy()
+        self.__point2 = point2.copy()
+
+        turn.gameMap.addLineElement(self, turn) # raises ActionError
+
         self._place()
 
     @property

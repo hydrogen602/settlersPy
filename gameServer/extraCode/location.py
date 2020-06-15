@@ -24,6 +24,9 @@ class HexPoint:
     def getAsTuple(self) -> Tuple[int, int]:
         return (self.__row, self.__col)
     
+    def copy(self) -> HexPoint:
+        return HexPoint(self.row, self.col)
+    
     def __add__(self, other: HexPoint) -> HexPoint:
         return HexPoint(self.row + other.row, self.col + other.col)
 
