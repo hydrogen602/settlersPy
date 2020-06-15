@@ -3,10 +3,10 @@ from __future__ import annotations
 from typing import Set, TYPE_CHECKING
 from secrets import token_urlsafe
 
+from .inventory import ExpandedInventory
 from ..extraCode.util import ActionError
 
 if TYPE_CHECKING:
-    from .inventory import ExpandedInventory
     from ..extraCode.location import Resource
     from ..extraCode.location import HexPoint
     from .turn import Turn

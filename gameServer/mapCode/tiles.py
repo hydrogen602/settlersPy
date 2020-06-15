@@ -37,6 +37,9 @@ class Tile:
 
         self.__settlementList: List[Settlement] = []
     
+    def __str__(self):
+        return f'Tile({self._position}, {self._biome.name},  {self.__diceValue})'
+    
     @property
     def position(self) -> HexPoint:
         return self._position
@@ -44,6 +47,10 @@ class Tile:
     @property
     def biome(self) -> Biome:
         return self._biome
+    
+    @property
+    def diceValue(self) -> int:
+        return self.__diceValue
 
     @classmethod
     def generate(cls, position: HexPoint) -> Tile:

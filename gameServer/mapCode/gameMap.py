@@ -5,15 +5,15 @@ from typing import List, Dict, Tuple, Optional, TYPE_CHECKING, Union
 if TYPE_CHECKING:
     from ..playerCode.player import Player
     from ..playerCode.turn import Turn
-    from .tiles import Tile
-
+    
+from .tiles import Tile
 from .pointMapFeatures import Settlement
 from .lineMapFeatures import Road
 from ..extraCode import HexPoint, JsonSerializable, ActionError
 
 class GameMap(JsonSerializable):
 
-    def __init__(self, tiles: List[Tile]) -> None:
+    def __init__(self, tiles: List[Tile] = []) -> None:
         self.__tiles: Dict[Tuple[int, int], Tile] = {}
         for t in tiles:
             self.__tiles[t.position.getAsTuple()] = t
@@ -22,6 +22,18 @@ class GameMap(JsonSerializable):
         self.__lineFeatures: Dict[Tuple[Tuple[int, int], Tuple[int, int]], Road] = {}
 
         self.__robberPosition: Optional[HexPoint] = None
+    
+    @property
+    def tiles(self) -> List[Tile]:
+        return list(self.__tiles.values())
+    
+    @property
+    def pointFeatures(self) -> List[Settlement]:
+        return list(self.__pointFeatures.values())
+    
+    @property
+    def lineFeatures(self) -> List[Road]:
+        return list(self.__lineFeatures.values())
     
     def generateHexagonalArea(self, size: int, startPoint: HexPoint = HexPoint(0, 0)):
         nP: float = (size - 1) / 2
@@ -33,7 +45,7 @@ class GameMap(JsonSerializable):
             for i in range(-addition, size + addition):
                 self.addTile(
                     Tile.generate(
-                        HexPoint(2*j, 2*i) + startPoint
+                        HexPoint(2*i, 2*j) + startPoint
                     )
                 )
 
@@ -43,7 +55,7 @@ class GameMap(JsonSerializable):
             for i in range(-addition, size + addition + 1):
                 self.addTile(
                     Tile.generate(
-                        HexPoint(2*j + 1, 2*i - 1) + startPoint
+                        HexPoint(2*i - 1, 2*j + 1) + startPoint
                     )
                 )
     
@@ -170,6 +182,8 @@ class GameMap(JsonSerializable):
     def toJsonSerializable(self):
         return {
             'tiles': [t.toJsonSerializable() for t in self.__tiles.values()],
+            'points': [e.toJsonSerializable() for e in self.__pointFeatures.values()],
+            'lines': [e.toJsonSerializable() for e in self.__lineFeatures.values()],
             **super().toJsonSerializable()
         }
 

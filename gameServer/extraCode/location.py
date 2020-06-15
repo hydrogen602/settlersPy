@@ -40,6 +40,12 @@ class HexPoint:
             return True
         return self.row != other.row or self.col != other.col
     
+    def __str__(self):
+        return f"HexPoint({self.__row}, {self.__col})"
+    
+    def __repr__(self):
+        return self.__str__()
+    
     def isNeighbor(self, other: HexPoint) -> bool:
         '''
         If point other is a next to this point.

@@ -8,7 +8,7 @@ class PlayerManager:
 
     __hasInit: bool = False
 
-    instance = None
+    #instance = None
 
     def __init__(self) -> None:
         '''
@@ -20,7 +20,7 @@ class PlayerManager:
         if PlayerManager.__hasInit:
             raise Exception('There should only be one instance of the PlayerManager')
         PlayerManager.__hasInit = True
-        PlayerManager.instance = self
+        #PlayerManager.instance = self
 
         self.__players: Dict[str, Player] = {}
 
@@ -28,6 +28,9 @@ class PlayerManager:
         self.__playerTurnOrder: List[str] = []
 
         self.__playerTurnOrderIterator: Optional[Iterator[str]] = None
+    
+    def getPlayerCount(self) -> int:
+        return len(self.__players)
     
     def startGame(self):
         '''
@@ -95,6 +98,9 @@ class PlayerManager:
         if self.__gameStarted:
             raise Exception('Cannot add player after game has started')
 
+        if p.token in self.__players:
+            raise KeyError(f"Token already exist: '{p.token}' for player '{p.name}'")
+
         self.__players[p.token] = p
         # players should always have unique tokens
     
@@ -134,4 +140,4 @@ class PlayerManager:
         return iter(self.__players.values())
     
 
-PlayerManager() # instantiate the one player manager instance
+# PlayerManager() # instantiate the one player manager instance

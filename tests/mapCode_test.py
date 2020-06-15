@@ -6,7 +6,7 @@ import sys
 newPath = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(newPath)
 
-from gameServer.mapCode.util import HexPoint, Biome
+from gameServer.extraCode.location import HexPoint, Biome
 
 class TestHexPoint:
     def testBasics(self):
