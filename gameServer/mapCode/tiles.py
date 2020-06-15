@@ -89,18 +89,15 @@ class Tile:
         Call this method on all tiles when the die
         are rolled for giving resources.
         '''
-        raise NotImplementedError("Needs a player class first")
+        if not isinstance(valueRolled, int):
+            raise TypeError(f'Expected int but got {type(valueRolled)} in argument valueRolled')
+        if valueRolled < 2 or valueRolled > 12:
+            raise ValueError(f'Invalid dieValue, got {valueRolled} but expected in range [2, 12], inclusive')
 
-        # if not isinstance(valueRolled, int):
-        #     raise TypeError(f'Expected int but got {type(valueRolled)} in argument valueRolled')
-        
-        # if valueRolled < 2 or valueRolled > 12:
-        #     raise ValueError(f'Invalid dieValue, got {valueRolled} but expected in range [2, 12], inclusive')
+        if self.__isBlockedByRobber:
+            # nothing is produced if robbers are here
+            return
 
-        # if self.__isBlockedByRobber:
-        #     # nothing is produced if robbers are here
-        #     return
-
-        # if valueRolled == self.__diceValue:
-        #     for s in self.__settlementList:
-        #         s.harvestResource(self._biome)
+        if valueRolled == self.__diceValue:
+            for s in self.__settlementList:
+                s.harvestResource(self._biome)

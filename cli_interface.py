@@ -206,14 +206,15 @@ def main(stdscr):
                     g.nextTurn()
                 except ActionError as e:
                     stdscr.addstr(0, 0, f"SettlersPy: Problem: {e}")
+                else:
+                    print(f"switched turn {g.currentTurn.currentPlayer.name}", file=log)
                 stdscr.clear()
             elif s == 'place s':
                 if len(g.currentTurn.currentPlayer.inventory.ownedPointFeatures) == 0:
                     stdscr.addstr(0, 0, f"SettlersPy: Problem: You own no settlements or cities")
                     continue
                 try:
-                    g.currentTurn.currentPlayer.inventory.ownedPointFeatures[0].place(atPos, g.currentTurn)
-                    g.currentTurn.currentPlayer.inventory.placePointFeature(0)
+                    g.currentTurn.currentPlayer.inventory.placePointFeature(0, atPos, g.currentTurn)
                 except ActionError as e:
                     stdscr.addstr(0, 0, f"SettlersPy: Problem: {e}")
             elif s == 'place r':
@@ -223,8 +224,7 @@ def main(stdscr):
 
                 if roadTmpPointHolder is not None:
                     try:
-                        g.currentTurn.currentPlayer.inventory.ownedLineFeatures[0].place(roadTmpPointHolder, atPos, g.currentTurn)
-                        g.currentTurn.currentPlayer.inventory.placeLineFeature(0)
+                        g.currentTurn.currentPlayer.inventory.placeLineFeature(0, roadTmpPointHolder, atPos, g.currentTurn)
                         roadTmpPointHolder = None
                     except ActionError as e:
                         stdscr.addstr(0, 0, f"SettlersPy: Problem: {e}")

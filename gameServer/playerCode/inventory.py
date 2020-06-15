@@ -2,10 +2,12 @@ from __future__ import annotations
 from typing import Dict, List, TYPE_CHECKING
 
 from ..extraCode.location import Biome, Resource
+from ..extraCode.util import ActionError
 
 if TYPE_CHECKING:
     from ..mapCode.pointMapFeatures import Settlement
     from ..mapCode.lineMapFeatures import Road
+    from ..extraCode.location import HexPoint
     from .turn import Turn
 
 class Inventory:
@@ -76,10 +78,26 @@ class ExpandedInventory(Inventory):
     def ownedLineFeatures(self) -> List[Road]:
         return self.__ownedLineFeatures
     
-    def placePointFeature(self, index: int):
+    def placePointFeature(self, index: int, point: HexPoint, turn: Turn):
+        if len(self.__ownedPointFeatures) == 0:
+            raise ActionError("You have no settlements or cities to place")
+        if index < 0 or index >= len(self.__ownedPointFeatures):
+            raise IndexError(f"Index out of bounds: {index}")
+
+        s = self.__ownedPointFeatures[index]
+        s.place(point, turn)
+
         self.__ownedPointFeatures.pop(index)
     
-    def placeLineFeature(self, index: int):
+    def placeLineFeature(self, index: int, point1: HexPoint, point2: HexPoint, turn: Turn):
+        if len(self.__ownedLineFeatures) == 0:
+            raise ActionError("You have no roads to place")
+        if index < 0 or index >= len(self.__ownedLineFeatures):
+            raise IndexError(f"Index out of bounds: {index}")
+
+        r = self.__ownedLineFeatures[index]
+        r.place(point1, point2, turn)
+
         self.__ownedLineFeatures.pop(index)
     
     def __str__(self) -> str:
