@@ -11,7 +11,7 @@ from gameServer.playerCode.player import Player
 class TestPlayer:
 
     def testBasic(self):
-        p = Player('alpha', None)
+        p = Player('alpha', None, 'blue')
 
         assert p.name == 'alpha'
         assert p.connection is None
