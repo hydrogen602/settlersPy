@@ -99,7 +99,7 @@ def drawMap(gameMap: GameMap, scr):
             # same for row
             setPoint(midRow, midCol, 'X', curses.color_pair(colorCode))
 
-    print(gameMap.toJsonSerializable(), file=log)
+    print(gameMap.getAsJson(), file=log)
         
 
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import List, Dict, Tuple, Optional, TYPE_CHECKING, Union
+import json
 
 if TYPE_CHECKING:
     from ..playerCode.player import Player
@@ -9,7 +10,7 @@ if TYPE_CHECKING:
 from .tiles import Tile
 from .pointMapFeatures import Settlement
 from .lineMapFeatures import Road
-from ..extraCode import HexPoint, JsonSerializable, ActionError
+from ..extraCode import HexPoint, JsonSerializable, ActionError, customJsonEncoder
 
 class GameMap(JsonSerializable):
 
@@ -187,11 +188,11 @@ class GameMap(JsonSerializable):
     
     def toJsonSerializable(self):
         return {
-            'tiles': [t.toJsonSerializable() for t in self.__tiles.values()],
-            'points': [e.toJsonSerializable() for e in self.__pointFeatures.values()],
-            'lines': [e.toJsonSerializable() for e in self.__lineFeatures.values()],
+            'tiles': self.tiles,
+            'points': self.pointFeatures,
+            'lines': self.lineFeatures,
             **super().toJsonSerializable()
         }
 
-    # def getAsJson(self):
-    #     return json.dumps(self, cls=customJsonEncoder)
+    def getAsJson(self):
+        return json.dumps(self, cls=customJsonEncoder)

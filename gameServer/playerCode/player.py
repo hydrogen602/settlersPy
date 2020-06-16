@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Set, TYPE_CHECKING
+from typing import Set, TYPE_CHECKING, Dict
 from secrets import token_urlsafe
 
 from .inventory import ExpandedInventory
@@ -163,3 +163,10 @@ class Player:
         returns `self.__str__()`
         '''
         return self.__str__()
+    
+    def toJsonSerializable(self) -> Dict[str, object]:
+        return {
+            'name': self.__name,
+            'token': self.__token,
+            'color': self.__color
+        }
