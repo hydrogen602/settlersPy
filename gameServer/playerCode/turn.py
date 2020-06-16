@@ -2,11 +2,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional
 
+from ..extraCode.util import JsonSerializable
+
 if TYPE_CHECKING:
     from ..mapCode.gameMap import GameMap
     from .player import Player
 
-class Turn:
+class Turn(JsonSerializable):
 
     def __init__(self, gameMap: GameMap, roundNum: int, currentPlayer: Player, dieValue: Optional[int] = None):
         assert dieValue is None or isinstance(dieValue, int)
@@ -36,3 +38,11 @@ class Turn:
     @property
     def dieValue(self) -> Optional[int]:
         return self.__dieValue
+    
+    def toJsonSerializable(self):
+        return {
+            'roundNum': self.__roundNum,
+            'currentPlayer': self.__currentPlayer,
+            'dieValue': self.__dieValue,
+            **super().toJsonSerializable()
+        }

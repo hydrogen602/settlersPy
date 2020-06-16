@@ -1,7 +1,8 @@
 
 from typing import Iterator, Optional
+import json
 
-from .extraCode.util import AlreadySetupException, NotSetupException, roll2Die
+from .extraCode.util import AlreadySetupException, NotSetupException, roll2Die, JsonSerializable, customJsonEncoder
 from .playerCode.playerManager import PlayerManager
 from .playerCode.player import Player
 from .playerCode.turn import Turn
@@ -9,7 +10,7 @@ from .mapCode.gameMap import GameMap
 from .mapCode.lineMapFeatures import Road
 from .mapCode.pointMapFeatures import Settlement
 
-class Game:
+class Game(JsonSerializable):
 
     def __init__(self, gameMap: GameMap):
         self.__gameStarted: bool = False
@@ -91,3 +92,14 @@ class Game:
             nextPlayer = next(self.__playerTurnOrderIterator)
         
         self.__newTurn(nextPlayer)
+    
+    def toJsonSerializable(self):
+        return {
+            'players': list(self.__playerManager),
+            'gameMap': self.__gameMap,
+            'gameStarted': self.__gameStarted,
+            **super().toJsonSerializable()
+        }
+
+    def getAsJson(self):
+        return json.dumps(self, cls=customJsonEncoder)

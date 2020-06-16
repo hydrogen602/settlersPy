@@ -38,6 +38,21 @@ else {
     button.onclick = setup
 }
 
+function startGame() {
+    ConnectionManager.instance.send({'debug': 'startGame'});
+
+    (<HTMLElement>document.getElementById("startBanner")).hidden = true;
+}
+
+const maybeButtonStartGame = document.getElementById("startGame");
+if (maybeButtonStartGame == null) {
+    throw new Error("missing submit button");
+}
+else {
+    const button = <HTMLElement>maybeButtonStartGame;
+    button.onclick = startGame
+}
+
 // ctx.fillStyle = 'black';
 // ctx.fillRect(currLocation.x, currLocation.y, 10, 10); 
 
