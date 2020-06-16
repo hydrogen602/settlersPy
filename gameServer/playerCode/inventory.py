@@ -40,9 +40,11 @@ class Inventory:
         if not isinstance(resourceType, Resource):
             raise TypeError(f"Expected type Resource but got type {type(resourceType)}")
 
+        if self.__inventory[resourceType] < count:
+            raise ValueError(f'Asked for {count} of {resourceType.name}, but the inventory only has {self.__inventory[resourceType]}')
+        
         self.__inventory[resourceType] -= count
-        if self.__inventory[resourceType] < 0:
-            raise ValueError('negative value in inventory')
+        
     
     def totalResourceCount(self) -> int:
         return sum(self.__inventory.values())

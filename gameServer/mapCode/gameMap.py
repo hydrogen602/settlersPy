@@ -82,11 +82,15 @@ class GameMap(JsonSerializable):
         Raises a `KeyError` if no tile exists at position. 
         '''
 
-        newTile = self.getTile(position) # raises KeyError
+        newTile = self.getTile(position)
         # if the tile does not exist, nothing else should change about the map
+        if newTile is None:
+            return ActionError("No tile found at given position")
 
         if self.__robberPosition is not None:
-            oldTile = self.getTile(self.__robberPosition) 
+            oldTile = self.getTile(self.__robberPosition)
+            if oldTile is None:
+                raise RuntimeError("This shouldn't happen")
             oldTile.robberDeparts()
         
         newTile.robberArrives()
@@ -104,15 +108,22 @@ class GameMap(JsonSerializable):
             raise KeyError(f'A tile already exists at postion {key}')
         self.__tiles[key] = elem
 
-    def getTile(self, position: HexPoint) -> Tile:
+    def getTile(self, position: HexPoint) -> Optional[Tile]:
         '''
         Fetches a tile from the map given the postion.
-        Raises a `KeyError` if the tile does not exist.
+        Returns `None` if the tile does not exist
         '''
         key = position.getAsTuple()
         if key not in self.__tiles:
-            raise KeyError(f'No tile found at postion {key}')
+            return None
+            #raise KeyError(f'No tile found at postion {key}')
         return self.__tiles[position.getAsTuple()]
+    
+    def __contains__(self, position: HexPoint) -> bool:
+        '''
+        For checking if a tile exists at some point
+        '''
+        return position.getAsTuple() in self.__tiles
 
     def addPointElement(self, elem: Settlement, turn: Turn):
         point: Tuple[int, int] = elem.position.getAsTuple()
@@ -143,7 +154,21 @@ class GameMap(JsonSerializable):
             
             if not foundOwnedRoad:
                 raise ActionError("Settlements must be connected to an owned road")
-                
+        
+        adjacentTiles: Tuple[HexPoint, HexPoint, HexPoint] = elem.position.getNeighboringTiles()
+        
+        foundOne = False
+        for hp in adjacentTiles:
+            t = self.getTile(hp)
+            if t is not None:
+                foundOne = True
+                t.addSettlement(elem)
+
+            pass # self.g
+        
+        if not foundOne:
+            # not next to any tiles, so in the ocean
+            raise ActionError("Settlement not placed on map")
 
         self.__pointFeatures[point] = elem
     

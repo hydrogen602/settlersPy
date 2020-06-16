@@ -1,0 +1,77 @@
+{
+    "tiles": [
+        {
+            "biome": "mountain",
+            "diceValue": 10,
+            "location": {
+                "row": 0,
+                "col": 0,
+                "__name__": "HexPoint"
+            },
+            "__name__": "Tile"
+        },
+        {
+            "biome": "farmland",
+            "diceValue": 8,
+            "location": {
+                "row": 2,
+                "col": 0,
+                "__name__": "HexPoint"
+            },
+            "__name__": "Tile"
+        },
+        {
+            "biome": "farmland",
+            "diceValue": 3,
+            "location": {
+                "row": 0,
+                "col": 2,
+                "__name__": "HexPoint"
+            },
+            "__name__": "Tile"
+        },
+        {
+            "biome": "grassland",
+            "diceValue": 10,
+            "location": {
+                "row": 2,
+                "col": 2,
+                "__name__": "HexPoint"
+            },
+            "__name__": "Tile"
+        },
+        {
+            "biome": "mountain",
+            "diceValue": 5,
+            "location": {
+                "row": -1,
+                "col": 1,
+                "__name__": "HexPoint"
+            },
+            "__name__": "Tile"
+        },
+        {
+            "biome": "mountain",
+            "diceValue": 8,
+            "location": {
+                "row": 1,
+                "col": 1,
+                "__name__": "HexPoint"
+            },
+            "__name__": "Tile"
+        },
+        {
+            "biome": "grassland",
+            "diceValue": 5,
+            "location": {
+                "row": 3,
+                "col": 1,
+                "__name__": "HexPoint"
+            },
+            "__name__": "Tile"
+        }
+    ],
+    "points": [],
+    "lines": [],
+    "__name__": "GameMap"
+}

@@ -1,9 +1,9 @@
 from typing import Union, Tuple, List
 import json
 
-from autobahn.twisted.websocket import WebSocketServerProtocol, WebSocketServerFactory
-from twisted.python import log
-from twisted.internet import reactor
+from autobahn.twisted.websocket import WebSocketServerProtocol, WebSocketServerFactory # type: ignore
+from twisted.python import log # type: ignore
+from twisted.internet import reactor # type: ignore
 
 from .. import playerCode
 

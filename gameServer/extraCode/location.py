@@ -86,6 +86,45 @@ class HexPoint:
             third = HexPoint(row=self.row, col=self.col - 1)
         
         return first, second, third
+    
+    def getNeighboringTiles(self) -> Tuple[HexPoint, HexPoint, HexPoint]:
+        '''
+        Get all the tiles adjacent to a point
+        '''
+        # right
+        #           * --- *
+        #          /       \
+        #   * --- *         *
+        #  /       \\      /
+        # *         X === *
+        #  \       //      \
+        #   * --- *         *
+        #          \       /
+        #           * --- *
+
+        # left
+        #   * --- *
+        #  /       \
+        # *         * --- *
+        #  \       //      \
+        #   * === X         *
+        #  /       \\      /
+        # *         * --- *
+        #  \       /
+        #   * --- *
+
+        if abs(self.col % 2) == abs(self.row % 2):
+            # two right, one left
+            first = HexPoint(row=self.row, col=self.col)
+            second = HexPoint(row=self.row-2, col=self.col)
+            third = HexPoint(row=self.row-1, col=self.col-1)
+        else:
+            # two left, one right
+            first = HexPoint(row=self.row-1, col=self.col)
+            second = HexPoint(row=self.row, col=self.col-1)
+            third = HexPoint(row=self.row-2, col=self.col-1)
+        
+        return first, second, third
 
 
 class Resource(Enum):

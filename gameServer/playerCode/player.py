@@ -52,12 +52,16 @@ class Player:
         if self.__canMoveRobber:
             raise ActionError("Robber needs to be moved")
     
-    def canMoveRobber(self):
+    def playerMustMoveRobber(self):
         '''
         Called whenever the player needs to move the robber.
         Ex: if a 7 is rolled or a knight is played
         '''
         self.__canMoveRobber = True
+    
+    @property
+    def canMoveRobber(self) -> bool:
+        return self.__canMoveRobber
     
     def moveRobber(self, point: HexPoint, turn: Turn):
         '''

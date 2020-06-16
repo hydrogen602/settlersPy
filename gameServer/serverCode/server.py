@@ -15,14 +15,8 @@ import json
 import secrets
 from typing import Callable, Tuple, Union, List, Optional
 
-# importing the necessary objects
-# autobahn does websocket stuff, but relies on twisted
-from autobahn.twisted.websocket import WebSocketServerProtocol, WebSocketServerFactory
-
-# twisted does asynchronous code execution needed for websockets
-from twisted.python import log
-from twisted.internet import reactor
-
+from twisted.python import log # type: ignore
+from twisted.internet import reactor # type: ignore
 
 from .. import playerCode
 from .. import extraCode
