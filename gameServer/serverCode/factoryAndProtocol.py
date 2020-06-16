@@ -1,34 +1,12 @@
-#!/usr/bin/env python3.7
-
-'''
-Server code for setting up a WebSocket server, handling connections, and verifying
-connection details.
-
-This code borrows from an earlier project with the CISS ROV Robotics Team
-
-
-Required 3rd-party libraries:
-`autobahn`
-`twisted`
-'''
-import sys
+from typing import Union, Tuple, List
 import json
-import secrets
 
-# importing the necessary objects
-# autobahn does websocket stuff, but relies on twisted
-from autobahn.twisted.websocket import \
-    WebSocketServerProtocol, WebSocketServerFactory
-
-# twisted does asynchronous code execution needed for websockets
+from autobahn.twisted.websocket import WebSocketServerProtocol, WebSocketServerFactory
 from twisted.python import log
 from twisted.internet import reactor
 
-from typing import Callable, Tuple, Union, List
+from .. import playerCode
 
-from tools import typeCheck
-import mechanics
-from message import Message
 
 class ServerProtocol(WebSocketServerProtocol):
     '''
@@ -58,7 +36,7 @@ class ServerProtocol(WebSocketServerProtocol):
             clientTypeRequest = clientTypeRequest[1:]
 
         # tell the factory to remember the connection
-        self.__token = self.factory.register(self, clientTypeRequest)
+        self.__token = self.factory.register(self, clientTypeRequest) # pylint: disable=no-member
 
     def onOpen(self):
         print('WebSocket connection open')
@@ -67,7 +45,7 @@ class ServerProtocol(WebSocketServerProtocol):
         print('WebSocket connection closed: {0}'.format(reason))
 
         # tell the factory that this connection is dead
-        self.factory.unregister(self)
+        self.factory.unregister(self) # pylint: disable=no-member
 
     def onMessage(self, msg, isBinary):
         msg = msg.decode()
@@ -75,11 +53,11 @@ class ServerProtocol(WebSocketServerProtocol):
         if msg.lower() == 'hi':
             self.sendMessage(b"Hello")
 
-            msg = json.dumps({'token': self.factory.getToken(self)})
+            msg = json.dumps({'token': self.factory.getToken(self)}) # pylint: disable=no-member
             self.sendMessage(msg.encode())
 
         elif msg == 'history':
-            self.factory.sendHistory(self)
+            self.factory.sendHistory(self) # pylint: disable=no-member
 
         else:
             try:
@@ -87,9 +65,12 @@ class ServerProtocol(WebSocketServerProtocol):
                 if type(obj) == 'str':
                     raise json.decoder.JSONDecodeError
 
-                m = Message(mechanics.PlayerManager.instance.getPlayer(self.token), obj, self.factory)
+                print("Got json msg:", obj)
 
-                self.factory.callbackHandler(m, self)   
+                self.factory.onMessage(obj) # pylint: disable=no-member
+                #m = Message(mechanics.PlayerManager.instance.getPlayer(self.token), obj, self.factory)
+
+                #self.factory.callbackHandler(m, self)   
             except json.decoder.JSONDecodeError:
                 print("Error: Invalid JSON:", msg)
 
@@ -99,8 +80,7 @@ class ServerFactory(WebSocketServerFactory):
     Keeps track of all connections and relays data to other clients
     '''
 
-    def __init__(self, url, f, callbackFunc: Callable[[str, dict], str], 
-                 init_msgs: Tuple[str] = (), playerManage: mechanics.PlayerManager = None):
+    def __init__(self, url, f, init_msgs: List[str], playerManage: playerCode.PlayerManager, serverCallback):
         '''
         Initializes the class
         Args:
@@ -109,25 +89,16 @@ class ServerFactory(WebSocketServerFactory):
         
         The playerManager should be shared with the GameManager
         '''
-        typeCheck(playerManage, mechanics.PlayerManager)
 
-        self.playerManager: mechanics.PlayerManager = playerManage
+        self.playerManager: playerCode.PlayerManager = playerManage
 
         self.file = f
 
-        self.callbackFunc = callbackFunc
-
         self.history = list(init_msgs)
 
+        self.serverCallback = serverCallback
+
         WebSocketServerFactory.__init__(self, url)
-    
-    def callbackHandler(self, msg: Message, client: ServerProtocol):
-        '''
-        call the callbackFunc to notify the game manager of a new
-        message
-        '''
-        jsonMsg = self.callbackFunc(msg)
-        self.broadcastToAll(jsonMsg)
     
     def getToken(self, client: ServerProtocol) -> str:
         t = client.token
@@ -139,6 +110,9 @@ class ServerFactory(WebSocketServerFactory):
     def sendHistory(self, client):
         for msg in self.history:
             client.sendMessage(msg.encode())
+    
+    def onMessage(self, obj: dict):
+        self.serverCallback(obj)
 
     def register(self, client: ServerProtocol, clientTypeRequest: str) -> Union[str, None]:
         '''
@@ -159,15 +133,19 @@ class ServerFactory(WebSocketServerFactory):
             print('name missing')
             client.sendHttpErrorResponse(404, 'Name missing')
             #client.sendClose()
+            return None
+
         
-        tmp = clientTypeRequest.strip()
-        tmp = tmp.split('/')
-        l = len(tmp)
+        tmp: str = clientTypeRequest.strip()
+        tmpLs = tmp.split('/')
+        del tmp
+
+        l = len(tmpLs)
         if l == 1:
-            name = tmp[0]
+            name = tmpLs[0]
         elif l == 2:
-            name = tmp[0]
-            token = tmp[1]
+            name = tmpLs[0]
+            token = tmpLs[1]
         else:
             print('name missing')
             client.sendHttpErrorResponse(404, 'Name missing')
@@ -176,27 +154,30 @@ class ServerFactory(WebSocketServerFactory):
         
         # print('clientTypeRequest =', len(clientTypeRequest.strip().split('/')))
         
-        p: mechanics.Player = None
-
         if token is None:
-            p = mechanics.Player(name, client)
-            print("New player:", p.token)
+            if self.playerManager.isGameStarted():
+                print('game already started, can\'t join')
+                client.sendHttpErrorResponse(403, 'Game already started, can\'t join')
+                return None
+            
+            p: playerCode.Player = playerCode.Player(name, client, color='green')
+            print("New player:", p)
             self.playerManager.addPlayer(p)
 
-        if token is not None:
+            return p.token
+
+        else:
             if token in self.playerManager:
                 print("Reconnecting player:", token)
-                p = self.playerManager.getPlayer(token)
+                p = self.playerManager[token]
                 p.reconnect(client)
             else:
                 print("Unknown token:", token)
                 client.sendHttpErrorResponse(403, 'Unknown token given')
                 #client.sendClose()
                 return None
-                # p = mechanics.Player(name, client)
-                # self.pm.addPlayer(p)
         
-        return p.token
+            return p.token
 
     def unregister(self, client):
         token = client.token
@@ -241,64 +222,3 @@ class ServerFactory(WebSocketServerFactory):
             p = self.playerManager.getPlayer(token)
             if p is not None and p.isConnected():
                 p.connection.sendMessage(encoded)
-        
-
-class Server:
-
-    def __init__(self, ip: str = '127.0.0.1', port: int = 5000, callbackFunc: Callable[[Message], str] = None, 
-                 init_msgs: Tuple[str] = (), playerManage: mechanics.PlayerManager = None):
-        '''
-        A class for managing the code for running the server.
-        To setup the server, run `s = Server()`,
-        and then run `s.run()` to start it.
-
-        Requires keyword argument `callbackFunc` which should
-        be of type `Callable[[str, dict], str]`. This is
-        for handling incoming messages and should return
-        a status update to all clients. The return type
-        should be type `str` and be json. The
-        arguments are a unique id for each player as a `str`
-        and the message from that player as a `dict`
-        '''
-        self.ip = ip
-        self.port = port
-
-        if not callbackFunc:
-            # def dummyFunc(self, d: dict) -> str:
-            #     print('[callbackFunc]', d)
-            #     return '{}'
-
-            # callbackFunc = dummyFunc
-
-            raise TypeError('Missing keyword argument "callbackFunc" which should be of type "Callable[[dict], str]"')
-
-        self.file = open('gameMsgLog.log', 'w')
-
-        # Setup server factory
-        self.server = ServerFactory(u'ws://{}:{}'.format(ip, port), self.file, callbackFunc, init_msgs=init_msgs, playerManage=playerManage)
-        self.server.protocol = ServerProtocol
-
-        # setup listening server
-        reactor.listenTCP(port, self.server)
-
-    def run(self):
-        '''
-        Run the server. This method will not return
-        until the server is ended by an Exception like ^C.
-
-        init_msgs are for messages that should be send to the player
-        immediately, like the game map for example.
-        '''
-        # display debug information to stdout for now
-        log.startLogging(sys.stdout)  # TODO: replace with log file (maybe)
-
-        try:
-            # start listening for and handling connections
-            # task.deferLater(reactor, 1, lambda: [self.server.broadcastToAll(msg) for msg in init_msgs])
-            reactor.run()
-        except KeyboardInterrupt:
-            pass
-        finally:
-            self.file.close()
-            # if logs are sent to a file instead of stdout
-            # the file should be closed here with f.close()
