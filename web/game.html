@@ -73,6 +73,20 @@
                 background-color: rgba(0, 0, 0, 0.5);
             }
 
+            #startBanner {
+                position: absolute;
+                top: 0px;
+                text-align: center;
+                z-index: 88;
+                width: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+            }
+
+            #startGame {
+                font-size: large;
+                margin: 1%;
+            }
+
             /* from https://www.w3schools.com/howto/howto_css_loader.asp */
             .loader {
                 border: 4px solid #f3f3f3; /* Light grey */
@@ -96,11 +110,15 @@
         <div class="cover" id="introBannerCover">
             <div id="introBanner">
                 <h2>Settlers Game</h2>
-                <p>Name: <input id="nameInput" style="display: inline;" type="text"></p>
-                <p>Server IP: <input id="ipAddrInput" style="display: inline;" type="url"></p>
-                <p>Server Port: <input id="portInput" style="display: inline;" type="number"></p>
+                <p>Name: <input id="nameInput" style="display: inline;" type="text" value="testPlayer"></p>
+                <p>Server IP: <input id="ipAddrInput" style="display: inline;" type="url" value="localhost"></p>
+                <p>Server Port: <input id="portInput" style="display: inline;" type="number" value="5000"></p>
                 <button id="submitInput">Join Game</button>
             </div>
+        </div>
+
+        <div id="startBanner">
+            <button id="startGame">Start Game</button>
         </div>
 
         <div id="control">

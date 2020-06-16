@@ -9,7 +9,6 @@ import { JsonParser } from "../jsonParser";
 import { ctx } from "../graphics/Screen";
 
 export class GameMap {
-    private sz: number;
     private tilesArr: Array<Tile>;
     private settlementsArr: Array<Settlement>;
     private roadsArr: Array<Road>;
@@ -20,13 +19,11 @@ export class GameMap {
     // offset of map on screen in order to move around the map
     // currLocation: RelPoint;
 
-    constructor(size: number, ctx: CanvasRenderingContext2D, tiles: Array<Tile>) {
+    constructor(ctx: CanvasRenderingContext2D, tiles: Array<Tile>) {
         GameMap.instance = this;
 
-        this.sz = size;
         this.ctx = ctx;
 
-        defined(this.sz);
         defined(this.ctx);
 
         this.tilesArr = tiles;
@@ -40,7 +37,6 @@ export class GameMap {
     static fromJson(data: object): GameMap {
         JsonParser.requireName(data, 'GameMap');
 
-        const n = JsonParser.requireNumber(data, '_GameMap__size');
         const tilesArr_tmp: Array<any> = JsonParser.requireArray(data, 'tiles');
 
         const tilesArr: Array<Tile> = [];
@@ -48,7 +44,7 @@ export class GameMap {
             tilesArr.push(Tile.fromJson(t));
         }
 
-        return new GameMap(n, ctx, tilesArr);
+        return new GameMap(ctx, tilesArr);
     }
 
     getTiles() {
@@ -67,18 +63,18 @@ export class GameMap {
         return this.ctx;
     }
 
-    isWithinMap(h: HexPoint): boolean {
-        const n = this.sz;
+    // isWithinMap(h: HexPoint): boolean {
+    //     const n = this.sz;
 
-        if (h.x < 0 || h.x > 2 * n - 1) {
-            return false;
-        }
-        const yAllowance = Math.abs(h.x - n + 0.5) - n + 0.5;
-        if (h.y < yAllowance || h.y > 2 * n - yAllowance) {
-            return false;
-        }
-        return true;
-    }
+    //     if (h.x < 0 || h.x > 2 * n - 1) {
+    //         return false;
+    //     }
+    //     const yAllowance = Math.abs(h.x - n + 0.5) - n + 0.5;
+    //     if (h.y < yAllowance || h.y > 2 * n - yAllowance) {
+    //         return false;
+    //     }
+    //     return true;
+    // }
 
     getAllowedRobberPlace(a: AbsPoint): Tile | undefined {
         let currTile = GameManager.instance.getRobber().getTile()
@@ -92,9 +88,9 @@ export class GameMap {
     }
 
     isAllowedSettlement(h: HexPoint): boolean {
-        if (!this.isWithinMap(h)) {
-            return false;
-        }
+        // if (!this.isWithinMap(h)) {
+        //     return false;
+        // }
 
         // console.log("new?", h)
         const conflicts = this.settlementsArr.filter(s => {
@@ -146,12 +142,12 @@ export class GameMap {
             return false;
         }
 
-        if (!this.isWithinMap(p1)) {
-            return false;
-        }
-        if (!this.isWithinMap(p2)) {
-            return false;
-        }
+        // if (!this.isWithinMap(p1)) {
+        //     return false;
+        // }
+        // if (!this.isWithinMap(p2)) {
+        //     return false;
+        // }
 
         // next to road or settlement owned
         const currPlayer = GameManager.instance.getSelf();

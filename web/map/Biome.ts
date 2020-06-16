@@ -53,17 +53,17 @@ export const biomes: Array<Biome> = [Desert, Grassland, Forest, Mountain, Farmla
 
 export function getBiomeByName(name: string): Biome {
     switch (name) {
-        case 'Desert':
+        case 'desert':
             return Desert;
-        case 'Grassland':
+        case 'grassland':
             return Grassland;
-        case 'Forest':
+        case 'forest':
             return Forest;
-        case 'Mountain':
+        case 'mountain':
             return Mountain;
-        case 'Farmland':
+        case 'farmland':
             return Farmland;
-        case 'Quarry':
+        case 'quarry':
             return Quarry;
     
         default:
