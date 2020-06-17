@@ -19,14 +19,14 @@ export class GameMap {
     // offset of map on screen in order to move around the map
     // currLocation: RelPoint;
 
-    constructor(ctx: CanvasRenderingContext2D, tiles: Array<Tile>) {
+    constructor(ctx: CanvasRenderingContext2D) {
         GameMap.instance = this;
 
         this.ctx = ctx;
 
         defined(this.ctx);
 
-        this.tilesArr = tiles;
+        this.tilesArr = [];
 
         defined(this.tilesArr);
 
@@ -34,7 +34,8 @@ export class GameMap {
         this.roadsArr = [];
     }
 
-    static fromJson(data: object): GameMap {
+    updateFromJson(data: object) {
+
         JsonParser.requireName(data, 'GameMap');
 
         const tilesArr_tmp: Array<any> = JsonParser.requireArray(data, 'tiles');
@@ -44,7 +45,8 @@ export class GameMap {
             tilesArr.push(Tile.fromJson(t));
         }
 
-        return new GameMap(ctx, tilesArr);
+        this.tilesArr = tilesArr;
+
     }
 
     getTiles() {
@@ -234,3 +236,5 @@ export class GameMap {
         });
     }
 }
+
+const tmp = new GameMap(ctx);

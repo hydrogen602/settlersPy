@@ -1,11 +1,12 @@
 
-// import { ctx } from "./graphics/Screen";
+import { ctx } from "./graphics/Screen";
 //import { GameMap } from "./map/GameMap";
 // import { currLocation, maxDistance, centerOfScreen } from "./graphics/Point";
 //import { Player } from "./mechanics/Player";
 // import { EventManager } from "./mechanics/EventManager";
 // import { GameManager } from "./mechanics/GameManager";
 import { ConnectionManager } from "./mechanics/ConnectionManager";
+import { GameMap } from "./map/GameMap";
 
 function main() {
     
@@ -15,7 +16,7 @@ function main() {
 
     //GameManager.instance = new GameManager(m, [new Player('blue', 'Blue Team'), new Player('green', 'Green Team')]);
     
-    //GameManager.instance.draw();
+    GameMap.instance.draw_SHOULD_ONLY_BE_CALLED_BY_GAME_MANAGER();
 }
 
 function setup() {
@@ -24,7 +25,7 @@ function setup() {
     const ip = (<HTMLInputElement>document.getElementById("ipAddrInput")).value;
     const port = (<HTMLInputElement>document.getElementById("portInput")).value;
 
-    const cm = new ConnectionManager(ip, parseInt(port), name);
+    //const cm = new ConnectionManager(ip, parseInt(port), name);
 
     (<HTMLElement>document.getElementById("introBannerCover")).hidden = true;
 }

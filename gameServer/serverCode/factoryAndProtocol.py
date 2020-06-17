@@ -1,4 +1,4 @@
-from typing import Union, Tuple, List
+from typing import Tuple, List, Optional, Union
 import json
 
 from autobahn.twisted.websocket import WebSocketServerProtocol, WebSocketServerFactory # type: ignore
@@ -6,6 +6,7 @@ from twisted.python import log # type: ignore
 from twisted.internet import reactor # type: ignore
 
 from .. import playerCode
+from .. import game
 
 
 class ServerProtocol(WebSocketServerProtocol):
@@ -17,11 +18,18 @@ class ServerProtocol(WebSocketServerProtocol):
     '''
 
     @property
-    def token(self) -> Union[str, None]:
+    def token(self) -> Optional[str]:
         try:
             return self.__token
         except AttributeError:
             return None
+    
+    @property
+    def isOpen(self) -> bool:
+        try:
+            return self.__isOpen
+        except AttributeError:
+            return False
 
     def onConnect(self, request):
 
@@ -40,9 +48,11 @@ class ServerProtocol(WebSocketServerProtocol):
 
     def onOpen(self):
         print('WebSocket connection open')
+        self.__isOpen = True
 
     def onClose(self, wasClean, code, reason):
         print('WebSocket connection closed: {0}'.format(reason))
+        self.__isOpen = False
 
         # tell the factory that this connection is dead
         self.factory.unregister(self) # pylint: disable=no-member
@@ -73,6 +83,11 @@ class ServerProtocol(WebSocketServerProtocol):
                 #self.factory.callbackHandler(m, self)   
             except json.decoder.JSONDecodeError:
                 print("Error: Invalid JSON:", msg)
+    
+    def sendMessage(self, payload: Union[str, bytes], isBinary=False, fragmentSize=None, sync=False, doNotCompress=False):
+        if isinstance(payload, str):
+            payload = payload.encode()
+        return super().sendMessage(payload, isBinary=isBinary, fragmentSize=fragmentSize, sync=sync, doNotCompress=doNotCompress)
 
 
 class ServerFactory(WebSocketServerFactory):
@@ -80,7 +95,7 @@ class ServerFactory(WebSocketServerFactory):
     Keeps track of all connections and relays data to other clients
     '''
 
-    def __init__(self, url, f, init_msgs: List[str], playerManage: playerCode.PlayerManager, serverCallback):
+    def __init__(self, url, f, g: game.Game, serverCallback):
         '''
         Initializes the class
         Args:
@@ -90,11 +105,12 @@ class ServerFactory(WebSocketServerFactory):
         The playerManager should be shared with the GameManager
         '''
 
-        self.playerManager: playerCode.PlayerManager = playerManage
+        self.g: game.Game = g
+        self.playerManager: playerCode.PlayerManager = g.playerManager
 
         self.file = f
 
-        self.history = list(init_msgs)
+        self.history = [g.getAsJson()]
 
         self.serverCallback = serverCallback
 
@@ -110,11 +126,12 @@ class ServerFactory(WebSocketServerFactory):
     def sendHistory(self, client):
         for msg in self.history:
             client.sendMessage(msg.encode())
+        client.sendMessage(self.g.getAsJson()) # latest state of the board
     
     def onMessage(self, obj: dict):
         self.serverCallback(obj)
 
-    def register(self, client: ServerProtocol, clientTypeRequest: str) -> Union[str, None]:
+    def register(self, client: ServerProtocol, clientTypeRequest: str) -> Optional[str]:
         '''
         Called by any new connecting client to address
         whether they are a new player or a reconnecting one.
@@ -155,14 +172,15 @@ class ServerFactory(WebSocketServerFactory):
         # print('clientTypeRequest =', len(clientTypeRequest.strip().split('/')))
         
         if token is None:
-            if self.playerManager.isGameStarted():
+            if self.g.playerManager.isGameStarted():
                 print('game already started, can\'t join')
                 client.sendHttpErrorResponse(403, 'Game already started, can\'t join')
                 return None
             
             p: playerCode.Player = playerCode.Player(name, client, color='green')
             print("New player:", p)
-            self.playerManager.addPlayer(p)
+            self.g.addPlayer(p)
+            self.newNotificationToAll('New Player: ' + p.name)
 
             return p.token
 
@@ -171,6 +189,7 @@ class ServerFactory(WebSocketServerFactory):
                 print("Reconnecting player:", token)
                 p = self.playerManager[token]
                 p.reconnect(client)
+                self.newNotificationToAll(f'{p.name} reconnected')
             else:
                 print("Unknown token:", token)
                 client.sendHttpErrorResponse(403, 'Unknown token given')
@@ -179,15 +198,21 @@ class ServerFactory(WebSocketServerFactory):
         
             return p.token
 
-    def unregister(self, client):
+    def unregister(self, client: ServerProtocol):
         token = client.token
-        if token in self.playerManager:
-            print("Disconnected player:", token)
-            self.playerManager[token].disconnect()
-        elif token is None:
+        if token is None:
             print("Player disconnected before assigned token:", token)
+        elif token in self.playerManager:
+            print("Disconnected player:", token)
+            self.newNotificationToAll(f'{self.playerManager[token].name} disconnected')
+            self.playerManager[token].disconnect()            
         else:
             print("Disconnected player, but token not found?:", token)
+    
+    def newNotificationToAll(self, msg: str):
+        json_msg = { 'type': 'notification', 'content': msg }
+        # special messages have a type and content
+        self.broadcastToAll(json.dumps(json_msg))
     
     def broadcastToAll(self, msg: str): # sourceConnection: ServerProtocol
         '''
@@ -201,7 +226,7 @@ class ServerFactory(WebSocketServerFactory):
         encoded = msg.encode()
 
         for p in self.playerManager:
-            if p.isConnected():
+            if p.isConnected() and p.connection.isOpen:
                 p.connection.sendMessage(encoded)
     
     def broadcastToSome(self, msg: str, tokenList: List[str], writeToHistory: bool = False):
@@ -220,5 +245,5 @@ class ServerFactory(WebSocketServerFactory):
         
         for token in tokenList:
             p = self.playerManager.getPlayer(token)
-            if p is not None and p.isConnected():
+            if p is not None and p.isConnected() and p.connection.isOpen:
                 p.connection.sendMessage(encoded)

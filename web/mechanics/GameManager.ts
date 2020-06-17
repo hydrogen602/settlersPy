@@ -1,6 +1,6 @@
 import { Player } from "./Player";
 import { GameMap } from "../map/GameMap";
-import { defined, assert, rollTwoDice } from "../util";
+import { defined } from "../util";
 import { MessageBoard } from "../graphics/MessageBoard";
 import { RelPoint } from "../graphics/Point";
 import { Robber } from "./Robber";
@@ -90,53 +90,6 @@ export class GameManager {
 
         ConnectionManager.instance.send({'action': 'nextTurn'});
     }
-
-    //playTurn() {
-        
-
-        // this.nextTurn();
-
-        // this.msgBoard.clear();
-        // this.errBoard.clear();
-        // this.map.getTiles().forEach(t => {
-        //     t.deactivate();
-        // });
-
-
-        //this.msgBoard.print("New turn: " + p.getName());
-        // if (this.isEarlyRound()) {
-        //     // game start phase
-        //     // each player places one settlement
-
-        //     this.msgBoard.print("Place a settlement");
-        //     this.msgBoard.print("Then place a road");
-
-        //     this.mayPlaceSettlement = true;
-        //     this.mayPlaceRoad = true;
-        // }
-        // else {
-        //     // // post init
-        //     // const dieRoll = rollTwoDice();
-        //     // this.msgBoard.print("Die Rolled: " + dieRoll);
-        //     // if (dieRoll == 7) {
-        //     //     this.mayPlaceRobber = true;
-        //     // }
-        //     // else {
-        //     //     this.map.getTiles().forEach(t => {
-        //     //         t.activateIfDiceValueMatches(dieRoll, this.map.getSettlements());
-        //     //     });
-        //     // }
-
-        //     this.draw();
-        // }
-
-    //}
-
-    // debugPlayers() {
-    //     this.players.forEach(p => {
-    //         p.debug();
-    //     });
-    // }
 
     print(msg: string) {
         this.msgBoard.print(msg);

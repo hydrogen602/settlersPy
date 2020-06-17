@@ -56,8 +56,7 @@ class Server:
         self.server = ServerFactory(
             u'ws://{}:{}'.format(ip, port), 
             self.file, 
-            init_msgs=[self.g.gameMap.getAsJson()], 
-            playerManage=self.g.playerManager, 
+            g=self.g,
             serverCallback=self.callback
             )
         self.server.protocol = ServerProtocol
