@@ -1,4 +1,4 @@
-from typing import Tuple, List, Optional, Union
+from typing import Tuple, List, Optional, Union, Callable
 import json
 
 from autobahn.twisted.websocket import WebSocketServerProtocol, WebSocketServerFactory # type: ignore
@@ -77,7 +77,7 @@ class ServerProtocol(WebSocketServerProtocol):
 
                 print("Got json msg:", obj)
 
-                self.factory.onMessage(obj) # pylint: disable=no-member
+                self.factory.onMessage(obj, self) # pylint: disable=no-member
                 #m = Message(mechanics.PlayerManager.instance.getPlayer(self.token), obj, self.factory)
 
                 #self.factory.callbackHandler(m, self)   
@@ -95,7 +95,7 @@ class ServerFactory(WebSocketServerFactory):
     Keeps track of all connections and relays data to other clients
     '''
 
-    def __init__(self, url, f, g: game.Game, serverCallback):
+    def __init__(self, url, f, g: game.Game, serverCallback: Callable[[dict, ServerProtocol], None]):
         '''
         Initializes the class
         Args:
@@ -128,8 +128,8 @@ class ServerFactory(WebSocketServerFactory):
             client.sendMessage(msg.encode())
         client.sendMessage(self.g.getAsJson()) # latest state of the board
     
-    def onMessage(self, obj: dict):
-        self.serverCallback(obj)
+    def onMessage(self, obj: dict, client: ServerProtocol):
+        self.serverCallback(obj, client)
 
     def register(self, client: ServerProtocol, clientTypeRequest: str) -> Optional[str]:
         '''

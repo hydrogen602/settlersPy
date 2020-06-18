@@ -64,13 +64,24 @@ class Server:
         # setup listening server
         reactor.listenTCP(port, self.server) # pylint: disable=no-member
     
-    def callback(self, obj: dict):
+    def callback(self, obj: dict, client: ServerProtocol):
         if 'debug' in obj:
             debugCmd = obj['debug']
             if debugCmd == 'startGame':
                 print('Game started')
                 self.g.startGame()
                 self.server.broadcastToAll(self.g.getAsJson())
+        else:
+            try:
+                pass
+            except extraCode.ActionError as e:
+                s = ' '.join(e.args)
+                t = client.token
+                if t is None:
+                    print(f'Error, toke is None???? {client}')
+                else:
+                    json_msg = { 'type': 'error', 'content': 'Error ' + s }
+                    self.server.broadcastToSome(json.dumps(json_msg), [t])
 
     def run(self):
         '''

@@ -4,7 +4,7 @@ import { ctx } from "./graphics/Screen";
 import { JsonParser } from "./jsonParser";
 import { assert, defined } from "./util";
 //import { currLocation, centerOfScreen, maxDistance } from "./graphics/Point";
-import { newNotification } from "./ui/notifications";
+import { newNotification, makePlayerList } from "./ui/notifications";
 
 interface Dictionary<T> {
     [key: string]: T;
@@ -25,16 +25,23 @@ class BasicPlayer {
     }
 
     static updateFromArray(obj: Array<object>) {
+        const nameList: Array<string> = [];
+
         for (const p of obj) {
             JsonParser.requireName(p, 'Player');
             const token = JsonParser.requireString(p, 'token');
+            nameList.push(JsonParser.requireString(p, 'name'));
             //console.log(JsonParser.requireString(p, 'name'));
 
             if (!(token in this.allPlayers)) {
                 const newPlayer = this.fromJson(p);
                 this.allPlayers[token] = newPlayer;
             }
+
+            
         }
+
+        makePlayerList(nameList, []);
     }
 
     private static fromJson(obj: object) {
@@ -107,7 +114,7 @@ function main(ip: string, port: number, name: string) {
         }
     
         if (name == "Game") {
-            newNotification('Game update');
+            //newNotification('Game update');
             g.map.updateFromJson(JsonParser.requireObject(obj, 'gameMap'));
             g.map.draw_SHOULD_ONLY_BE_CALLED_BY_GAME_MANAGER();
 

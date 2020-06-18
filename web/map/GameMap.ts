@@ -214,7 +214,7 @@ export class GameMap {
     draw_SHOULD_ONLY_BE_CALLED_BY_GAME_MANAGER() {
         this.ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        this.ctx.fillStyle = 'blue';
+        this.ctx.fillStyle = '#8395c1'; // background color is set here!
         this.ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
 
         this.ctx.strokeStyle = 'black';
