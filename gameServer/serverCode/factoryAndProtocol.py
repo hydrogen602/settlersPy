@@ -1,7 +1,9 @@
-from typing import Tuple, List, Optional, Union, Callable
+from typing import Tuple, List, Optional, Union, Callable, Dict
 import json
+from urllib.parse import urlparse, parse_qs
 
 from autobahn.twisted.websocket import WebSocketServerProtocol, WebSocketServerFactory # type: ignore
+from autobahn.websocket.protocol import ConnectingRequest, ConnectionDeny
 from twisted.python import log # type: ignore
 from twisted.internet import reactor # type: ignore
 
@@ -31,9 +33,12 @@ class ServerProtocol(WebSocketServerProtocol):
         except AttributeError:
             return False
 
-    def onConnect(self, request):
+    def onConnect(self, request: ConnectingRequest):
 
         print(request.path)
+        # print(request.headers)
+        # print(request.protocols)
+
         # debug information
         print('Client connecting & registering: {0}'.format(request.peer))
         clientTypeRequest = request.path
@@ -143,8 +148,24 @@ class ServerFactory(WebSocketServerFactory):
         return `None` and trigger a 400 error. Same goes for if
         a token is given that the server does not know.        
         '''
-        token = None
-        name = None
+        token: Optional[str] = None
+        name: Optional[str] = None
+
+        # parsed = urlparse(clientTypeRequest)
+
+        # if parsed.path == 'login':
+        #     query: Dict[str, List[str]] = parse_qs(parsed.query)
+        #     if not 'name' in query or len(query['name']) != 1:
+        #         print('name missing')
+        #         client.sendHttpErrorResponse(404, 'Name missing')
+        #         #client.sendClose()
+        #         return None
+            
+        #     name = query['name'][0]
+            
+        #     if 'token' in query or len(query['token']) == 1:
+        #         token = query['token'][0]
+        # else:
 
         if len(clientTypeRequest.strip()) == 0:
             print('name missing')
@@ -170,6 +191,9 @@ class ServerFactory(WebSocketServerFactory):
             return None
         
         # print('clientTypeRequest =', len(clientTypeRequest.strip().split('/')))
+
+        if name is None:
+            raise RuntimeError("Something went wrong in register")
         
         if token is None:
             if self.g.playerManager.isGameStarted():
