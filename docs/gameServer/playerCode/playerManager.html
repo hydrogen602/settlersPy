@@ -34,7 +34,7 @@ class PlayerManager:
 
     __hasInit: bool = False
 
-    instance = None
+    #instance = None
 
     def __init__(self) -&gt; None:
         &#39;&#39;&#39;
@@ -46,7 +46,7 @@ class PlayerManager:
         if PlayerManager.__hasInit:
             raise Exception(&#39;There should only be one instance of the PlayerManager&#39;)
         PlayerManager.__hasInit = True
-        PlayerManager.instance = self
+        #PlayerManager.instance = self
 
         self.__players: Dict[str, Player] = {}
 
@@ -54,6 +54,9 @@ class PlayerManager:
         self.__playerTurnOrder: List[str] = []
 
         self.__playerTurnOrderIterator: Optional[Iterator[str]] = None
+    
+    def getPlayerCount(self) -&gt; int:
+        return len(self.__players)
     
     def startGame(self):
         &#39;&#39;&#39;
@@ -121,6 +124,9 @@ class PlayerManager:
         if self.__gameStarted:
             raise Exception(&#39;Cannot add player after game has started&#39;)
 
+        if p.token in self.__players:
+            raise KeyError(f&#34;Token already exist: &#39;{p.token}&#39; for player &#39;{p.name}&#39;&#34;)
+
         self.__players[p.token] = p
         # players should always have unique tokens
     
@@ -150,7 +156,7 @@ class PlayerManager:
         &#39;&#39;&#39;
         return token in self.__players
     
-    def __iter__(self):
+    def __iter__(self) -&gt; Iterator[Player]:
         &#39;&#39;&#39;
         Returns an iterator over the player list.
         Call this if the order of players does not matter.
@@ -160,7 +166,7 @@ class PlayerManager:
         return iter(self.__players.values())
     
 
-PlayerManager() # instantiate the one player manager instance</code></pre>
+# PlayerManager() # instantiate the one player manager instance</code></pre>
 </details>
 </section>
 <section>
@@ -188,7 +194,7 @@ and other player management related things.</p></section>
 
     __hasInit: bool = False
 
-    instance = None
+    #instance = None
 
     def __init__(self) -&gt; None:
         &#39;&#39;&#39;
@@ -200,7 +206,7 @@ and other player management related things.</p></section>
         if PlayerManager.__hasInit:
             raise Exception(&#39;There should only be one instance of the PlayerManager&#39;)
         PlayerManager.__hasInit = True
-        PlayerManager.instance = self
+        #PlayerManager.instance = self
 
         self.__players: Dict[str, Player] = {}
 
@@ -208,6 +214,9 @@ and other player management related things.</p></section>
         self.__playerTurnOrder: List[str] = []
 
         self.__playerTurnOrderIterator: Optional[Iterator[str]] = None
+    
+    def getPlayerCount(self) -&gt; int:
+        return len(self.__players)
     
     def startGame(self):
         &#39;&#39;&#39;
@@ -275,6 +284,9 @@ and other player management related things.</p></section>
         if self.__gameStarted:
             raise Exception(&#39;Cannot add player after game has started&#39;)
 
+        if p.token in self.__players:
+            raise KeyError(f&#34;Token already exist: &#39;{p.token}&#39; for player &#39;{p.name}&#39;&#34;)
+
         self.__players[p.token] = p
         # players should always have unique tokens
     
@@ -304,7 +316,7 @@ and other player management related things.</p></section>
         &#39;&#39;&#39;
         return token in self.__players
     
-    def __iter__(self):
+    def __iter__(self) -&gt; Iterator[Player]:
         &#39;&#39;&#39;
         Returns an iterator over the player list.
         Call this if the order of players does not matter.
@@ -313,13 +325,6 @@ and other player management related things.</p></section>
         &#39;&#39;&#39;
         return iter(self.__players.values())</code></pre>
 </details>
-<h3>Class variables</h3>
-<dl>
-<dt id="gameServer.playerCode.playerManager.PlayerManager.instance"><code class="name">var <span class="ident">instance</span></code></dt>
-<dd>
-<section class="desc"></section>
-</dd>
-</dl>
 <h3>Methods</h3>
 <dl>
 <dt id="gameServer.playerCode.playerManager.PlayerManager.addPlayer"><code class="name flex">
@@ -342,6 +347,9 @@ Cannot be done once the game has started</p></section>
 
     if self.__gameStarted:
         raise Exception(&#39;Cannot add player after game has started&#39;)
+
+    if p.token in self.__players:
+        raise KeyError(f&#34;Token already exist: &#39;{p.token}&#39; for player &#39;{p.name}&#39;&#34;)
 
     self.__players[p.token] = p</code></pre>
 </details>
@@ -366,6 +374,19 @@ Thus this method doesn't raise a <code>KeyError</code></p></section>
     Thus this method doesn&#39;t raise a `KeyError`
     &#39;&#39;&#39;
     return self.__players.get(token)</code></pre>
+</details>
+</dd>
+<dt id="gameServer.playerCode.playerManager.PlayerManager.getPlayerCount"><code class="name flex">
+<span>def <span class="ident">getPlayerCount</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def getPlayerCount(self) -&gt; int:
+    return len(self.__players)</code></pre>
 </details>
 </dd>
 <dt id="gameServer.playerCode.playerManager.PlayerManager.getPlayerTurnOrderIterator"><code class="name flex">
@@ -452,8 +473,8 @@ and creates a random turn order from the current list of players</p></section>
 <ul class="">
 <li><code><a title="gameServer.playerCode.playerManager.PlayerManager.addPlayer" href="#gameServer.playerCode.playerManager.PlayerManager.addPlayer">addPlayer</a></code></li>
 <li><code><a title="gameServer.playerCode.playerManager.PlayerManager.getPlayer" href="#gameServer.playerCode.playerManager.PlayerManager.getPlayer">getPlayer</a></code></li>
+<li><code><a title="gameServer.playerCode.playerManager.PlayerManager.getPlayerCount" href="#gameServer.playerCode.playerManager.PlayerManager.getPlayerCount">getPlayerCount</a></code></li>
 <li><code><a title="gameServer.playerCode.playerManager.PlayerManager.getPlayerTurnOrderIterator" href="#gameServer.playerCode.playerManager.PlayerManager.getPlayerTurnOrderIterator">getPlayerTurnOrderIterator</a></code></li>
-<li><code><a title="gameServer.playerCode.playerManager.PlayerManager.instance" href="#gameServer.playerCode.playerManager.PlayerManager.instance">instance</a></code></li>
 <li><code><a title="gameServer.playerCode.playerManager.PlayerManager.isGameStarted" href="#gameServer.playerCode.playerManager.PlayerManager.isGameStarted">isGameStarted</a></code></li>
 <li><code><a title="gameServer.playerCode.playerManager.PlayerManager.startGame" href="#gameServer.playerCode.playerManager.PlayerManager.startGame">startGame</a></code></li>
 </ul>

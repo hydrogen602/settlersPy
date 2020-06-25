@@ -98,6 +98,14 @@ class Game(JsonSerializable):
         self.__newTurn(nextPlayer)
     
     def toJsonSerializable(self):
+        '''
+        Format:
+        {
+            'players': List[Player],
+            'gameMap': GameMap,
+            'gameStarted': bool
+        }
+        '''
         return {
             'players': list(self.__playerManager),
             'gameMap': self.__gameMap,

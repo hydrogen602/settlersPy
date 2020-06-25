@@ -30,6 +30,7 @@ from ..extraCode.location import HexPoint, Resource
 from ..extraCode.util import isNotNone, JsonSerializable, ArgumentMissingError, NotSetupException, AlreadySetupException
 from ..extraCode.modifiers import Placeable, Ownable, Purchaseable
 from ..playerCode.player import Player
+from ..playerCode.turn import Turn
 
 class Road(Placeable, Purchaseable, Ownable, JsonSerializable):
 
@@ -58,13 +59,22 @@ class Road(Placeable, Purchaseable, Ownable, JsonSerializable):
             Resource.Lumber: 1,
             Resource.Brick: 1
         }, isLineFeature=True)
+
+    def __str__(self):
+        if self._isPlaced:
+            return f&#34;Road({self.__point1, self.__point2})&#34;
+        else:
+            return f&#34;Road()&#34;
     
-    def place(self, point1: HexPoint, point2: HexPoint):
+    def place(self, point1: HexPoint, point2: HexPoint, turn: Turn):
         if self._isPlaced:
             raise AlreadySetupException(&#34;This road has already been placed&#34;)
 
-        self.__point1 = point1
-        self.__point2 = point2
+        self.__point1 = point1.copy()
+        self.__point2 = point2.copy()
+
+        turn.gameMap.addLineElement(self, turn) # raises ActionError
+
         self._place()
 
     @property
@@ -136,13 +146,22 @@ If both are not None, this is a placed road</p></section>
             Resource.Lumber: 1,
             Resource.Brick: 1
         }, isLineFeature=True)
+
+    def __str__(self):
+        if self._isPlaced:
+            return f&#34;Road({self.__point1, self.__point2})&#34;
+        else:
+            return f&#34;Road()&#34;
     
-    def place(self, point1: HexPoint, point2: HexPoint):
+    def place(self, point1: HexPoint, point2: HexPoint, turn: Turn):
         if self._isPlaced:
             raise AlreadySetupException(&#34;This road has already been placed&#34;)
 
-        self.__point1 = point1
-        self.__point2 = point2
+        self.__point1 = point1.copy()
+        self.__point2 = point2.copy()
+
+        turn.gameMap.addLineElement(self, turn) # raises ActionError
+
         self._place()
 
     @property
@@ -205,7 +224,7 @@ def point2(self) -&gt; HexPoint:
 <h3>Methods</h3>
 <dl>
 <dt id="gameServer.mapCode.lineMapFeatures.Road.place"><code class="name flex">
-<span>def <span class="ident">place</span></span>(<span>self, point1, point2)</span>
+<span>def <span class="ident">place</span></span>(<span>self, point1, point2, turn)</span>
 </code></dt>
 <dd>
 <section class="desc"></section>
@@ -213,12 +232,15 @@ def point2(self) -&gt; HexPoint:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def place(self, point1: HexPoint, point2: HexPoint):
+<pre><code class="python">def place(self, point1: HexPoint, point2: HexPoint, turn: Turn):
     if self._isPlaced:
         raise AlreadySetupException(&#34;This road has already been placed&#34;)
 
-    self.__point1 = point1
-    self.__point2 = point2
+    self.__point1 = point1.copy()
+    self.__point2 = point2.copy()
+
+    turn.gameMap.addLineElement(self, turn) # raises ActionError
+
     self._place()</code></pre>
 </details>
 </dd>

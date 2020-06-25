@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.7.5" />
+<title>gameServer.game API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>gameServer.game</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">from typing import Iterator, Optional
+import json
+
+from .extraCode.util import AlreadySetupException, NotSetupException, roll2Die, JsonSerializable, customJsonEncoder
+from .playerCode.playerManager import PlayerManager
+from .playerCode.player import Player
+from .playerCode.turn import Turn
+from .mapCode.gameMap import GameMap
+from .mapCode.lineMapFeatures import Road
+from .mapCode.pointMapFeatures import Settlement
+
+class Game(JsonSerializable):
+
+    def __init__(self, gameMap: GameMap):
+        self.__gameStarted: bool = False
+        self.__playerManager: PlayerManager = PlayerManager()
+
+        self.__gameMap: GameMap = gameMap
+
+        self.__playerTurnOrderIterator: Optional[Iterator[Player]] = None
+        self.__currentTurn: Optional[Turn] = None
+
+        self.__roundNum = 0
+
+    @property
+    def playerManager(self) -&gt; PlayerManager:
+        return self.__playerManager
+
+    @property
+    def currentTurn(self) -&gt; Turn:
+        &#39;&#39;&#39;
+        Returns the current turn of the game.
+        Raises a NotSetupException if the game hasn&#39;t started yet.
+        &#39;&#39;&#39;
+        if self.__currentTurn is None:
+            raise NotSetupException(&#34;Game hasn&#39;t started yet&#34;)
+
+        return self.__currentTurn
+    
+    @property
+    def gameMap(self) -&gt; GameMap:
+        return self.__gameMap
+
+    def __newTurn(self, currentPlayer: Player):
+        &#39;&#39;&#39;
+        For handling things that should happen when it becomes a player&#39;s
+        turn, like making a `Turn` instance or giving them a settlement and
+        road in the first two turns
+        &#39;&#39;&#39;
+        dieVal: Optional[int] = None
+        if self.__roundNum &gt;= 2:
+            # give resources!
+            dieVal = roll2Die()
+            if dieVal == 7:
+                currentPlayer.playerMustMoveRobber()
+                # TODO: if inv count &gt; 7, then half has to be removed
+            else:
+                for t in self.__gameMap.tiles:
+                    t.diceRolled(dieVal)
+
+        self.__currentTurn = Turn(self.__gameMap, self.__roundNum, currentPlayer, dieVal)
+
+        if self.__roundNum &lt; 2:
+            currentPlayer.inventory.addPointFeature(Settlement(owner=currentPlayer))
+            currentPlayer.inventory.addLineFeature(Road(owner=currentPlayer))
+
+    def startGame(self):
+        if self.__gameStarted:
+            raise AlreadySetupException(&#34;Game already started&#34;)
+
+        self.__gameStarted = True
+        self.__playerManager.startGame()
+        self.__playerTurnOrderIterator = self.__playerManager.getPlayerTurnOrderIterator()
+
+        self.__newTurn(next(self.__playerTurnOrderIterator))
+        
+    
+    def addPlayer(self, p: Player):
+        if self.__gameStarted:
+            raise AlreadySetupException(&#34;Game already started&#34;)
+        self.__playerManager.addPlayer(p)
+    
+    def nextTurn(self):
+        if not self.__gameStarted:
+            raise NotSetupException(&#34;Game hasn&#39;t started yet&#34;)
+
+        self.__currentTurn.currentPlayer.checkFinishTurn()
+
+        try:
+            nextPlayer = next(self.__playerTurnOrderIterator)
+        except StopIteration:
+            self.__roundNum += 1
+            self.__playerTurnOrderIterator = self.__playerManager.getPlayerTurnOrderIterator()
+
+            nextPlayer = next(self.__playerTurnOrderIterator)
+        
+        self.__newTurn(nextPlayer)
+    
+    def toJsonSerializable(self):
+        &#39;&#39;&#39;
+        Format:
+        {
+            &#39;players&#39;: List[Player],
+            &#39;gameMap&#39;: GameMap,
+            &#39;gameStarted&#39;: bool
+        }
+        &#39;&#39;&#39;
+        return {
+            &#39;players&#39;: list(self.__playerManager),
+            &#39;gameMap&#39;: self.__gameMap,
+            &#39;gameStarted&#39;: self.__gameStarted,
+            **super().toJsonSerializable()
+        }
+
+    def getAsJson(self):
+        return json.dumps(self, cls=customJsonEncoder)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="gameServer.game.Game"><code class="flex name class">
+<span>class <span class="ident">Game</span></span>
+<span>(</span><span>gameMap)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>A superclass for classes that have a
+<code>toJsonSerializable</code> method but may
+also be part of multiple inheritance.
+Requires subclasses to override the
+<code>toJsonSerializable</code> method.
+In the list of classes that a cls is inheriting
+from, put JsonSerializable last for best results.
+(aka it might crash otherwise but i'm not sure)</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Game(JsonSerializable):
+
+    def __init__(self, gameMap: GameMap):
+        self.__gameStarted: bool = False
+        self.__playerManager: PlayerManager = PlayerManager()
+
+        self.__gameMap: GameMap = gameMap
+
+        self.__playerTurnOrderIterator: Optional[Iterator[Player]] = None
+        self.__currentTurn: Optional[Turn] = None
+
+        self.__roundNum = 0
+
+    @property
+    def playerManager(self) -&gt; PlayerManager:
+        return self.__playerManager
+
+    @property
+    def currentTurn(self) -&gt; Turn:
+        &#39;&#39;&#39;
+        Returns the current turn of the game.
+        Raises a NotSetupException if the game hasn&#39;t started yet.
+        &#39;&#39;&#39;
+        if self.__currentTurn is None:
+            raise NotSetupException(&#34;Game hasn&#39;t started yet&#34;)
+
+        return self.__currentTurn
+    
+    @property
+    def gameMap(self) -&gt; GameMap:
+        return self.__gameMap
+
+    def __newTurn(self, currentPlayer: Player):
+        &#39;&#39;&#39;
+        For handling things that should happen when it becomes a player&#39;s
+        turn, like making a `Turn` instance or giving them a settlement and
+        road in the first two turns
+        &#39;&#39;&#39;
+        dieVal: Optional[int] = None
+        if self.__roundNum &gt;= 2:
+            # give resources!
+            dieVal = roll2Die()
+            if dieVal == 7:
+                currentPlayer.playerMustMoveRobber()
+                # TODO: if inv count &gt; 7, then half has to be removed
+            else:
+                for t in self.__gameMap.tiles:
+                    t.diceRolled(dieVal)
+
+        self.__currentTurn = Turn(self.__gameMap, self.__roundNum, currentPlayer, dieVal)
+
+        if self.__roundNum &lt; 2:
+            currentPlayer.inventory.addPointFeature(Settlement(owner=currentPlayer))
+            currentPlayer.inventory.addLineFeature(Road(owner=currentPlayer))
+
+    def startGame(self):
+        if self.__gameStarted:
+            raise AlreadySetupException(&#34;Game already started&#34;)
+
+        self.__gameStarted = True
+        self.__playerManager.startGame()
+        self.__playerTurnOrderIterator = self.__playerManager.getPlayerTurnOrderIterator()
+
+        self.__newTurn(next(self.__playerTurnOrderIterator))
+        
+    
+    def addPlayer(self, p: Player):
+        if self.__gameStarted:
+            raise AlreadySetupException(&#34;Game already started&#34;)
+        self.__playerManager.addPlayer(p)
+    
+    def nextTurn(self):
+        if not self.__gameStarted:
+            raise NotSetupException(&#34;Game hasn&#39;t started yet&#34;)
+
+        self.__currentTurn.currentPlayer.checkFinishTurn()
+
+        try:
+            nextPlayer = next(self.__playerTurnOrderIterator)
+        except StopIteration:
+            self.__roundNum += 1
+            self.__playerTurnOrderIterator = self.__playerManager.getPlayerTurnOrderIterator()
+
+            nextPlayer = next(self.__playerTurnOrderIterator)
+        
+        self.__newTurn(nextPlayer)
+    
+    def toJsonSerializable(self):
+        &#39;&#39;&#39;
+        Format:
+        {
+            &#39;players&#39;: List[Player],
+            &#39;gameMap&#39;: GameMap,
+            &#39;gameStarted&#39;: bool
+        }
+        &#39;&#39;&#39;
+        return {
+            &#39;players&#39;: list(self.__playerManager),
+            &#39;gameMap&#39;: self.__gameMap,
+            &#39;gameStarted&#39;: self.__gameStarted,
+            **super().toJsonSerializable()
+        }
+
+    def getAsJson(self):
+        return json.dumps(self, cls=customJsonEncoder)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="gameServer.extraCode.util.JsonSerializable" href="extraCode/util.html#gameServer.extraCode.util.JsonSerializable">JsonSerializable</a></li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="gameServer.game.Game.currentTurn"><code class="name">var <span class="ident">currentTurn</span></code></dt>
+<dd>
+<section class="desc"><p>Returns the current turn of the game.
+Raises a NotSetupException if the game hasn't started yet.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def currentTurn(self) -&gt; Turn:
+    &#39;&#39;&#39;
+    Returns the current turn of the game.
+    Raises a NotSetupException if the game hasn&#39;t started yet.
+    &#39;&#39;&#39;
+    if self.__currentTurn is None:
+        raise NotSetupException(&#34;Game hasn&#39;t started yet&#34;)
+
+    return self.__currentTurn</code></pre>
+</details>
+</dd>
+<dt id="gameServer.game.Game.gameMap"><code class="name">var <span class="ident">gameMap</span></code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def gameMap(self) -&gt; GameMap:
+    return self.__gameMap</code></pre>
+</details>
+</dd>
+<dt id="gameServer.game.Game.playerManager"><code class="name">var <span class="ident">playerManager</span></code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def playerManager(self) -&gt; PlayerManager:
+    return self.__playerManager</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="gameServer.game.Game.addPlayer"><code class="name flex">
+<span>def <span class="ident">addPlayer</span></span>(<span>self, p)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def addPlayer(self, p: Player):
+    if self.__gameStarted:
+        raise AlreadySetupException(&#34;Game already started&#34;)
+    self.__playerManager.addPlayer(p)</code></pre>
+</details>
+</dd>
+<dt id="gameServer.game.Game.getAsJson"><code class="name flex">
+<span>def <span class="ident">getAsJson</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def getAsJson(self):
+    return json.dumps(self, cls=customJsonEncoder)</code></pre>
+</details>
+</dd>
+<dt id="gameServer.game.Game.nextTurn"><code class="name flex">
+<span>def <span class="ident">nextTurn</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def nextTurn(self):
+    if not self.__gameStarted:
+        raise NotSetupException(&#34;Game hasn&#39;t started yet&#34;)
+
+    self.__currentTurn.currentPlayer.checkFinishTurn()
+
+    try:
+        nextPlayer = next(self.__playerTurnOrderIterator)
+    except StopIteration:
+        self.__roundNum += 1
+        self.__playerTurnOrderIterator = self.__playerManager.getPlayerTurnOrderIterator()
+
+        nextPlayer = next(self.__playerTurnOrderIterator)
+    
+    self.__newTurn(nextPlayer)</code></pre>
+</details>
+</dd>
+<dt id="gameServer.game.Game.startGame"><code class="name flex">
+<span>def <span class="ident">startGame</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def startGame(self):
+    if self.__gameStarted:
+        raise AlreadySetupException(&#34;Game already started&#34;)
+
+    self.__gameStarted = True
+    self.__playerManager.startGame()
+    self.__playerTurnOrderIterator = self.__playerManager.getPlayerTurnOrderIterator()
+
+    self.__newTurn(next(self.__playerTurnOrderIterator))</code></pre>
+</details>
+</dd>
+<dt id="gameServer.game.Game.toJsonSerializable"><code class="name flex">
+<span>def <span class="ident">toJsonSerializable</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Format:
+{
+'players': List[Player],
+'gameMap': GameMap,
+'gameStarted': bool
+}</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def toJsonSerializable(self):
+    &#39;&#39;&#39;
+    Format:
+    {
+        &#39;players&#39;: List[Player],
+        &#39;gameMap&#39;: GameMap,
+        &#39;gameStarted&#39;: bool
+    }
+    &#39;&#39;&#39;
+    return {
+        &#39;players&#39;: list(self.__playerManager),
+        &#39;gameMap&#39;: self.__gameMap,
+        &#39;gameStarted&#39;: self.__gameStarted,
+        **super().toJsonSerializable()
+    }</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="gameServer" href="index.html">gameServer</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="gameServer.game.Game" href="#gameServer.game.Game">Game</a></code></h4>
+<ul class="two-column">
+<li><code><a title="gameServer.game.Game.addPlayer" href="#gameServer.game.Game.addPlayer">addPlayer</a></code></li>
+<li><code><a title="gameServer.game.Game.currentTurn" href="#gameServer.game.Game.currentTurn">currentTurn</a></code></li>
+<li><code><a title="gameServer.game.Game.gameMap" href="#gameServer.game.Game.gameMap">gameMap</a></code></li>
+<li><code><a title="gameServer.game.Game.getAsJson" href="#gameServer.game.Game.getAsJson">getAsJson</a></code></li>
+<li><code><a title="gameServer.game.Game.nextTurn" href="#gameServer.game.Game.nextTurn">nextTurn</a></code></li>
+<li><code><a title="gameServer.game.Game.playerManager" href="#gameServer.game.Game.playerManager">playerManager</a></code></li>
+<li><code><a title="gameServer.game.Game.startGame" href="#gameServer.game.Game.startGame">startGame</a></code></li>
+<li><code><a title="gameServer.game.Game.toJsonSerializable" href="#gameServer.game.Game.toJsonSerializable">toJsonSerializable</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.7.5</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

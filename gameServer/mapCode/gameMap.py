@@ -212,6 +212,14 @@ class GameMap(JsonSerializable):
         self.__lineFeatures[(p1, p2)] = elem
     
     def toJsonSerializable(self):
+        '''
+        Format:
+        {
+            'tiles': List[Tile],
+            'points': List[Settlement],
+            'lines': List[Road]
+        }
+        '''
         return {
             'tiles': self.tiles,
             'points': self.pointFeatures,
