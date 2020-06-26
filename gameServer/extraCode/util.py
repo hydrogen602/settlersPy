@@ -143,3 +143,7 @@ class customJsonEncoder(json.JSONEncoder):
         
         dictData['__name__'] = type(obj).__name__
         return dictData
+
+
+def getAsJson(obj: JsonSerializable) -> str:
+    return json.dumps(obj, cls=customJsonEncoder)

@@ -207,6 +207,14 @@ class ServerFactory(WebSocketServerFactory):
                 client.sendClose(code=4001, reason='Game already started, can\'t join')
                 return None
             
+            pTmp: playerCode.Player
+            for pTmp in self.g.playerManager:
+                if pTmp.name.lower() == name.lower(): # ignore caps
+                    print(f'name already taken: {name}')
+                    client.sendClose(code=4003, reason='Name taken')
+                    return None
+
+            
             p: playerCode.Player = playerCode.Player(name, client, color='green')
             print("New player:", p)
             self.g.addPlayer(p)

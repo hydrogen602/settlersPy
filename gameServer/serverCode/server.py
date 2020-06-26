@@ -74,6 +74,10 @@ class Server:
 
                 json_msg = { 'type': 'notification', 'content': 'Game Started' }
                 self.server.broadcastToAll(json.dumps(json_msg))
+
+                self.server.broadcastToAll(extraCode.getAsJson(self.g.currentTurn)) # send out turn
+
+                #print('sent:', extraCode.getAsJson(self.g.currentTurn))
         else:
             try:
                 pass
