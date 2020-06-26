@@ -71,6 +71,9 @@ class Server:
                 print('Game started')
                 self.g.startGame()
                 self.server.broadcastToAll(self.g.getAsJson())
+
+                json_msg = { 'type': 'notification', 'content': 'Game Started' }
+                self.server.broadcastToAll(json.dumps(json_msg))
         else:
             try:
                 pass
