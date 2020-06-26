@@ -40,8 +40,13 @@ class ServerProtocol(WebSocketServerProtocol):
         # print(request.protocols)
 
         # debug information
-        print('Client connecting & registering: {0}'.format(request.peer))
-        clientTypeRequest = request.path
+        print('Client connecting: {0}'.format(request.peer))
+        self.clientTypeRequest = request.path
+
+    def onOpen(self):
+        if not hasattr(self, 'clientTypeRequest'):
+            raise RuntimeError("Connected without setting clientTypeRequest, this should never happen")
+        clientTypeRequest: str = getattr(self, 'clientTypeRequest')
 
         # process the type of request
         if clientTypeRequest.startswith('/'):
@@ -51,7 +56,6 @@ class ServerProtocol(WebSocketServerProtocol):
         # tell the factory to remember the connection
         self.__token = self.factory.register(self, clientTypeRequest) # pylint: disable=no-member
 
-    def onOpen(self):
         print('WebSocket connection open')
         self.__isOpen = True
 
@@ -169,7 +173,8 @@ class ServerFactory(WebSocketServerFactory):
 
         if len(clientTypeRequest.strip()) == 0:
             print('name missing')
-            client.sendHttpErrorResponse(404, 'Name missing')
+            #client.sendHttpErrorResponse(404, 'Name missing')
+            client.sendClose(code=4000, reason='Name missing')
             #client.sendClose()
             return None
 
@@ -186,8 +191,8 @@ class ServerFactory(WebSocketServerFactory):
             token = tmpLs[1]
         else:
             print('name missing')
-            client.sendHttpErrorResponse(404, 'Name missing')
-            #client.sendClose()
+            #client.sendHttpErrorResponse(404, 'Name missing')
+            client.sendClose(code=4000, reason='Name missing')
             return None
         
         # print('clientTypeRequest =', len(clientTypeRequest.strip().split('/')))
@@ -198,7 +203,8 @@ class ServerFactory(WebSocketServerFactory):
         if token is None:
             if self.g.playerManager.isGameStarted():
                 print('game already started, can\'t join')
-                client.sendHttpErrorResponse(403, 'Game already started, can\'t join')
+                #client.sendHttpErrorResponse(403, 'Game already started, can\'t join')
+                client.sendClose(code=4001, reason='Game already started, can\'t join')
                 return None
             
             p: playerCode.Player = playerCode.Player(name, client, color='green')
@@ -216,8 +222,8 @@ class ServerFactory(WebSocketServerFactory):
                 self.newNotificationToAll(f'{p.name} reconnected')
             else:
                 print("Unknown token:", token)
-                client.sendHttpErrorResponse(403, 'Unknown token given')
-                #client.sendClose()
+                #client.sendHttpErrorResponse(403, 'Unknown token given')
+                client.sendClose(code=4002, reason='Unknown token given')
                 return None
         
             return p.token
