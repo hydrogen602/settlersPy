@@ -220,6 +220,8 @@ class ServerFactory(WebSocketServerFactory):
             self.g.addPlayer(p)
             self.newNotificationToAll('New Player: ' + p.name)
 
+            self.broadcastToAll(self.g.getAsJson())
+
             return p.token
 
         else:

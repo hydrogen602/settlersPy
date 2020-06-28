@@ -82,6 +82,9 @@ class Game(JsonSerializable):
         self.__playerManager.addPlayer(p)
     
     def nextTurn(self):
+        '''
+        throws `NotSetupException` and `ActionError` 
+        '''
         if not self.__gameStarted:
             raise NotSetupException("Game hasn't started yet")
 

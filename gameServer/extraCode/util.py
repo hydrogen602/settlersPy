@@ -2,8 +2,10 @@ from typing import Dict
 import random
 import json
 
+
 def _debugSetSeed(seed):
     random.seed(seed)
+
 
 def rollDice() -> int:
     return random.randint(1,6)

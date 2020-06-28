@@ -80,14 +80,20 @@ class Server:
                 #print('sent:', extraCode.getAsJson(self.g.currentTurn))
         else:
             try:
-                pass
+                if 'type' in obj and 'content' in obj:
+                    type_: str = obj['type']
+                    content = obj['content']
+                    if type_ == 'action':
+                        if content == 'nextTurn':
+                            self.g.nextTurn()
+
             except extraCode.ActionError as e:
                 s = ' '.join(e.args)
                 t = client.token
                 if t is None:
                     print(f'Error, toke is None???? {client}')
                 else:
-                    json_msg = { 'type': 'error', 'content': 'Error ' + s }
+                    json_msg = { 'type': 'error', 'content': 'ERROR: ' + s }
                     self.server.broadcastToSome(json.dumps(json_msg), [t])
 
     def run(self):
