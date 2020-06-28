@@ -113,3 +113,4 @@ I'll use 4000-4099 for errors that should sent the user back to login
 ## JSON communication
 
 - End turn: `{'type': 'action', 'content': 'nextTurn'}`
+- Place settlement: `{'type': 'action', 'content': 'placeSettlement', 'args': []}`

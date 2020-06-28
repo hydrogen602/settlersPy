@@ -125,6 +125,12 @@ class ServerFactory(WebSocketServerFactory):
 
         WebSocketServerFactory.__init__(self, url)
     
+    def updateAll(self):
+        '''
+        Sends the current game state to all players
+        '''
+        self.broadcastToAll(self.g.getAsJson())
+    
     def getToken(self, client: ServerProtocol) -> str:
         t = client.token
         if t is None:
@@ -220,7 +226,7 @@ class ServerFactory(WebSocketServerFactory):
             self.g.addPlayer(p)
             self.newNotificationToAll('New Player: ' + p.name)
 
-            self.broadcastToAll(self.g.getAsJson())
+            self.updateAll()
 
             return p.token
 

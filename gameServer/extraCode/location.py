@@ -2,16 +2,29 @@ from __future__ import annotations
 from enum import Enum
 from typing import Dict, Iterable, Tuple, List
 
-from .util import IterableCls
+from .util import IterableCls, JsonSerializable
 
 
-class HexPoint:
+class HexPoint(JsonSerializable):
     def __init__(self, row: int, col: int) -> None:
         self.__row: int = row
         self.__col: int = col
     
-    def toJsonSerializable(self) -> Dict[str, int]:
-        return {'row': self.__row, 'col': self.__col}
+    def toJsonSerializable(self) -> Dict[str, object]:
+        return {
+            'row': self.__row, 
+            'col': self.__col,
+            **super().toJsonSerializable()
+            }
+    
+    @classmethod
+    def fromJson(cls, o: Dict[str, str]) -> HexPoint:
+        if o.get('__name__') != 'HexPoint':
+            raise SyntaxError('Wrong __name__ property')
+        if 'row' not in o or 'col' not in o:
+            raise SyntaxError('Missing fields row or col')
+        
+        return cls(int(o['row']), int(o['col']))
 
     @property
     def row(self) -> int:

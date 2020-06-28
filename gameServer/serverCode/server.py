@@ -23,6 +23,7 @@ from .. import extraCode
 from .. import mapCode
 from .. import game
 from .factoryAndProtocol import ServerFactory, ServerProtocol
+from .jsonParser import JsonParserType
 
 
 class Server:
@@ -80,12 +81,21 @@ class Server:
                 #print('sent:', extraCode.getAsJson(self.g.currentTurn))
         else:
             try:
-                if 'type' in obj and 'content' in obj:
-                    type_: str = obj['type']
-                    content = obj['content']
-                    if type_ == 'action':
-                        if content == 'nextTurn':
-                            self.g.nextTurn()
+                request = JsonParserType(obj)
+
+                if request.type_ == 'action':
+                    if request.content == 'nextTurn':
+                        self.g.nextTurn()
+                
+                    elif request.content == 'placeSettlement':
+                        point, = request.requireArgs(1) # pylint: disable=unbalanced-tuple-unpacking
+                        hp: extraCode.HexPoint = extraCode.HexPoint.fromJson(point)
+
+                        if len(self.g.currentTurn.currentPlayer.inventory.ownedPointFeatures) == 0:
+                            raise extraCode.ActionError('You own no settlements or cities')
+                        
+                        self.g.currentTurn.currentPlayer.inventory.placePointFeature(0, hp, self.g.currentTurn)
+                        self.server.updateAll()
 
             except extraCode.ActionError as e:
                 s = ' '.join(e.args)
