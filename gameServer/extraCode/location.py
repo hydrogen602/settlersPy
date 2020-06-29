@@ -215,5 +215,4 @@ Biome('grassland', Resource.Sheepie, 'limegreen')
 Biome('forest', Resource.Lumber, 'forestgreen')
 Biome('mountain', Resource.Ore, 'dimgray')
 Biome('quarry', Resource.Brick, 'firebrick')
-
 Biome('desert', Resource.NoResource, 'yellow')

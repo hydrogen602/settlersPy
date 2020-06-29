@@ -59,7 +59,7 @@ class Inventory(JsonSerializable):
             d[key.name] = value
 
         return {
-            **d,
+            'inventory': d,
             **super().toJsonSerializable()
         }
 

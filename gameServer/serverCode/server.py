@@ -71,7 +71,7 @@ class Server:
         if token is None:
             print(f'Error, toke is None???? client={client} obj={obj}')
             return
-        
+                
         if 'debug' in obj:
             debugCmd = obj['debug']
             if debugCmd == 'startGame':
@@ -111,7 +111,7 @@ class Server:
                             return
                         
                         self.server.broadcastToSome(extraCode.getAsJson(p.inventory), [token])
-                        print(extraCode.getAsJson(p.inventory))
+                        # print(extraCode.getAsJson(p.inventory))
 
             except extraCode.ActionError as e:
                 s = ' '.join(e.args)
