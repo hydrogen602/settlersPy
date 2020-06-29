@@ -21,6 +21,10 @@ class ServerProtocol(WebSocketServerProtocol):
 
     @property
     def token(self) -> Optional[str]:
+        '''
+        Returns the token if it exists. A token is generated once
+        the websocket enters the open state.
+        '''
         try:
             return self.__token
         except AttributeError:
@@ -35,12 +39,12 @@ class ServerProtocol(WebSocketServerProtocol):
 
     def onConnect(self, request: ConnectingRequest):
 
-        print(request.path)
+        log.msg(request.path)
         # print(request.headers)
         # print(request.protocols)
 
         # debug information
-        print('Client connecting: {0}'.format(request.peer))
+        log.msg('Client connecting: {0}'.format(request.peer))
         self.clientTypeRequest = request.path
 
     def onOpen(self):
@@ -56,11 +60,11 @@ class ServerProtocol(WebSocketServerProtocol):
         # tell the factory to remember the connection
         self.__token = self.factory.register(self, clientTypeRequest) # pylint: disable=no-member
 
-        print('WebSocket connection open')
+        log.msg('WebSocket connection open')
         self.__isOpen = True
 
     def onClose(self, wasClean, code, reason):
-        print('WebSocket connection closed: {0}'.format(reason))
+        log.msg('WebSocket connection closed: {0}'.format(reason))
         self.__isOpen = False
 
         # tell the factory that this connection is dead
@@ -84,14 +88,14 @@ class ServerProtocol(WebSocketServerProtocol):
                 if type(obj) == 'str':
                     raise json.decoder.JSONDecodeError
 
-                print("Got json msg:", obj)
+                log.msg("Got json msg:", obj)
 
                 self.factory.onMessage(obj, self) # pylint: disable=no-member
                 #m = Message(mechanics.PlayerManager.instance.getPlayer(self.token), obj, self.factory)
 
                 #self.factory.callbackHandler(m, self)   
             except json.decoder.JSONDecodeError:
-                print("Error: Invalid JSON:", msg)
+                log.msg("Error: Invalid JSON:", msg)
     
     def sendMessage(self, payload: Union[str, bytes], isBinary=False, fragmentSize=None, sync=False, doNotCompress=False):
         if isinstance(payload, str):
@@ -178,7 +182,7 @@ class ServerFactory(WebSocketServerFactory):
         # else:
 
         if len(clientTypeRequest.strip()) == 0:
-            print('name missing')
+            log.msg('name missing')
             #client.sendHttpErrorResponse(404, 'Name missing')
             client.sendClose(code=4000, reason='Name missing')
             #client.sendClose()
@@ -196,7 +200,7 @@ class ServerFactory(WebSocketServerFactory):
             name = tmpLs[0]
             token = tmpLs[1]
         else:
-            print('name missing')
+            log.msg('name missing')
             #client.sendHttpErrorResponse(404, 'Name missing')
             client.sendClose(code=4000, reason='Name missing')
             return None
@@ -208,7 +212,7 @@ class ServerFactory(WebSocketServerFactory):
         
         if token is None:
             if self.g.playerManager.isGameStarted():
-                print('game already started, can\'t join')
+                log.msg('game already started, can\'t join')
                 #client.sendHttpErrorResponse(403, 'Game already started, can\'t join')
                 client.sendClose(code=4001, reason='Game already started, can\'t join')
                 return None
@@ -216,13 +220,13 @@ class ServerFactory(WebSocketServerFactory):
             pTmp: playerCode.Player
             for pTmp in self.g.playerManager:
                 if pTmp.name.lower() == name.lower(): # ignore caps
-                    print(f'name already taken: {name}')
+                    log.msg(f'name already taken: {name}')
                     client.sendClose(code=4003, reason='Name taken')
                     return None
 
             
             p: playerCode.Player = playerCode.Player(name, client, color='green')
-            print("New player:", p)
+            log.msg("New player:", p)
             self.g.addPlayer(p)
             self.newNotificationToAll('New Player: ' + p.name)
 
@@ -232,12 +236,12 @@ class ServerFactory(WebSocketServerFactory):
 
         else:
             if token in self.playerManager:
-                print("Reconnecting player:", token)
+                log.msg("Reconnecting player:", token)
                 p = self.playerManager[token]
                 p.reconnect(client)
                 self.newNotificationToAll(f'{p.name} reconnected')
             else:
-                print("Unknown token:", token)
+                log.msg("Unknown token:", token)
                 #client.sendHttpErrorResponse(403, 'Unknown token given')
                 client.sendClose(code=4002, reason='Unknown token given')
                 return None
@@ -247,13 +251,13 @@ class ServerFactory(WebSocketServerFactory):
     def unregister(self, client: ServerProtocol):
         token = client.token
         if token is None:
-            print("Player disconnected before assigned token:", token)
+            log.msg("Player disconnected before assigned token:", token)
         elif token in self.playerManager:
-            print("Disconnected player:", token)
+            log.msg("Disconnected player:", token)
             self.newNotificationToAll(f'{self.playerManager[token].name} disconnected')
             self.playerManager[token].disconnect()            
         else:
-            print("Disconnected player, but token not found?:", token)
+            log.msg("Disconnected player, but token not found?:", token)
     
     def newNotificationToAll(self, msg: str):
         json_msg = { 'type': 'notification', 'content': msg }

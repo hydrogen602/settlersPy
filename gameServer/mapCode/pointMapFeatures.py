@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 class Settlement(Placeable, Purchaseable, Ownable, JsonSerializable):
 
-    def __init__(self, pos: HexPoint = None, **kwargs) -> None:
+    def __init__(self, pos: Optional[HexPoint] = None, **kwargs) -> None:
         self._pos: Optional[HexPoint] = pos
 
         hasLocation = False

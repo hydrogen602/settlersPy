@@ -15,7 +15,7 @@ import json
 import secrets
 from typing import Callable, Tuple, Union, List, Optional
 
-from twisted.python import log # type: ignore
+from twisted.python import log, logfile # type: ignore
 from twisted.internet import reactor # type: ignore
 
 from .. import playerCode
@@ -60,12 +60,18 @@ class Server:
             g=self.g,
             serverCallback=self.callback
             )
+            
         self.server.protocol = ServerProtocol
 
         # setup listening server
         reactor.listenTCP(port, self.server) # pylint: disable=no-member
     
     def callback(self, obj: dict, client: ServerProtocol):
+        token = client.token
+        if token is None:
+            print(f'Error, toke is None???? client={client} obj={obj}')
+            return
+        
         if 'debug' in obj:
             debugCmd = obj['debug']
             if debugCmd == 'startGame':
@@ -96,15 +102,22 @@ class Server:
                         
                         self.g.currentTurn.currentPlayer.inventory.placePointFeature(0, hp, self.g.currentTurn)
                         self.server.updateAll()
+                
+                elif request.type_ == 'update':
+                    if request.content == 'inventory':
+                        p = self.g.playerManager.getPlayer(token)
+                        if p is None:
+                            print(f'RuntimeError: token of client not in playerManager. This should not happen')
+                            return
+                        
+                        self.server.broadcastToSome(extraCode.getAsJson(p.inventory), [token])
+                        print(extraCode.getAsJson(p.inventory))
 
             except extraCode.ActionError as e:
                 s = ' '.join(e.args)
-                t = client.token
-                if t is None:
-                    print(f'Error, toke is None???? {client}')
-                else:
-                    json_msg = { 'type': 'error', 'content': 'ERROR: ' + s }
-                    self.server.broadcastToSome(json.dumps(json_msg), [t])
+                
+                json_msg = { 'type': 'error', 'content': 'ERROR: ' + s }
+                self.server.broadcastToSome(json.dumps(json_msg), [token])
 
     def run(self):
         '''
@@ -114,8 +127,6 @@ class Server:
         init_msgs are for messages that should be send to the player
         immediately, like the game map for example.
         '''
-        # display debug information to stdout for now
-        log.startLogging(sys.stdout)  # TODO: replace with log file (maybe)
 
         try:
             # start listening for and handling connections
@@ -130,5 +141,10 @@ class Server:
 
 
 def main():
+    log.startLogging(sys.stdout, setStdout=True)
+
+    logFile = logfile.LogFile.fromFullPath('twistedLog.log')
+    log.addObserver(log.FileLogObserver(logFile).emit)
+
     s = Server()
     s.run()

@@ -141,11 +141,12 @@ class HexPoint(JsonSerializable):
 
 
 class Resource(Enum):
-    Wheat = 0
-    Sheepie = 1
-    Lumber = 2
-    Ore = 3
-    Brick = 4
+    NoResource = 0
+    Wheat = 1
+    Sheepie = 2
+    Lumber = 3
+    Ore = 4
+    Brick = 5
 
 
 class Biome(metaclass=IterableCls):
@@ -214,3 +215,5 @@ Biome('grassland', Resource.Sheepie, 'limegreen')
 Biome('forest', Resource.Lumber, 'forestgreen')
 Biome('mountain', Resource.Ore, 'dimgray')
 Biome('quarry', Resource.Brick, 'firebrick')
+
+Biome('desert', Resource.NoResource, 'yellow')
