@@ -13,6 +13,15 @@ if TYPE_CHECKING:
 
 class Settlement(Placeable, Purchaseable, Ownable, JsonSerializable):
 
+    _cost: Dict[Resource, int] = {
+        Resource.Brick: 1,
+        Resource.Lumber: 1,
+        Resource.Sheepie: 1,
+        Resource.Wheat: 1
+    }
+
+    _isPointFeature = True
+
     def __init__(self, pos: Optional[HexPoint] = None, **kwargs) -> None:
         self._pos: Optional[HexPoint] = pos
 
@@ -22,12 +31,12 @@ class Settlement(Placeable, Purchaseable, Ownable, JsonSerializable):
 
         super().__init__(isPlaced=hasLocation, **kwargs)
 
-        self.setupPurchase(Settlement, {
-            Resource.Brick: 1,
-            Resource.Lumber: 1,
-            Resource.Sheepie: 1,
-            Resource.Wheat: 1
-        }, isPointFeature=True)
+        # self.setupPurchase(Settlement, {
+        #     Resource.Brick: 1,
+        #     Resource.Lumber: 1,
+        #     Resource.Sheepie: 1,
+        #     Resource.Wheat: 1
+        # }, isPointFeature=True)
     
     def __str__(self):
         if self._isPlaced:

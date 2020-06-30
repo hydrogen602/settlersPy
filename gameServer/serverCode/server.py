@@ -60,7 +60,7 @@ class Server:
             g=self.g,
             serverCallback=self.callback
             )
-            
+
         self.server.protocol = ServerProtocol
 
         # setup listening server
@@ -77,7 +77,7 @@ class Server:
         if p is None:
             print(f'RuntimeError: token of client not in playerManager. This should not happen')
             return
-        
+
         self.server.broadcastToSome(extraCode.getAsJson(p.inventory), [token])
     
     def callback(self, obj: dict, client: ServerProtocol):
@@ -85,7 +85,7 @@ class Server:
         if token is None:
             print(f'Error, toke is None???? client={client} obj={obj}')
             return
-                
+
         if 'debug' in obj:
             debugCmd = obj['debug']
             if debugCmd == 'startGame':
@@ -108,7 +108,7 @@ class Server:
                         self.g.nextTurn()
                         self.server.broadcastToAll(extraCode.getAsJson(self.g.currentTurn)) # send out turn
                         self.__updateClientInventory()
-                
+
                     elif request.content == 'placeSettlement':
                         point, indexTmp = request.requireArgs(2) # pylint: disable=unbalanced-tuple-unpacking
                         hp: extraCode.HexPoint = extraCode.HexPoint.fromJson(point)
@@ -116,13 +116,13 @@ class Server:
 
                         if len(self.g.currentTurn.currentPlayer.inventory.ownedPointFeatures) == 0:
                             raise extraCode.ActionError('You own no settlements or cities')
-                        
+
                         self.g.currentTurn.currentPlayer.inventory.placePointFeature(index, hp, self.g.currentTurn)
                         self.server.updateAll()
-                    
+
                     #{'type': 'action', 'content': 'placeRoad', 'args': [{'__name__': 'HexPoint', 'row': 1, 'col': 1}, {'__name__': 'HexPoint', 'row': 1, 'col': 2}, None]}
                     elif request.content == 'placeRoad':
-                        p1, p2, indexTmp = request.requireArgs(3)
+                        p1, p2, indexTmp = request.requireArgs(3) # pylint: disable=unbalanced-tuple-unpacking
                         hp1: extraCode.HexPoint = extraCode.HexPoint.fromJson(p1)
                         hp2: extraCode.HexPoint = extraCode.HexPoint.fromJson(p2)
                         index = int(indexTmp)
@@ -132,14 +132,22 @@ class Server:
 
                         self.g.currentTurn.currentPlayer.inventory.placeLineFeature(index, hp1, hp2, self.g.currentTurn)
                         self.server.updateAll()
-                
+
                 elif request.type_ == 'update':
                     if request.content == 'inventory':
                         self.__updateClientInventory(token)
+                
+                elif request.type_ == 'purchase':
+                    if request.content == 'settlement':
+                        pass
+                    elif request.content == 'road':
+                        pass
+                    elif request.content == 'city':
+                        pass
 
             except extraCode.ActionError as e:
                 s = ' '.join(e.args)
-                
+
                 json_msg = { 'type': 'error', 'content': 'ERROR: ' + s }
                 self.server.broadcastToSome(json.dumps(json_msg), [token])
 

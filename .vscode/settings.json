@@ -2,6 +2,7 @@
     "python.linting.pylintEnabled": true,
     "python.linting.enabled": true,
     "cSpell.words": [
+        "pylint",
         "serializable"
     ],
     "python.pythonPath": "/usr/local/bin/python3",

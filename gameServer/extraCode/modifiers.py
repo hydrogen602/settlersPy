@@ -69,44 +69,69 @@ class Ownable(JsonSerializable):
 
 class Purchaseable:
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    _cost: Optional[Dict[Resource, int]] = None
+    _isLineFeature: bool = False
+    _isPointFeature: bool = False
 
-        self.__cost: Optional[Dict[Resource, int]] = None
-        self.__cls: Optional[type] = None
+    def __init_subclass__(cls):
+        super().__init_subclass__()
 
-    def setupPurchase(self, clsOfObjectBeingPurchased: type, cost: Dict[Resource, int], isLineFeature: bool = False, isPointFeature: bool = False):
-        assert not (isLineFeature and isPointFeature)
-        assert isLineFeature or isPointFeature
-        self.__cost = cost
-        self.__cls = clsOfObjectBeingPurchased
-
-        self.__isLineFeature: bool = isLineFeature
-        self.__isPointFeature: bool = isPointFeature
-    
-    def purchase(self, p: Player) -> bool:
-        if self.__cost is None or self.__cls is None:
-            raise NotSetupException('Cannot purchase before setupPurchase has been called')
+        if not cls._cost:
+            raise TypeError(f'Subclass ${cls.__name__} of Purchaseable is missing \'_cost\' attribute')
         
-        for resource, qty in self.__cost.items():
+        assert isinstance(cls._cost, dict)
+        for key, value in cls._cost.items():
+            assert isinstance(key, Resource)
+            assert isinstance(value, int)
+
+        if not (hasattr(cls, '_isLineFeature') or hasattr(cls, '_isPointFeature')):
+            raise TypeError(f'Subclass ${cls.__name__} of Purchaseable needs to have either \'_isLineFeature\' or \'_isPointFeature\' attribute')
+
+        isLineFeature = False
+        isPointFeature = False
+
+        if hasattr(cls, '_isLineFeature'):
+            isLineFeature = getattr(cls, '_isLineFeature')
+            assert isinstance(isLineFeature, bool)
+        
+        if hasattr(cls, '_isPointFeature'):
+            isPointFeature = getattr(cls, '_isPointFeature')
+            assert isinstance(isPointFeature, bool)
+        
+        if (isLineFeature and isPointFeature) or not (isLineFeature or isPointFeature):
+            raise TypeError('One one of \'_isPointFeature\' and \'_isLineFeature\' should be set')
+
+        cls._isLineFeature = isLineFeature
+        cls._isPointFeature = isPointFeature
+    
+    @classmethod
+    def purchase(cls, p: Player) -> bool:
+        if (cls is Purchaseable):
+            raise TypeError('Do not call \'purchase()\' on Purchaseable, only on subclasses')
+
+        # if cls._cost is None or cls.__cls is None:
+        #     raise NotSetupException('Cannot purchase before setupPurchase has been called')
+        
+        for resource, qty in cls._cost.items():
             if not p.hasResource(resource, qty):
                 raise ActionError(f"Missing resource: {resource.name}")
         
-        for resource, qty in self.__cost.items():
+        for resource, qty in cls._cost.items():
             p.takeResource(resource, qty)
 
-        if self.__isLineFeature:
-            p.inventory.addLineFeature(self.__cls())
+        if cls._isLineFeature:
+            p.inventory.addLineFeature(cls())
             return True
-        if self.__isPointFeature:
-            p.inventory.addPointFeature(self.__cls())
+
+        if cls._isPointFeature:
+            p.inventory.addPointFeature(cls())
             return True
         
         raise RuntimeError("This shouldn't happen")
     
-    @property
-    def purchaseCost(self) -> Dict[Resource, int]:
-        if self.__cost is None:
+    @classmethod
+    def purchaseCost(cls) -> Dict[Resource, int]:
+        if cls._cost is None:
             raise NotSetupException('Cannot get purchaseCost before setupPurchase has been called')
         
-        return self.__cost
+        return cls._cost
