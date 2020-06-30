@@ -106,6 +106,7 @@ class Server:
                 if request.type_ == 'action':
                     if request.content == 'nextTurn':
                         self.g.nextTurn()
+                        self.server.broadcastToAll(extraCode.getAsJson(self.g.currentTurn)) # send out turn
                         self.__updateClientInventory()
                 
                     elif request.content == 'placeSettlement':

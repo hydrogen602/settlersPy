@@ -29,7 +29,11 @@ class TestGame:
         assert g.playerManager.getPlayerCount() == 0
         assert len(g.gameMap.tiles) == 7
 
-        with open('tests/runMap.json') as f:
+        path = 'tests/runMap.json'
+        if not os.path.isfile(path):
+            path = 'runMap.json'
+
+        with open(path) as f:
             # as the random num gen's seed gets set the map will be the same
             standard = json.load(f) 
             current = json.loads(g.gameMap.getAsJson())
