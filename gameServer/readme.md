@@ -96,3 +96,21 @@ method that returns an empty dictionary, so that
 `super().toJsonSerializable()` can be called without
 worrying that none of the parents have the method,
 which would cause an exception. 
+
+---
+## Websocket Error Codes
+
+4000–4999 are for applications by websocket design
+
+I'll use 4000-4099 for errors that should sent the user back to login
+
+- [4000] name missing
+- [4001] game already started
+- [4002] invalid token
+- [4003] name taken
+
+---
+## JSON communication
+
+- End turn: `{'type': 'action', 'content': 'nextTurn'}`
+- Place settlement: `{'type': 'action', 'content': 'placeSettlement', 'args': []}`

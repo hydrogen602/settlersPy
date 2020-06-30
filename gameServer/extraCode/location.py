@@ -2,16 +2,29 @@ from __future__ import annotations
 from enum import Enum
 from typing import Dict, Iterable, Tuple, List
 
-from .util import IterableCls
+from .util import IterableCls, JsonSerializable
 
 
-class HexPoint:
+class HexPoint(JsonSerializable):
     def __init__(self, row: int, col: int) -> None:
         self.__row: int = row
         self.__col: int = col
     
-    def toJsonSerializable(self) -> Dict[str, int]:
-        return {'row': self.__row, 'col': self.__col}
+    def toJsonSerializable(self) -> Dict[str, object]:
+        return {
+            'row': self.__row, 
+            'col': self.__col,
+            **super().toJsonSerializable()
+            }
+    
+    @classmethod
+    def fromJson(cls, o: Dict[str, str]) -> HexPoint:
+        if o.get('__name__') != 'HexPoint':
+            raise SyntaxError('Wrong __name__ property')
+        if 'row' not in o or 'col' not in o:
+            raise SyntaxError('Missing fields row or col')
+        
+        return cls(int(o['row']), int(o['col']))
 
     @property
     def row(self) -> int:
@@ -86,14 +99,54 @@ class HexPoint:
             third = HexPoint(row=self.row, col=self.col - 1)
         
         return first, second, third
+    
+    def getNeighboringTiles(self) -> Tuple[HexPoint, HexPoint, HexPoint]:
+        '''
+        Get all the tiles adjacent to a point
+        '''
+        # right
+        #           * --- *
+        #          /       \
+        #   * --- *         *
+        #  /       \\      /
+        # *         X === *
+        #  \       //      \
+        #   * --- *         *
+        #          \       /
+        #           * --- *
+
+        # left
+        #   * --- *
+        #  /       \
+        # *         * --- *
+        #  \       //      \
+        #   * === X         *
+        #  /       \\      /
+        # *         * --- *
+        #  \       /
+        #   * --- *
+
+        if abs(self.col % 2) == abs(self.row % 2):
+            # two right, one left
+            first = HexPoint(row=self.row, col=self.col)
+            second = HexPoint(row=self.row-2, col=self.col)
+            third = HexPoint(row=self.row-1, col=self.col-1)
+        else:
+            # two left, one right
+            first = HexPoint(row=self.row-1, col=self.col)
+            second = HexPoint(row=self.row, col=self.col-1)
+            third = HexPoint(row=self.row-2, col=self.col-1)
+        
+        return first, second, third
 
 
 class Resource(Enum):
-    Wheat = 0
-    Sheepie = 1
-    Lumber = 2
-    Ore = 3
-    Brick = 4
+    NoResource = 0
+    Wheat = 1
+    Sheepie = 2
+    Lumber = 3
+    Ore = 4
+    Brick = 5
 
 
 class Biome(metaclass=IterableCls):
@@ -162,3 +215,4 @@ Biome('grassland', Resource.Sheepie, 'limegreen')
 Biome('forest', Resource.Lumber, 'forestgreen')
 Biome('mountain', Resource.Ore, 'dimgray')
 Biome('quarry', Resource.Brick, 'firebrick')
+Biome('desert', Resource.NoResource, 'yellow')

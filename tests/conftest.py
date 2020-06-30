@@ -47,3 +47,9 @@ def pytest_runtest_setup(item):
             # if name found, test has failed for the combination of class name & test name
             if test_name is not None:
                 pytest.xfail("previous test failed ({})".format(test_name))
+
+
+def pytest_configure(config):
+    config.addinivalue_line(
+        "markers", "incremental: run one after the other"
+    )

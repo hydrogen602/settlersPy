@@ -3,6 +3,10 @@ import random
 import json
 
 
+def _debugSetSeed(seed):
+    random.seed(seed)
+
+
 def rollDice() -> int:
     return random.randint(1,6)
 
@@ -141,3 +145,7 @@ class customJsonEncoder(json.JSONEncoder):
         
         dictData['__name__'] = type(obj).__name__
         return dictData
+
+
+def getAsJson(obj: JsonSerializable) -> str:
+    return json.dumps(obj, cls=customJsonEncoder)

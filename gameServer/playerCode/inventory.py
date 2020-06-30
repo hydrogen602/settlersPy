@@ -3,6 +3,7 @@ from typing import Dict, List, TYPE_CHECKING
 
 from ..extraCode.location import Biome, Resource
 from ..extraCode.util import ActionError
+from ..extraCode.util import JsonSerializable
 
 if TYPE_CHECKING:
     from ..mapCode.pointMapFeatures import Settlement
@@ -10,7 +11,8 @@ if TYPE_CHECKING:
     from ..extraCode.location import HexPoint
     from .turn import Turn
 
-class Inventory:
+
+class Inventory(JsonSerializable):
 
     def __init__(self):
         self.__inventory: Dict[Resource, int] = dict([(r, 0) for r in Resource])
@@ -40,9 +42,10 @@ class Inventory:
         if not isinstance(resourceType, Resource):
             raise TypeError(f"Expected type Resource but got type {type(resourceType)}")
 
+        if self.__inventory[resourceType] < count:
+            raise ValueError(f'Asked for {count} of {resourceType.name}, but the inventory only has {self.__inventory[resourceType]}')
+        
         self.__inventory[resourceType] -= count
-        if self.__inventory[resourceType] < 0:
-            raise ValueError('negative value in inventory')
     
     def totalResourceCount(self) -> int:
         return sum(self.__inventory.values())
@@ -50,6 +53,15 @@ class Inventory:
     def __str__(self) -> str:
         return "Inv: " + '; '.join([f"{resource.name}: {count}" for resource, count in self.__inventory.items()])
 
+    def toJsonSerializable(self):
+        d = {}
+        for key, value in self.__inventory.items():
+            d[key.name] = value
+
+        return {
+            'inventory': d,
+            **super().toJsonSerializable()
+        }
 
 class ExpandedInventory(Inventory):
     '''
@@ -103,3 +115,10 @@ class ExpandedInventory(Inventory):
     def __str__(self) -> str:
         s = super().__str__()
         return s + f" | PointFeatures: [{', '.join([str(e) for e in self.__ownedPointFeatures])}]; LineFeatures: [{', '.join([str(e) for e in self.__ownedLineFeatures])}]"
+
+    def toJsonSerializable(self):
+        return {
+            'pointFeatures': self.__ownedPointFeatures,
+            'lineFeatures': self.__ownedLineFeatures,
+            **super().toJsonSerializable()
+        }

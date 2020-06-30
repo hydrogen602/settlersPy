@@ -28,10 +28,13 @@
 from typing import Dict, List, TYPE_CHECKING
 
 from ..extraCode.location import Biome, Resource
+from ..extraCode.util import ActionError
 
 if TYPE_CHECKING:
     from ..mapCode.pointMapFeatures import Settlement
     from ..mapCode.lineMapFeatures import Road
+    from ..extraCode.location import HexPoint
+    from .turn import Turn
 
 class Inventory:
 
@@ -39,8 +42,8 @@ class Inventory:
         self.__inventory: Dict[Resource, int] = dict([(r, 0) for r in Resource])
         
         # for debug
-        self.addResource(Resource.Brick, 1)
-        self.addResource(Resource.Lumber, 1)
+        # self.addResource(Resource.Brick, 1)
+        # self.addResource(Resource.Lumber, 1)
     
     def getCount(self, resourceType: Resource) -&gt; int:
         if not isinstance(resourceType, Resource):
@@ -63,12 +66,17 @@ class Inventory:
         if not isinstance(resourceType, Resource):
             raise TypeError(f&#34;Expected type Resource but got type {type(resourceType)}&#34;)
 
+        if self.__inventory[resourceType] &lt; count:
+            raise ValueError(f&#39;Asked for {count} of {resourceType.name}, but the inventory only has {self.__inventory[resourceType]}&#39;)
+        
         self.__inventory[resourceType] -= count
-        if self.__inventory[resourceType] &lt; 0:
-            raise ValueError(&#39;negative value in inventory&#39;)
+        
     
     def totalResourceCount(self) -&gt; int:
         return sum(self.__inventory.values())
+    
+    def __str__(self) -&gt; str:
+        return &#34;Inv: &#34; + &#39;; &#39;.join([f&#34;{resource.name}: {count}&#34; for resource, count in self.__inventory.items()])
 
 
 class ExpandedInventory(Inventory):
@@ -98,11 +106,31 @@ class ExpandedInventory(Inventory):
     def ownedLineFeatures(self) -&gt; List[Road]:
         return self.__ownedLineFeatures
     
-    def placePointFeature(self, index: int):
+    def placePointFeature(self, index: int, point: HexPoint, turn: Turn):
+        if len(self.__ownedPointFeatures) == 0:
+            raise ActionError(&#34;You have no settlements or cities to place&#34;)
+        if index &lt; 0 or index &gt;= len(self.__ownedPointFeatures):
+            raise IndexError(f&#34;Index out of bounds: {index}&#34;)
+
+        s = self.__ownedPointFeatures[index]
+        s.place(point, turn)
+
         self.__ownedPointFeatures.pop(index)
     
-    def placeLineFeature(self, index: int):
-        self.__ownedLineFeatures.pop(index)</code></pre>
+    def placeLineFeature(self, index: int, point1: HexPoint, point2: HexPoint, turn: Turn):
+        if len(self.__ownedLineFeatures) == 0:
+            raise ActionError(&#34;You have no roads to place&#34;)
+        if index &lt; 0 or index &gt;= len(self.__ownedLineFeatures):
+            raise IndexError(f&#34;Index out of bounds: {index}&#34;)
+
+        r = self.__ownedLineFeatures[index]
+        r.place(point1, point2, turn)
+
+        self.__ownedLineFeatures.pop(index)
+    
+    def __str__(self) -&gt; str:
+        s = super().__str__()
+        return s + f&#34; | PointFeatures: [{&#39;, &#39;.join([str(e) for e in self.__ownedPointFeatures])}]; LineFeatures: [{&#39;, &#39;.join([str(e) for e in self.__ownedLineFeatures])}]&#34;</code></pre>
 </details>
 </section>
 <section>
@@ -152,11 +180,31 @@ that haven't been placed yet</p></section>
     def ownedLineFeatures(self) -&gt; List[Road]:
         return self.__ownedLineFeatures
     
-    def placePointFeature(self, index: int):
+    def placePointFeature(self, index: int, point: HexPoint, turn: Turn):
+        if len(self.__ownedPointFeatures) == 0:
+            raise ActionError(&#34;You have no settlements or cities to place&#34;)
+        if index &lt; 0 or index &gt;= len(self.__ownedPointFeatures):
+            raise IndexError(f&#34;Index out of bounds: {index}&#34;)
+
+        s = self.__ownedPointFeatures[index]
+        s.place(point, turn)
+
         self.__ownedPointFeatures.pop(index)
     
-    def placeLineFeature(self, index: int):
-        self.__ownedLineFeatures.pop(index)</code></pre>
+    def placeLineFeature(self, index: int, point1: HexPoint, point2: HexPoint, turn: Turn):
+        if len(self.__ownedLineFeatures) == 0:
+            raise ActionError(&#34;You have no roads to place&#34;)
+        if index &lt; 0 or index &gt;= len(self.__ownedLineFeatures):
+            raise IndexError(f&#34;Index out of bounds: {index}&#34;)
+
+        r = self.__ownedLineFeatures[index]
+        r.place(point1, point2, turn)
+
+        self.__ownedLineFeatures.pop(index)
+    
+    def __str__(self) -&gt; str:
+        s = super().__str__()
+        return s + f&#34; | PointFeatures: [{&#39;, &#39;.join([str(e) for e in self.__ownedPointFeatures])}]; LineFeatures: [{&#39;, &#39;.join([str(e) for e in self.__ownedLineFeatures])}]&#34;</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -218,7 +266,7 @@ def ownedPointFeatures(self) -&gt; List[Settlement]:
 </details>
 </dd>
 <dt id="gameServer.playerCode.inventory.ExpandedInventory.placeLineFeature"><code class="name flex">
-<span>def <span class="ident">placeLineFeature</span></span>(<span>self, index)</span>
+<span>def <span class="ident">placeLineFeature</span></span>(<span>self, index, point1, point2, turn)</span>
 </code></dt>
 <dd>
 <section class="desc"></section>
@@ -226,12 +274,20 @@ def ownedPointFeatures(self) -&gt; List[Settlement]:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def placeLineFeature(self, index: int):
+<pre><code class="python">def placeLineFeature(self, index: int, point1: HexPoint, point2: HexPoint, turn: Turn):
+    if len(self.__ownedLineFeatures) == 0:
+        raise ActionError(&#34;You have no roads to place&#34;)
+    if index &lt; 0 or index &gt;= len(self.__ownedLineFeatures):
+        raise IndexError(f&#34;Index out of bounds: {index}&#34;)
+
+    r = self.__ownedLineFeatures[index]
+    r.place(point1, point2, turn)
+
     self.__ownedLineFeatures.pop(index)</code></pre>
 </details>
 </dd>
 <dt id="gameServer.playerCode.inventory.ExpandedInventory.placePointFeature"><code class="name flex">
-<span>def <span class="ident">placePointFeature</span></span>(<span>self, index)</span>
+<span>def <span class="ident">placePointFeature</span></span>(<span>self, index, point, turn)</span>
 </code></dt>
 <dd>
 <section class="desc"></section>
@@ -239,7 +295,15 @@ def ownedPointFeatures(self) -&gt; List[Settlement]:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def placePointFeature(self, index: int):
+<pre><code class="python">def placePointFeature(self, index: int, point: HexPoint, turn: Turn):
+    if len(self.__ownedPointFeatures) == 0:
+        raise ActionError(&#34;You have no settlements or cities to place&#34;)
+    if index &lt; 0 or index &gt;= len(self.__ownedPointFeatures):
+        raise IndexError(f&#34;Index out of bounds: {index}&#34;)
+
+    s = self.__ownedPointFeatures[index]
+    s.place(point, turn)
+
     self.__ownedPointFeatures.pop(index)</code></pre>
 </details>
 </dd>
@@ -260,8 +324,8 @@ def ownedPointFeatures(self) -&gt; List[Settlement]:
         self.__inventory: Dict[Resource, int] = dict([(r, 0) for r in Resource])
         
         # for debug
-        self.addResource(Resource.Brick, 1)
-        self.addResource(Resource.Lumber, 1)
+        # self.addResource(Resource.Brick, 1)
+        # self.addResource(Resource.Lumber, 1)
     
     def getCount(self, resourceType: Resource) -&gt; int:
         if not isinstance(resourceType, Resource):
@@ -284,12 +348,17 @@ def ownedPointFeatures(self) -&gt; List[Settlement]:
         if not isinstance(resourceType, Resource):
             raise TypeError(f&#34;Expected type Resource but got type {type(resourceType)}&#34;)
 
+        if self.__inventory[resourceType] &lt; count:
+            raise ValueError(f&#39;Asked for {count} of {resourceType.name}, but the inventory only has {self.__inventory[resourceType]}&#39;)
+        
         self.__inventory[resourceType] -= count
-        if self.__inventory[resourceType] &lt; 0:
-            raise ValueError(&#39;negative value in inventory&#39;)
+        
     
     def totalResourceCount(self) -&gt; int:
-        return sum(self.__inventory.values())</code></pre>
+        return sum(self.__inventory.values())
+    
+    def __str__(self) -&gt; str:
+        return &#34;Inv: &#34; + &#39;; &#39;.join([f&#34;{resource.name}: {count}&#34; for resource, count in self.__inventory.items()])</code></pre>
 </details>
 <h3>Subclasses</h3>
 <ul class="hlist">
@@ -357,9 +426,10 @@ def ownedPointFeatures(self) -&gt; List[Settlement]:
     if not isinstance(resourceType, Resource):
         raise TypeError(f&#34;Expected type Resource but got type {type(resourceType)}&#34;)
 
-    self.__inventory[resourceType] -= count
-    if self.__inventory[resourceType] &lt; 0:
-        raise ValueError(&#39;negative value in inventory&#39;)</code></pre>
+    if self.__inventory[resourceType] &lt; count:
+        raise ValueError(f&#39;Asked for {count} of {resourceType.name}, but the inventory only has {self.__inventory[resourceType]}&#39;)
+    
+    self.__inventory[resourceType] -= count</code></pre>
 </details>
 </dd>
 <dt id="gameServer.playerCode.inventory.Inventory.totalResourceCount"><code class="name flex">

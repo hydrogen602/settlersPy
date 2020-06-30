@@ -31,7 +31,6 @@ from typing import Dict, Iterable, Tuple, List
 from .util import IterableCls
 
 
-
 class HexPoint:
     def __init__(self, row: int, col: int) -&gt; None:
         self.__row: int = row
@@ -51,6 +50,9 @@ class HexPoint:
     def getAsTuple(self) -&gt; Tuple[int, int]:
         return (self.__row, self.__col)
     
+    def copy(self) -&gt; HexPoint:
+        return HexPoint(self.row, self.col)
+    
     def __add__(self, other: HexPoint) -&gt; HexPoint:
         return HexPoint(self.row + other.row, self.col + other.col)
 
@@ -66,6 +68,12 @@ class HexPoint:
         if not isinstance(other, HexPoint):
             return True
         return self.row != other.row or self.col != other.col
+    
+    def __str__(self):
+        return f&#34;HexPoint({self.__row}, {self.__col})&#34;
+    
+    def __repr__(self):
+        return self.__str__()
     
     def isNeighbor(self, other: HexPoint) -&gt; bool:
         &#39;&#39;&#39;
@@ -87,6 +95,62 @@ class HexPoint:
                 return True
 
         return False
+
+    def getNeighbors(self) -&gt; Tuple[HexPoint, HexPoint, HexPoint]:
+        &#39;&#39;&#39;
+        Gets all points adjacent to this point
+        &#39;&#39;&#39;
+        first = HexPoint(row=self.row + 1, col=self.col)
+        second = HexPoint(row=self.row - 1, col=self.col)
+
+
+        if abs(self.col % 2) == abs(self.row % 2):
+            # right
+            third = HexPoint(row=self.row, col=self.col + 1)
+        else:
+            # left
+            third = HexPoint(row=self.row, col=self.col - 1)
+        
+        return first, second, third
+    
+    def getNeighboringTiles(self) -&gt; Tuple[HexPoint, HexPoint, HexPoint]:
+        &#39;&#39;&#39;
+        Get all the tiles adjacent to a point
+        &#39;&#39;&#39;
+        # right
+        #           * --- *
+        #          /       \
+        #   * --- *         *
+        #  /       \\      /
+        # *         X === *
+        #  \       //      \
+        #   * --- *         *
+        #          \       /
+        #           * --- *
+
+        # left
+        #   * --- *
+        #  /       \
+        # *         * --- *
+        #  \       //      \
+        #   * === X         *
+        #  /       \\      /
+        # *         * --- *
+        #  \       /
+        #   * --- *
+
+        if abs(self.col % 2) == abs(self.row % 2):
+            # two right, one left
+            first = HexPoint(row=self.row, col=self.col)
+            second = HexPoint(row=self.row-2, col=self.col)
+            third = HexPoint(row=self.row-1, col=self.col-1)
+        else:
+            # two left, one right
+            first = HexPoint(row=self.row-1, col=self.col)
+            second = HexPoint(row=self.row, col=self.col-1)
+            third = HexPoint(row=self.row-2, col=self.col-1)
+        
+        return first, second, third
 
 
 class Resource(Enum):
@@ -394,6 +458,9 @@ def primaryResource(self) -&gt; Resource:
     def getAsTuple(self) -&gt; Tuple[int, int]:
         return (self.__row, self.__col)
     
+    def copy(self) -&gt; HexPoint:
+        return HexPoint(self.row, self.col)
+    
     def __add__(self, other: HexPoint) -&gt; HexPoint:
         return HexPoint(self.row + other.row, self.col + other.col)
 
@@ -409,6 +476,12 @@ def primaryResource(self) -&gt; Resource:
         if not isinstance(other, HexPoint):
             return True
         return self.row != other.row or self.col != other.col
+    
+    def __str__(self):
+        return f&#34;HexPoint({self.__row}, {self.__col})&#34;
+    
+    def __repr__(self):
+        return self.__str__()
     
     def isNeighbor(self, other: HexPoint) -&gt; bool:
         &#39;&#39;&#39;
@@ -429,7 +502,63 @@ def primaryResource(self) -&gt; Resource:
             if other.col == self.col - 1 and other.row == self.row:
                 return True
 
-        return False</code></pre>
+        return False
+
+    def getNeighbors(self) -&gt; Tuple[HexPoint, HexPoint, HexPoint]:
+        &#39;&#39;&#39;
+        Gets all points adjacent to this point
+        &#39;&#39;&#39;
+        first = HexPoint(row=self.row + 1, col=self.col)
+        second = HexPoint(row=self.row - 1, col=self.col)
+
+
+        if abs(self.col % 2) == abs(self.row % 2):
+            # right
+            third = HexPoint(row=self.row, col=self.col + 1)
+        else:
+            # left
+            third = HexPoint(row=self.row, col=self.col - 1)
+        
+        return first, second, third
+    
+    def getNeighboringTiles(self) -&gt; Tuple[HexPoint, HexPoint, HexPoint]:
+        &#39;&#39;&#39;
+        Get all the tiles adjacent to a point
+        &#39;&#39;&#39;
+        # right
+        #           * --- *
+        #          /       \
+        #   * --- *         *
+        #  /       \\      /
+        # *         X === *
+        #  \       //      \
+        #   * --- *         *
+        #          \       /
+        #           * --- *
+
+        # left
+        #   * --- *
+        #  /       \
+        # *         * --- *
+        #  \       //      \
+        #   * === X         *
+        #  /       \\      /
+        # *         * --- *
+        #  \       /
+        #   * --- *
+
+        if abs(self.col % 2) == abs(self.row % 2):
+            # two right, one left
+            first = HexPoint(row=self.row, col=self.col)
+            second = HexPoint(row=self.row-2, col=self.col)
+            third = HexPoint(row=self.row-1, col=self.col-1)
+        else:
+            # two left, one right
+            first = HexPoint(row=self.row-1, col=self.col)
+            second = HexPoint(row=self.row, col=self.col-1)
+            third = HexPoint(row=self.row-2, col=self.col-1)
+        
+        return first, second, third</code></pre>
 </details>
 <h3>Instance variables</h3>
 <dl>
@@ -460,6 +589,19 @@ def row(self) -&gt; int:
 </dl>
 <h3>Methods</h3>
 <dl>
+<dt id="gameServer.extraCode.location.HexPoint.copy"><code class="name flex">
+<span>def <span class="ident">copy</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def copy(self) -&gt; HexPoint:
+    return HexPoint(self.row, self.col)</code></pre>
+</details>
+</dd>
 <dt id="gameServer.extraCode.location.HexPoint.getAsTuple"><code class="name flex">
 <span>def <span class="ident">getAsTuple</span></span>(<span>self)</span>
 </code></dt>
@@ -471,6 +613,82 @@ def row(self) -&gt; int:
 </summary>
 <pre><code class="python">def getAsTuple(self) -&gt; Tuple[int, int]:
     return (self.__row, self.__col)</code></pre>
+</details>
+</dd>
+<dt id="gameServer.extraCode.location.HexPoint.getNeighboringTiles"><code class="name flex">
+<span>def <span class="ident">getNeighboringTiles</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Get all the tiles adjacent to a point</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def getNeighboringTiles(self) -&gt; Tuple[HexPoint, HexPoint, HexPoint]:
+    &#39;&#39;&#39;
+    Get all the tiles adjacent to a point
+    &#39;&#39;&#39;
+    # right
+    #           * --- *
+    #          /       \
+    #   * --- *         *
+    #  /       \\      /
+    # *         X === *
+    #  \       //      \
+    #   * --- *         *
+    #          \       /
+    #           * --- *
+
+    # left
+    #   * --- *
+    #  /       \
+    # *         * --- *
+    #  \       //      \
+    #   * === X         *
+    #  /       \\      /
+    # *         * --- *
+    #  \       /
+    #   * --- *
+
+    if abs(self.col % 2) == abs(self.row % 2):
+        # two right, one left
+        first = HexPoint(row=self.row, col=self.col)
+        second = HexPoint(row=self.row-2, col=self.col)
+        third = HexPoint(row=self.row-1, col=self.col-1)
+    else:
+        # two left, one right
+        first = HexPoint(row=self.row-1, col=self.col)
+        second = HexPoint(row=self.row, col=self.col-1)
+        third = HexPoint(row=self.row-2, col=self.col-1)
+    
+    return first, second, third</code></pre>
+</details>
+</dd>
+<dt id="gameServer.extraCode.location.HexPoint.getNeighbors"><code class="name flex">
+<span>def <span class="ident">getNeighbors</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Gets all points adjacent to this point</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def getNeighbors(self) -&gt; Tuple[HexPoint, HexPoint, HexPoint]:
+    &#39;&#39;&#39;
+    Gets all points adjacent to this point
+    &#39;&#39;&#39;
+    first = HexPoint(row=self.row + 1, col=self.col)
+    second = HexPoint(row=self.row - 1, col=self.col)
+
+
+    if abs(self.col % 2) == abs(self.row % 2):
+        # right
+        third = HexPoint(row=self.row, col=self.col + 1)
+    else:
+        # left
+        third = HexPoint(row=self.row, col=self.col - 1)
+    
+    return first, second, third</code></pre>
 </details>
 </dd>
 <dt id="gameServer.extraCode.location.HexPoint.isNeighbor"><code class="name flex">
@@ -595,9 +813,12 @@ Taken from the typescript version, it worked there so I hope it works here</p></
 </li>
 <li>
 <h4><code><a title="gameServer.extraCode.location.HexPoint" href="#gameServer.extraCode.location.HexPoint">HexPoint</a></code></h4>
-<ul class="">
+<ul class="two-column">
 <li><code><a title="gameServer.extraCode.location.HexPoint.col" href="#gameServer.extraCode.location.HexPoint.col">col</a></code></li>
+<li><code><a title="gameServer.extraCode.location.HexPoint.copy" href="#gameServer.extraCode.location.HexPoint.copy">copy</a></code></li>
 <li><code><a title="gameServer.extraCode.location.HexPoint.getAsTuple" href="#gameServer.extraCode.location.HexPoint.getAsTuple">getAsTuple</a></code></li>
+<li><code><a title="gameServer.extraCode.location.HexPoint.getNeighboringTiles" href="#gameServer.extraCode.location.HexPoint.getNeighboringTiles">getNeighboringTiles</a></code></li>
+<li><code><a title="gameServer.extraCode.location.HexPoint.getNeighbors" href="#gameServer.extraCode.location.HexPoint.getNeighbors">getNeighbors</a></code></li>
 <li><code><a title="gameServer.extraCode.location.HexPoint.isNeighbor" href="#gameServer.extraCode.location.HexPoint.isNeighbor">isNeighbor</a></code></li>
 <li><code><a title="gameServer.extraCode.location.HexPoint.row" href="#gameServer.extraCode.location.HexPoint.row">row</a></code></li>
 <li><code><a title="gameServer.extraCode.location.HexPoint.toJsonSerializable" href="#gameServer.extraCode.location.HexPoint.toJsonSerializable">toJsonSerializable</a></code></li>

@@ -26,28 +26,41 @@
 </summary>
 <pre><code class="python">from __future__ import annotations
 
-from typing import List, Dict, Tuple, Optional, TYPE_CHECKING
+from typing import List, Dict, Tuple, Optional, TYPE_CHECKING, Union
+import json
 
 if TYPE_CHECKING:
     from ..playerCode.player import Player
-    from .tiles import Tile
-    from .pointMapFeatures import Settlement
-    from .lineMapFeatures import Road
-
-from ..extraCode import HexPoint, JsonSerializable
-
+    from ..playerCode.turn import Turn
+    
+from .tiles import Tile
+from .pointMapFeatures import Settlement
+from .lineMapFeatures import Road
+from ..extraCode import HexPoint, JsonSerializable, ActionError, customJsonEncoder
 
 class GameMap(JsonSerializable):
 
-    def __init__(self, tiles: List[Tile]) -&gt; None:
+    def __init__(self, tiles: List[Tile] = []) -&gt; None:
         self.__tiles: Dict[Tuple[int, int], Tile] = {}
         for t in tiles:
             self.__tiles[t.position.getAsTuple()] = t
         
-        self.__pointFeatures: List[Settlement] = []
-        self.__lineFeatures: List[Road] = []
+        self.__pointFeatures: Dict[Tuple[int, int], Settlement] = {}
+        self.__lineFeatures: Dict[Tuple[Tuple[int, int], Tuple[int, int]], Road] = {}
 
         self.__robberPosition: Optional[HexPoint] = None
+    
+    @property
+    def tiles(self) -&gt; List[Tile]:
+        return list(self.__tiles.values())
+    
+    @property
+    def pointFeatures(self) -&gt; List[Settlement]:
+        return list(self.__pointFeatures.values())
+    
+    @property
+    def lineFeatures(self) -&gt; List[Road]:
+        return list(self.__lineFeatures.values())
     
     def generateHexagonalArea(self, size: int, startPoint: HexPoint = HexPoint(0, 0)):
         nP: float = (size - 1) / 2
@@ -59,7 +72,7 @@ class GameMap(JsonSerializable):
             for i in range(-addition, size + addition):
                 self.addTile(
                     Tile.generate(
-                        HexPoint(2*j, 2*i) + startPoint
+                        HexPoint(2*i, 2*j) + startPoint
                     )
                 )
 
@@ -69,9 +82,19 @@ class GameMap(JsonSerializable):
             for i in range(-addition, size + addition + 1):
                 self.addTile(
                     Tile.generate(
-                        HexPoint(2*j + 1, 2*i - 1) + startPoint
+                        HexPoint(2*i - 1, 2*j + 1) + startPoint
                     )
                 )
+    
+    # def isLegalPosition(self, thing: Union[Road, Settlement]):
+    #     if isinstance(thing, Road):
+    #         r: Road = thing
+
+    #     elif isinstance(thing, Settlement): # TODO
+    #         s: Settlement = thing
+        
+    #     else:
+    #         raise TypeError(f&#34;Argument of wrong type, got {type(thing)}, but expected Union[Road, Settlement]&#34;)
     
     def moveRobber(self, position: HexPoint):
         &#39;&#39;&#39;
@@ -80,15 +103,22 @@ class GameMap(JsonSerializable):
         on the old tile and robberArrives() on the new
         tile. If the robber doesn&#39;t have a location yet,
         no attempt will be made to get the old tile
-        as that would result in a KeyError
+        as that would result in a KeyError.
+
+        Raises a `KeyError` if no tile exists at position. 
         &#39;&#39;&#39;
+
+        newTile = self.getTile(position)
+        # if the tile does not exist, nothing else should change about the map
+        if newTile is None:
+            return ActionError(&#34;No tile found at given position&#34;)
 
         if self.__robberPosition is not None:
             oldTile = self.getTile(self.__robberPosition)
+            if oldTile is None:
+                raise RuntimeError(&#34;This shouldn&#39;t happen&#34;)
             oldTile.robberDeparts()
         
-
-        newTile = self.getTile(position)
         newTile.robberArrives()
 
         self.__robberPosition = position
@@ -97,35 +127,134 @@ class GameMap(JsonSerializable):
         &#39;&#39;&#39;
         Add a tile to the map. Tiles cannot
         be placed where there already is a tile.
+        Raises a `KeyError` if the tile already exists.
         &#39;&#39;&#39;
         key = elem.position.getAsTuple()
         if key in self.__tiles:
             raise KeyError(f&#39;A tile already exists at postion {key}&#39;)
         self.__tiles[key] = elem
 
-    def getTile(self, position: HexPoint) -&gt; Tile:
+    def getTile(self, position: HexPoint) -&gt; Optional[Tile]:
         &#39;&#39;&#39;
-        Fetches a tile from the map given the postion
+        Fetches a tile from the map given the postion.
+        Returns `None` if the tile does not exist
         &#39;&#39;&#39;
         key = position.getAsTuple()
         if key not in self.__tiles:
-            raise KeyError(f&#39;No tile found at postion {key}&#39;)
+            return None
+            #raise KeyError(f&#39;No tile found at postion {key}&#39;)
         return self.__tiles[position.getAsTuple()]
-
-    def addPointElement(self, elem: Settlement):
-        self.__pointFeatures.append(elem)
     
-    def addLineElement(self, elem: Road):
-        self.__lineFeatures.append(elem)
+    def __contains__(self, position: HexPoint) -&gt; bool:
+        &#39;&#39;&#39;
+        For checking if a tile exists at some point
+        &#39;&#39;&#39;
+        return position.getAsTuple() in self.__tiles
+
+    def addPointElement(self, elem: Settlement, turn: Turn):
+        point: Tuple[int, int] = elem.position.getAsTuple()
+
+        if elem.owner != turn.currentPlayer:
+            raise ActionError(&#34;Things may only be placed on your turn&#34;)
+
+        if point in self.__pointFeatures:
+            raise ActionError(&#34;A settlement exists here already&#34;)
+
+        # check neighbors -&gt; there must be none
+        neighbors: List[Tuple[int, int]] = [p.getAsTuple() for p in elem.position.getNeighbors()]
+
+        for n in neighbors:
+            if n in self.__pointFeatures:
+                raise ActionError(&#34;Too close to other settlement, needs at least one space in between&#34;)
+
+        if turn.roundNum &gt;= 2:
+            # check for roads -&gt; there must be one of owner
+            foundOwnedRoad = False
+            for p in neighbors:
+                if (point, p) in self.__lineFeatures and self.__lineFeatures[(point, p)].owner == elem.owner:
+                    foundOwnedRoad = True
+                    break
+                if (p, point) in self.__lineFeatures and self.__lineFeatures[(p, point)].owner == elem.owner:
+                    foundOwnedRoad = True
+                    break
+            
+            if not foundOwnedRoad:
+                raise ActionError(&#34;Settlements must be connected to an owned road&#34;)
+        
+        adjacentTiles: Tuple[HexPoint, HexPoint, HexPoint] = elem.position.getNeighboringTiles()
+        
+        foundOne = False
+        for hp in adjacentTiles:
+            t = self.getTile(hp)
+            if t is not None:
+                foundOne = True
+                t.addSettlement(elem)
+
+            pass # self.g
+        
+        if not foundOne:
+            # not next to any tiles, so in the ocean
+            raise ActionError(&#34;Settlement not placed on map&#34;)
+
+        self.__pointFeatures[point] = elem
+    
+    def addLineElement(self, elem: Road, turn: Turn):
+        p1: Tuple[int, int] = elem.point1.getAsTuple()
+        p2: Tuple[int, int] = elem.point2.getAsTuple()
+
+        if elem.owner != turn.currentPlayer:
+            raise ActionError(&#34;Things may only be placed on your turn&#34;)
+
+        if (p1, p2) in self.__lineFeatures or (p2, p1) in self.__lineFeatures:
+            # remember to check both orders
+            raise ActionError(&#34;A road exists here already&#34;)
+
+        if not elem.point1.isNeighbor(elem.point2):
+            raise ActionError(&#34;A road cannot be placed between these points&#34;)
+
+        neighbors1: List[Tuple[int, int]] = [p.getAsTuple() for p in elem.point1.getNeighbors()]
+        neighbors2: List[Tuple[int, int]] = [p.getAsTuple() for p in elem.point2.getNeighbors()]
+
+        # check for connection to road or settlement
+        foundOwnedConnection = False
+        for nGroup, point in ((neighbors1, p1), (neighbors2, p2)):
+            if point in self.__pointFeatures and self.__pointFeatures[point].owner == elem.owner:
+                foundOwnedConnection = True
+                break
+
+            for n in nGroup:
+                if (point, n) in self.__lineFeatures and self.__lineFeatures[(point, n)].owner == elem.owner:
+                    foundOwnedConnection = True
+                    break
+                if (n, point) in self.__lineFeatures and self.__lineFeatures[(n, point)].owner == elem.owner:
+                    foundOwnedConnection = True
+                    break
+            if foundOwnedConnection:
+                break
+        
+        if not foundOwnedConnection:
+            raise ActionError(&#34;Roads must be connected to an owned road or settlement&#34;)
+
+        self.__lineFeatures[(p1, p2)] = elem
     
     def toJsonSerializable(self):
+        &#39;&#39;&#39;
+        Format:
+        {
+            &#39;tiles&#39;: List[Tile],
+            &#39;points&#39;: List[Settlement],
+            &#39;lines&#39;: List[Road]
+        }
+        &#39;&#39;&#39;
         return {
-            &#39;tiles&#39;: [t.toJsonSerializable() for t in self.__tiles.values()],
+            &#39;tiles&#39;: self.tiles,
+            &#39;points&#39;: self.pointFeatures,
+            &#39;lines&#39;: self.lineFeatures,
             **super().toJsonSerializable()
         }
 
-    # def getAsJson(self):
-    #     return json.dumps(self, cls=customJsonEncoder)</code></pre>
+    def getAsJson(self):
+        return json.dumps(self, cls=customJsonEncoder)</code></pre>
 </details>
 </section>
 <section>
@@ -139,7 +268,7 @@ class GameMap(JsonSerializable):
 <dl>
 <dt id="gameServer.mapCode.gameMap.GameMap"><code class="flex name class">
 <span>class <span class="ident">GameMap</span></span>
-<span>(</span><span>tiles)</span>
+<span>(</span><span>tiles=[])</span>
 </code></dt>
 <dd>
 <section class="desc"><p>A superclass for classes that have a
@@ -156,15 +285,27 @@ from, put JsonSerializable last for best results.
 </summary>
 <pre><code class="python">class GameMap(JsonSerializable):
 
-    def __init__(self, tiles: List[Tile]) -&gt; None:
+    def __init__(self, tiles: List[Tile] = []) -&gt; None:
         self.__tiles: Dict[Tuple[int, int], Tile] = {}
         for t in tiles:
             self.__tiles[t.position.getAsTuple()] = t
         
-        self.__pointFeatures: List[Settlement] = []
-        self.__lineFeatures: List[Road] = []
+        self.__pointFeatures: Dict[Tuple[int, int], Settlement] = {}
+        self.__lineFeatures: Dict[Tuple[Tuple[int, int], Tuple[int, int]], Road] = {}
 
         self.__robberPosition: Optional[HexPoint] = None
+    
+    @property
+    def tiles(self) -&gt; List[Tile]:
+        return list(self.__tiles.values())
+    
+    @property
+    def pointFeatures(self) -&gt; List[Settlement]:
+        return list(self.__pointFeatures.values())
+    
+    @property
+    def lineFeatures(self) -&gt; List[Road]:
+        return list(self.__lineFeatures.values())
     
     def generateHexagonalArea(self, size: int, startPoint: HexPoint = HexPoint(0, 0)):
         nP: float = (size - 1) / 2
@@ -176,7 +317,7 @@ from, put JsonSerializable last for best results.
             for i in range(-addition, size + addition):
                 self.addTile(
                     Tile.generate(
-                        HexPoint(2*j, 2*i) + startPoint
+                        HexPoint(2*i, 2*j) + startPoint
                     )
                 )
 
@@ -186,9 +327,19 @@ from, put JsonSerializable last for best results.
             for i in range(-addition, size + addition + 1):
                 self.addTile(
                     Tile.generate(
-                        HexPoint(2*j + 1, 2*i - 1) + startPoint
+                        HexPoint(2*i - 1, 2*j + 1) + startPoint
                     )
                 )
+    
+    # def isLegalPosition(self, thing: Union[Road, Settlement]):
+    #     if isinstance(thing, Road):
+    #         r: Road = thing
+
+    #     elif isinstance(thing, Settlement): # TODO
+    #         s: Settlement = thing
+        
+    #     else:
+    #         raise TypeError(f&#34;Argument of wrong type, got {type(thing)}, but expected Union[Road, Settlement]&#34;)
     
     def moveRobber(self, position: HexPoint):
         &#39;&#39;&#39;
@@ -197,15 +348,22 @@ from, put JsonSerializable last for best results.
         on the old tile and robberArrives() on the new
         tile. If the robber doesn&#39;t have a location yet,
         no attempt will be made to get the old tile
-        as that would result in a KeyError
+        as that would result in a KeyError.
+
+        Raises a `KeyError` if no tile exists at position. 
         &#39;&#39;&#39;
+
+        newTile = self.getTile(position)
+        # if the tile does not exist, nothing else should change about the map
+        if newTile is None:
+            return ActionError(&#34;No tile found at given position&#34;)
 
         if self.__robberPosition is not None:
             oldTile = self.getTile(self.__robberPosition)
+            if oldTile is None:
+                raise RuntimeError(&#34;This shouldn&#39;t happen&#34;)
             oldTile.robberDeparts()
         
-
-        newTile = self.getTile(position)
         newTile.robberArrives()
 
         self.__robberPosition = position
@@ -214,41 +372,182 @@ from, put JsonSerializable last for best results.
         &#39;&#39;&#39;
         Add a tile to the map. Tiles cannot
         be placed where there already is a tile.
+        Raises a `KeyError` if the tile already exists.
         &#39;&#39;&#39;
         key = elem.position.getAsTuple()
         if key in self.__tiles:
             raise KeyError(f&#39;A tile already exists at postion {key}&#39;)
         self.__tiles[key] = elem
 
-    def getTile(self, position: HexPoint) -&gt; Tile:
+    def getTile(self, position: HexPoint) -&gt; Optional[Tile]:
         &#39;&#39;&#39;
-        Fetches a tile from the map given the postion
+        Fetches a tile from the map given the postion.
+        Returns `None` if the tile does not exist
         &#39;&#39;&#39;
         key = position.getAsTuple()
         if key not in self.__tiles:
-            raise KeyError(f&#39;No tile found at postion {key}&#39;)
+            return None
+            #raise KeyError(f&#39;No tile found at postion {key}&#39;)
         return self.__tiles[position.getAsTuple()]
-
-    def addPointElement(self, elem: Settlement):
-        self.__pointFeatures.append(elem)
     
-    def addLineElement(self, elem: Road):
-        self.__lineFeatures.append(elem)
+    def __contains__(self, position: HexPoint) -&gt; bool:
+        &#39;&#39;&#39;
+        For checking if a tile exists at some point
+        &#39;&#39;&#39;
+        return position.getAsTuple() in self.__tiles
+
+    def addPointElement(self, elem: Settlement, turn: Turn):
+        point: Tuple[int, int] = elem.position.getAsTuple()
+
+        if elem.owner != turn.currentPlayer:
+            raise ActionError(&#34;Things may only be placed on your turn&#34;)
+
+        if point in self.__pointFeatures:
+            raise ActionError(&#34;A settlement exists here already&#34;)
+
+        # check neighbors -&gt; there must be none
+        neighbors: List[Tuple[int, int]] = [p.getAsTuple() for p in elem.position.getNeighbors()]
+
+        for n in neighbors:
+            if n in self.__pointFeatures:
+                raise ActionError(&#34;Too close to other settlement, needs at least one space in between&#34;)
+
+        if turn.roundNum &gt;= 2:
+            # check for roads -&gt; there must be one of owner
+            foundOwnedRoad = False
+            for p in neighbors:
+                if (point, p) in self.__lineFeatures and self.__lineFeatures[(point, p)].owner == elem.owner:
+                    foundOwnedRoad = True
+                    break
+                if (p, point) in self.__lineFeatures and self.__lineFeatures[(p, point)].owner == elem.owner:
+                    foundOwnedRoad = True
+                    break
+            
+            if not foundOwnedRoad:
+                raise ActionError(&#34;Settlements must be connected to an owned road&#34;)
+        
+        adjacentTiles: Tuple[HexPoint, HexPoint, HexPoint] = elem.position.getNeighboringTiles()
+        
+        foundOne = False
+        for hp in adjacentTiles:
+            t = self.getTile(hp)
+            if t is not None:
+                foundOne = True
+                t.addSettlement(elem)
+
+            pass # self.g
+        
+        if not foundOne:
+            # not next to any tiles, so in the ocean
+            raise ActionError(&#34;Settlement not placed on map&#34;)
+
+        self.__pointFeatures[point] = elem
+    
+    def addLineElement(self, elem: Road, turn: Turn):
+        p1: Tuple[int, int] = elem.point1.getAsTuple()
+        p2: Tuple[int, int] = elem.point2.getAsTuple()
+
+        if elem.owner != turn.currentPlayer:
+            raise ActionError(&#34;Things may only be placed on your turn&#34;)
+
+        if (p1, p2) in self.__lineFeatures or (p2, p1) in self.__lineFeatures:
+            # remember to check both orders
+            raise ActionError(&#34;A road exists here already&#34;)
+
+        if not elem.point1.isNeighbor(elem.point2):
+            raise ActionError(&#34;A road cannot be placed between these points&#34;)
+
+        neighbors1: List[Tuple[int, int]] = [p.getAsTuple() for p in elem.point1.getNeighbors()]
+        neighbors2: List[Tuple[int, int]] = [p.getAsTuple() for p in elem.point2.getNeighbors()]
+
+        # check for connection to road or settlement
+        foundOwnedConnection = False
+        for nGroup, point in ((neighbors1, p1), (neighbors2, p2)):
+            if point in self.__pointFeatures and self.__pointFeatures[point].owner == elem.owner:
+                foundOwnedConnection = True
+                break
+
+            for n in nGroup:
+                if (point, n) in self.__lineFeatures and self.__lineFeatures[(point, n)].owner == elem.owner:
+                    foundOwnedConnection = True
+                    break
+                if (n, point) in self.__lineFeatures and self.__lineFeatures[(n, point)].owner == elem.owner:
+                    foundOwnedConnection = True
+                    break
+            if foundOwnedConnection:
+                break
+        
+        if not foundOwnedConnection:
+            raise ActionError(&#34;Roads must be connected to an owned road or settlement&#34;)
+
+        self.__lineFeatures[(p1, p2)] = elem
     
     def toJsonSerializable(self):
+        &#39;&#39;&#39;
+        Format:
+        {
+            &#39;tiles&#39;: List[Tile],
+            &#39;points&#39;: List[Settlement],
+            &#39;lines&#39;: List[Road]
+        }
+        &#39;&#39;&#39;
         return {
-            &#39;tiles&#39;: [t.toJsonSerializable() for t in self.__tiles.values()],
+            &#39;tiles&#39;: self.tiles,
+            &#39;points&#39;: self.pointFeatures,
+            &#39;lines&#39;: self.lineFeatures,
             **super().toJsonSerializable()
-        }</code></pre>
+        }
+
+    def getAsJson(self):
+        return json.dumps(self, cls=customJsonEncoder)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="gameServer.extraCode.util.JsonSerializable" href="../extraCode/util.html#gameServer.extraCode.util.JsonSerializable">JsonSerializable</a></li>
 </ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="gameServer.mapCode.gameMap.GameMap.lineFeatures"><code class="name">var <span class="ident">lineFeatures</span></code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def lineFeatures(self) -&gt; List[Road]:
+    return list(self.__lineFeatures.values())</code></pre>
+</details>
+</dd>
+<dt id="gameServer.mapCode.gameMap.GameMap.pointFeatures"><code class="name">var <span class="ident">pointFeatures</span></code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def pointFeatures(self) -&gt; List[Settlement]:
+    return list(self.__pointFeatures.values())</code></pre>
+</details>
+</dd>
+<dt id="gameServer.mapCode.gameMap.GameMap.tiles"><code class="name">var <span class="ident">tiles</span></code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def tiles(self) -&gt; List[Tile]:
+    return list(self.__tiles.values())</code></pre>
+</details>
+</dd>
+</dl>
 <h3>Methods</h3>
 <dl>
 <dt id="gameServer.mapCode.gameMap.GameMap.addLineElement"><code class="name flex">
-<span>def <span class="ident">addLineElement</span></span>(<span>self, elem)</span>
+<span>def <span class="ident">addLineElement</span></span>(<span>self, elem, turn)</span>
 </code></dt>
 <dd>
 <section class="desc"></section>
@@ -256,12 +555,48 @@ from, put JsonSerializable last for best results.
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def addLineElement(self, elem: Road):
-    self.__lineFeatures.append(elem)</code></pre>
+<pre><code class="python">def addLineElement(self, elem: Road, turn: Turn):
+    p1: Tuple[int, int] = elem.point1.getAsTuple()
+    p2: Tuple[int, int] = elem.point2.getAsTuple()
+
+    if elem.owner != turn.currentPlayer:
+        raise ActionError(&#34;Things may only be placed on your turn&#34;)
+
+    if (p1, p2) in self.__lineFeatures or (p2, p1) in self.__lineFeatures:
+        # remember to check both orders
+        raise ActionError(&#34;A road exists here already&#34;)
+
+    if not elem.point1.isNeighbor(elem.point2):
+        raise ActionError(&#34;A road cannot be placed between these points&#34;)
+
+    neighbors1: List[Tuple[int, int]] = [p.getAsTuple() for p in elem.point1.getNeighbors()]
+    neighbors2: List[Tuple[int, int]] = [p.getAsTuple() for p in elem.point2.getNeighbors()]
+
+    # check for connection to road or settlement
+    foundOwnedConnection = False
+    for nGroup, point in ((neighbors1, p1), (neighbors2, p2)):
+        if point in self.__pointFeatures and self.__pointFeatures[point].owner == elem.owner:
+            foundOwnedConnection = True
+            break
+
+        for n in nGroup:
+            if (point, n) in self.__lineFeatures and self.__lineFeatures[(point, n)].owner == elem.owner:
+                foundOwnedConnection = True
+                break
+            if (n, point) in self.__lineFeatures and self.__lineFeatures[(n, point)].owner == elem.owner:
+                foundOwnedConnection = True
+                break
+        if foundOwnedConnection:
+            break
+    
+    if not foundOwnedConnection:
+        raise ActionError(&#34;Roads must be connected to an owned road or settlement&#34;)
+
+    self.__lineFeatures[(p1, p2)] = elem</code></pre>
 </details>
 </dd>
 <dt id="gameServer.mapCode.gameMap.GameMap.addPointElement"><code class="name flex">
-<span>def <span class="ident">addPointElement</span></span>(<span>self, elem)</span>
+<span>def <span class="ident">addPointElement</span></span>(<span>self, elem, turn)</span>
 </code></dt>
 <dd>
 <section class="desc"></section>
@@ -269,8 +604,52 @@ from, put JsonSerializable last for best results.
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def addPointElement(self, elem: Settlement):
-    self.__pointFeatures.append(elem)</code></pre>
+<pre><code class="python">def addPointElement(self, elem: Settlement, turn: Turn):
+    point: Tuple[int, int] = elem.position.getAsTuple()
+
+    if elem.owner != turn.currentPlayer:
+        raise ActionError(&#34;Things may only be placed on your turn&#34;)
+
+    if point in self.__pointFeatures:
+        raise ActionError(&#34;A settlement exists here already&#34;)
+
+    # check neighbors -&gt; there must be none
+    neighbors: List[Tuple[int, int]] = [p.getAsTuple() for p in elem.position.getNeighbors()]
+
+    for n in neighbors:
+        if n in self.__pointFeatures:
+            raise ActionError(&#34;Too close to other settlement, needs at least one space in between&#34;)
+
+    if turn.roundNum &gt;= 2:
+        # check for roads -&gt; there must be one of owner
+        foundOwnedRoad = False
+        for p in neighbors:
+            if (point, p) in self.__lineFeatures and self.__lineFeatures[(point, p)].owner == elem.owner:
+                foundOwnedRoad = True
+                break
+            if (p, point) in self.__lineFeatures and self.__lineFeatures[(p, point)].owner == elem.owner:
+                foundOwnedRoad = True
+                break
+        
+        if not foundOwnedRoad:
+            raise ActionError(&#34;Settlements must be connected to an owned road&#34;)
+    
+    adjacentTiles: Tuple[HexPoint, HexPoint, HexPoint] = elem.position.getNeighboringTiles()
+    
+    foundOne = False
+    for hp in adjacentTiles:
+        t = self.getTile(hp)
+        if t is not None:
+            foundOne = True
+            t.addSettlement(elem)
+
+        pass # self.g
+    
+    if not foundOne:
+        # not next to any tiles, so in the ocean
+        raise ActionError(&#34;Settlement not placed on map&#34;)
+
+    self.__pointFeatures[point] = elem</code></pre>
 </details>
 </dd>
 <dt id="gameServer.mapCode.gameMap.GameMap.addTile"><code class="name flex">
@@ -278,7 +657,8 @@ from, put JsonSerializable last for best results.
 </code></dt>
 <dd>
 <section class="desc"><p>Add a tile to the map. Tiles cannot
-be placed where there already is a tile.</p></section>
+be placed where there already is a tile.
+Raises a <code>KeyError</code> if the tile already exists.</p></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -287,6 +667,7 @@ be placed where there already is a tile.</p></section>
     &#39;&#39;&#39;
     Add a tile to the map. Tiles cannot
     be placed where there already is a tile.
+    Raises a `KeyError` if the tile already exists.
     &#39;&#39;&#39;
     key = elem.position.getAsTuple()
     if key in self.__tiles:
@@ -295,7 +676,7 @@ be placed where there already is a tile.</p></section>
 </details>
 </dd>
 <dt id="gameServer.mapCode.gameMap.GameMap.generateHexagonalArea"><code class="name flex">
-<span>def <span class="ident">generateHexagonalArea</span></span>(<span>self, size, startPoint=&lt;gameServer.extraCode.location.HexPoint object&gt;)</span>
+<span>def <span class="ident">generateHexagonalArea</span></span>(<span>self, size, startPoint=HexPoint(0, 0))</span>
 </code></dt>
 <dd>
 <section class="desc"></section>
@@ -313,7 +694,7 @@ be placed where there already is a tile.</p></section>
         for i in range(-addition, size + addition):
             self.addTile(
                 Tile.generate(
-                    HexPoint(2*j, 2*i) + startPoint
+                    HexPoint(2*i, 2*j) + startPoint
                 )
             )
 
@@ -323,27 +704,43 @@ be placed where there already is a tile.</p></section>
         for i in range(-addition, size + addition + 1):
             self.addTile(
                 Tile.generate(
-                    HexPoint(2*j + 1, 2*i - 1) + startPoint
+                    HexPoint(2*i - 1, 2*j + 1) + startPoint
                 )
             )</code></pre>
+</details>
+</dd>
+<dt id="gameServer.mapCode.gameMap.GameMap.getAsJson"><code class="name flex">
+<span>def <span class="ident">getAsJson</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def getAsJson(self):
+    return json.dumps(self, cls=customJsonEncoder)</code></pre>
 </details>
 </dd>
 <dt id="gameServer.mapCode.gameMap.GameMap.getTile"><code class="name flex">
 <span>def <span class="ident">getTile</span></span>(<span>self, position)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Fetches a tile from the map given the postion</p></section>
+<section class="desc"><p>Fetches a tile from the map given the postion.
+Returns <code>None</code> if the tile does not exist</p></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def getTile(self, position: HexPoint) -&gt; Tile:
+<pre><code class="python">def getTile(self, position: HexPoint) -&gt; Optional[Tile]:
     &#39;&#39;&#39;
-    Fetches a tile from the map given the postion
+    Fetches a tile from the map given the postion.
+    Returns `None` if the tile does not exist
     &#39;&#39;&#39;
     key = position.getAsTuple()
     if key not in self.__tiles:
-        raise KeyError(f&#39;No tile found at postion {key}&#39;)
+        return None
+        #raise KeyError(f&#39;No tile found at postion {key}&#39;)
     return self.__tiles[position.getAsTuple()]</code></pre>
 </details>
 </dd>
@@ -356,7 +753,8 @@ to the new position. Calls robberDeparts()
 on the old tile and robberArrives() on the new
 tile. If the robber doesn't have a location yet,
 no attempt will be made to get the old tile
-as that would result in a KeyError</p></section>
+as that would result in a KeyError.</p>
+<p>Raises a <code>KeyError</code> if no tile exists at position.</p></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -368,15 +766,22 @@ as that would result in a KeyError</p></section>
     on the old tile and robberArrives() on the new
     tile. If the robber doesn&#39;t have a location yet,
     no attempt will be made to get the old tile
-    as that would result in a KeyError
+    as that would result in a KeyError.
+
+    Raises a `KeyError` if no tile exists at position. 
     &#39;&#39;&#39;
+
+    newTile = self.getTile(position)
+    # if the tile does not exist, nothing else should change about the map
+    if newTile is None:
+        return ActionError(&#34;No tile found at given position&#34;)
 
     if self.__robberPosition is not None:
         oldTile = self.getTile(self.__robberPosition)
+        if oldTile is None:
+            raise RuntimeError(&#34;This shouldn&#39;t happen&#34;)
         oldTile.robberDeparts()
     
-
-    newTile = self.getTile(position)
     newTile.robberArrives()
 
     self.__robberPosition = position</code></pre>
@@ -386,14 +791,29 @@ as that would result in a KeyError</p></section>
 <span>def <span class="ident">toJsonSerializable</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<section class="desc"></section>
+<section class="desc"><p>Format:
+{
+'tiles': List[Tile],
+'points': List[Settlement],
+'lines': List[Road]
+}</p></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def toJsonSerializable(self):
+    &#39;&#39;&#39;
+    Format:
+    {
+        &#39;tiles&#39;: List[Tile],
+        &#39;points&#39;: List[Settlement],
+        &#39;lines&#39;: List[Road]
+    }
+    &#39;&#39;&#39;
     return {
-        &#39;tiles&#39;: [t.toJsonSerializable() for t in self.__tiles.values()],
+        &#39;tiles&#39;: self.tiles,
+        &#39;points&#39;: self.pointFeatures,
+        &#39;lines&#39;: self.lineFeatures,
         **super().toJsonSerializable()
     }</code></pre>
 </details>
@@ -423,8 +843,12 @@ as that would result in a KeyError</p></section>
 <li><code><a title="gameServer.mapCode.gameMap.GameMap.addPointElement" href="#gameServer.mapCode.gameMap.GameMap.addPointElement">addPointElement</a></code></li>
 <li><code><a title="gameServer.mapCode.gameMap.GameMap.addTile" href="#gameServer.mapCode.gameMap.GameMap.addTile">addTile</a></code></li>
 <li><code><a title="gameServer.mapCode.gameMap.GameMap.generateHexagonalArea" href="#gameServer.mapCode.gameMap.GameMap.generateHexagonalArea">generateHexagonalArea</a></code></li>
+<li><code><a title="gameServer.mapCode.gameMap.GameMap.getAsJson" href="#gameServer.mapCode.gameMap.GameMap.getAsJson">getAsJson</a></code></li>
 <li><code><a title="gameServer.mapCode.gameMap.GameMap.getTile" href="#gameServer.mapCode.gameMap.GameMap.getTile">getTile</a></code></li>
+<li><code><a title="gameServer.mapCode.gameMap.GameMap.lineFeatures" href="#gameServer.mapCode.gameMap.GameMap.lineFeatures">lineFeatures</a></code></li>
 <li><code><a title="gameServer.mapCode.gameMap.GameMap.moveRobber" href="#gameServer.mapCode.gameMap.GameMap.moveRobber">moveRobber</a></code></li>
+<li><code><a title="gameServer.mapCode.gameMap.GameMap.pointFeatures" href="#gameServer.mapCode.gameMap.GameMap.pointFeatures">pointFeatures</a></code></li>
+<li><code><a title="gameServer.mapCode.gameMap.GameMap.tiles" href="#gameServer.mapCode.gameMap.GameMap.tiles">tiles</a></code></li>
 <li><code><a title="gameServer.mapCode.gameMap.GameMap.toJsonSerializable" href="#gameServer.mapCode.gameMap.GameMap.toJsonSerializable">toJsonSerializable</a></code></li>
 </ul>
 </li>

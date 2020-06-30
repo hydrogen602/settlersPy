@@ -29,6 +29,10 @@ class Game(JsonSerializable):
 
     @property
     def currentTurn(self) -> Turn:
+        '''
+        Returns the current turn of the game.
+        Raises a NotSetupException if the game hasn't started yet.
+        '''
         if self.__currentTurn is None:
             raise NotSetupException("Game hasn't started yet")
 
@@ -49,7 +53,7 @@ class Game(JsonSerializable):
             # give resources!
             dieVal = roll2Die()
             if dieVal == 7:
-                currentPlayer.canMoveRobber()
+                currentPlayer.playerMustMoveRobber()
                 # TODO: if inv count > 7, then half has to be removed
             else:
                 for t in self.__gameMap.tiles:
@@ -78,6 +82,9 @@ class Game(JsonSerializable):
         self.__playerManager.addPlayer(p)
     
     def nextTurn(self):
+        '''
+        throws `NotSetupException` and `ActionError` 
+        '''
         if not self.__gameStarted:
             raise NotSetupException("Game hasn't started yet")
 
@@ -94,6 +101,14 @@ class Game(JsonSerializable):
         self.__newTurn(nextPlayer)
     
     def toJsonSerializable(self):
+        '''
+        Format:
+        {
+            'players': List[Player],
+            'gameMap': GameMap,
+            'gameStarted': bool
+        }
+        '''
         return {
             'players': list(self.__playerManager),
             'gameMap': self.__gameMap,

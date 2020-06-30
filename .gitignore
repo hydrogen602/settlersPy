@@ -1,6 +1,5 @@
 **/__pycache__/
 **.DS_Store
-gameMsgLog.log
 test.json
 web/built/**
 web/libraries/*
@@ -8,3 +7,4 @@ web/libraries/*
 
 .mypy_cache/
 .pytest_cache/
+**.pyc

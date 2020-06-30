@@ -130,7 +130,7 @@ class PlayerManager:
         '''
         return token in self.__players
     
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Player]:
         '''
         Returns an iterator over the player list.
         Call this if the order of players does not matter.
