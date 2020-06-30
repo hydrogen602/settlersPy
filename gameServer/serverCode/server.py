@@ -66,6 +66,20 @@ class Server:
         # setup listening server
         reactor.listenTCP(port, self.server) # pylint: disable=no-member
     
+    def __updateClientInventory(self, token: Optional[str] = None):
+        if token is None:
+            pIter: playerCode.Player
+            for pIter in self.g.playerManager:
+                self.server.broadcastToSome(extraCode.getAsJson(pIter.inventory), [pIter.token])
+            return
+
+        p = self.g.playerManager.getPlayer(token)
+        if p is None:
+            print(f'RuntimeError: token of client not in playerManager. This should not happen')
+            return
+        
+        self.server.broadcastToSome(extraCode.getAsJson(p.inventory), [token])
+    
     def callback(self, obj: dict, client: ServerProtocol):
         token = client.token
         if token is None:
@@ -92,26 +106,35 @@ class Server:
                 if request.type_ == 'action':
                     if request.content == 'nextTurn':
                         self.g.nextTurn()
+                        self.__updateClientInventory()
                 
                     elif request.content == 'placeSettlement':
-                        point, = request.requireArgs(1) # pylint: disable=unbalanced-tuple-unpacking
+                        point, indexTmp = request.requireArgs(2) # pylint: disable=unbalanced-tuple-unpacking
                         hp: extraCode.HexPoint = extraCode.HexPoint.fromJson(point)
+                        index: int = int(indexTmp)
 
                         if len(self.g.currentTurn.currentPlayer.inventory.ownedPointFeatures) == 0:
                             raise extraCode.ActionError('You own no settlements or cities')
                         
-                        self.g.currentTurn.currentPlayer.inventory.placePointFeature(0, hp, self.g.currentTurn)
+                        self.g.currentTurn.currentPlayer.inventory.placePointFeature(index, hp, self.g.currentTurn)
+                        self.server.updateAll()
+                    
+                    #{'type': 'action', 'content': 'placeRoad', 'args': [{'__name__': 'HexPoint', 'row': 1, 'col': 1}, {'__name__': 'HexPoint', 'row': 1, 'col': 2}, None]}
+                    elif request.content == 'placeRoad':
+                        p1, p2, indexTmp = request.requireArgs(3)
+                        hp1: extraCode.HexPoint = extraCode.HexPoint.fromJson(p1)
+                        hp2: extraCode.HexPoint = extraCode.HexPoint.fromJson(p2)
+                        index = int(indexTmp)
+
+                        if len(self.g.currentTurn.currentPlayer.inventory.ownedLineFeatures) == 0:
+                            raise extraCode.ActionError('You own no roads')
+
+                        self.g.currentTurn.currentPlayer.inventory.placeLineFeature(index, hp1, hp2, self.g.currentTurn)
                         self.server.updateAll()
                 
                 elif request.type_ == 'update':
                     if request.content == 'inventory':
-                        p = self.g.playerManager.getPlayer(token)
-                        if p is None:
-                            print(f'RuntimeError: token of client not in playerManager. This should not happen')
-                            return
-                        
-                        self.server.broadcastToSome(extraCode.getAsJson(p.inventory), [token])
-                        # print(extraCode.getAsJson(p.inventory))
+                        self.__updateClientInventory(token)
 
             except extraCode.ActionError as e:
                 s = ' '.join(e.args)
