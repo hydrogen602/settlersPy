@@ -155,15 +155,19 @@ class ServerFactory(WebSocketServerFactory):
         Called by any new connecting client to address
         whether they are a new player or a reconnecting one.
 
-        The request line should be /name/token
-        or /name but the first / is removed by onConnect
+        The request line should be 
+            /name/token/color     <- reconnect
+            /name/color           <- first connect
+        
+        but the first / is removed by onConnect
 
-        In the case that the name is missing the method will
+        In the case that the name or color is missing the method will
         return `None` and trigger a 400 error. Same goes for if
-        a token is given that the server does not know.        
+        a token is given that the server does not know.
         '''
         token: Optional[str] = None
         name: Optional[str] = None
+        color: Optional[str] = None
 
         # parsed = urlparse(clientTypeRequest)
 
@@ -195,10 +199,16 @@ class ServerFactory(WebSocketServerFactory):
 
         l = len(tmpLs)
         if l == 1:
-            name = tmpLs[0]
+            # name = tmpLs[0]
+            log.msg('color missing')
+            client.sendClose(code=4004, reason='Color missing')
+            return None
         elif l == 2:
-            name = tmpLs[0]
-            token = tmpLs[1]
+            # first connecting
+            name, color = tmpLs
+        elif l == 3:
+            # reconnect
+            name, token, color = tmpLs
         else:
             log.msg('name missing')
             #client.sendHttpErrorResponse(404, 'Name missing')
@@ -207,7 +217,7 @@ class ServerFactory(WebSocketServerFactory):
         
         # print('clientTypeRequest =', len(clientTypeRequest.strip().split('/')))
 
-        if name is None:
+        if name is None or color is None:
             raise RuntimeError("Something went wrong in register")
         
         if token is None:
@@ -225,7 +235,7 @@ class ServerFactory(WebSocketServerFactory):
                     return None
 
             
-            p: playerCode.Player = playerCode.Player(name, client, color='green')
+            p: playerCode.Player = playerCode.Player(name, client, color)
             log.msg("New player:", p)
             self.g.addPlayer(p)
             self.newNotificationToAll('New Player: ' + p.name)

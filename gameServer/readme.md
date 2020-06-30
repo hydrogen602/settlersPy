@@ -108,6 +108,7 @@ I'll use 4000-4099 for errors that should sent the user back to login
 - [4001] game already started
 - [4002] invalid token
 - [4003] name taken
+- [4004] color missing
 
 ---
 ## JSON communication
