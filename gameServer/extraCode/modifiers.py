@@ -2,10 +2,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from .util import ActionError, NotSetupException, isNotNone, JsonSerializable, ArgumentMissingError
+from .location import Resource
 
 if TYPE_CHECKING:
     from typing import Optional, Dict
-    from .location import Resource
     from ..playerCode.player import Player
 
 
@@ -77,40 +77,32 @@ class Purchaseable:
         super().__init_subclass__()
 
         if not cls._cost:
-            raise TypeError(f'Subclass ${cls.__name__} of Purchaseable is missing \'_cost\' attribute')
-        
+            raise TypeError(f'Subclass \'{cls.__name__}\' of Purchaseable is missing \'_cost\' attribute')
+
         assert isinstance(cls._cost, dict)
         for key, value in cls._cost.items():
             assert isinstance(key, Resource)
             assert isinstance(value, int)
 
-        if not (hasattr(cls, '_isLineFeature') or hasattr(cls, '_isPointFeature')):
-            raise TypeError(f'Subclass ${cls.__name__} of Purchaseable needs to have either \'_isLineFeature\' or \'_isPointFeature\' attribute')
+        assert isinstance(cls._isLineFeature, bool)
+        assert isinstance(cls._isPointFeature, bool)
 
-        isLineFeature = False
-        isPointFeature = False
-
-        if hasattr(cls, '_isLineFeature'):
-            isLineFeature = getattr(cls, '_isLineFeature')
-            assert isinstance(isLineFeature, bool)
-        
-        if hasattr(cls, '_isPointFeature'):
-            isPointFeature = getattr(cls, '_isPointFeature')
-            assert isinstance(isPointFeature, bool)
-        
-        if (isLineFeature and isPointFeature) or not (isLineFeature or isPointFeature):
+        if (cls._isLineFeature and cls._isPointFeature) or not (cls._isLineFeature or cls._isPointFeature):
             raise TypeError('One one of \'_isPointFeature\' and \'_isLineFeature\' should be set')
-
-        cls._isLineFeature = isLineFeature
-        cls._isPointFeature = isPointFeature
     
     @classmethod
-    def purchase(cls, p: Player) -> bool:
+    def purchase(cls, p: Player):
+        '''
+        Automatically adds to player's inventory
+
+        raises `ActionError`
+        '''
+
         if (cls is Purchaseable):
             raise TypeError('Do not call \'purchase()\' on Purchaseable, only on subclasses')
 
-        # if cls._cost is None or cls.__cls is None:
-        #     raise NotSetupException('Cannot purchase before setupPurchase has been called')
+        if cls._cost is None:
+            raise RuntimeError('This should have been caught in \'__init_subclass__\'')
         
         for resource, qty in cls._cost.items():
             if not p.hasResource(resource, qty):
@@ -121,17 +113,17 @@ class Purchaseable:
 
         if cls._isLineFeature:
             p.inventory.addLineFeature(cls())
-            return True
+            return
 
         if cls._isPointFeature:
             p.inventory.addPointFeature(cls())
-            return True
+            return
         
         raise RuntimeError("This shouldn't happen")
     
     @classmethod
     def purchaseCost(cls) -> Dict[Resource, int]:
         if cls._cost is None:
-            raise NotSetupException('Cannot get purchaseCost before setupPurchase has been called')
+            raise RuntimeError('This should have been caught in \'__init_subclass__\'')
         
         return cls._cost

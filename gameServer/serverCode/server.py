@@ -85,6 +85,11 @@ class Server:
         if token is None:
             print(f'Error, toke is None???? client={client} obj={obj}')
             return
+        
+        thisPlayer = self.g.playerManager.getPlayer(token)
+        if thisPlayer is None:
+            print(f'Error, player not found???? client={client} obj={obj} token={token}')
+            return
 
         if 'debug' in obj:
             debugCmd = obj['debug']
@@ -138,12 +143,17 @@ class Server:
                         self.__updateClientInventory(token)
                 
                 elif request.type_ == 'purchase':
+                    if self.g.currentTurn.currentPlayer != thisPlayer:
+                        raise extraCode.ActionError('Purchases can only be made during your turn')
+
                     if request.content == 'settlement':
-                        pass
+                        mapCode.Settlement.purchase(thisPlayer)
+                        
                     elif request.content == 'road':
-                        pass
+                        mapCode.Road.purchase(thisPlayer)
+
                     elif request.content == 'city':
-                        pass
+                        mapCode.City.purchase(thisPlayer)
 
             except extraCode.ActionError as e:
                 s = ' '.join(e.args)
