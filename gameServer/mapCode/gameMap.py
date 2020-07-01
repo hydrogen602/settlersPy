@@ -209,6 +209,24 @@ class GameMap(JsonSerializable):
         if not foundOwnedConnection:
             raise ActionError("Roads must be connected to an owned road or settlement")
 
+        foundOne_1 = False
+        for hp in elem.point1.getNeighbors():
+            t = self.getTile(hp)
+            if t is not None:
+                foundOne_1 = True
+                break
+        
+        foundOne_2 = False
+        for hp in elem.point2.getNeighbors():
+            t = self.getTile(hp)
+            if t is not None:
+                foundOne_2 = True
+                break
+        
+        if not (foundOne_1 and foundOne_2):
+            # not next to any tiles, so in the ocean
+            raise ActionError("Road not placed on map")
+
         self.__lineFeatures[(p1, p2)] = elem
     
     def toJsonSerializable(self):
