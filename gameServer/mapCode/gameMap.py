@@ -6,7 +6,7 @@ import json
 if TYPE_CHECKING:
     from ..playerCode.player import Player
     from ..playerCode.turn import Turn
-    
+
 from .tiles import Tile
 from .pointMapFeatures import Settlement
 from .lineMapFeatures import Road
@@ -18,24 +18,24 @@ class GameMap(JsonSerializable):
         self.__tiles: Dict[Tuple[int, int], Tile] = {}
         for t in tiles:
             self.__tiles[t.position.getAsTuple()] = t
-        
+
         self.__pointFeatures: Dict[Tuple[int, int], Settlement] = {}
         self.__lineFeatures: Dict[Tuple[Tuple[int, int], Tuple[int, int]], Road] = {}
 
         self.__robberPosition: Optional[HexPoint] = None
-    
+
     @property
     def tiles(self) -> List[Tile]:
         return list(self.__tiles.values())
-    
+
     @property
     def pointFeatures(self) -> List[Settlement]:
         return list(self.__pointFeatures.values())
-    
+
     @property
     def lineFeatures(self) -> List[Road]:
         return list(self.__lineFeatures.values())
-    
+
     def generateHexagonalArea(self, size: int, startPoint: HexPoint = HexPoint(0, 0)):
         nP: float = (size - 1) / 2
         nP2: float = (size - 2) / 2
@@ -59,17 +59,17 @@ class GameMap(JsonSerializable):
                         HexPoint(2*i - 1, 2*j + 1) + startPoint
                     )
                 )
-    
+
     # def isLegalPosition(self, thing: Union[Road, Settlement]):
     #     if isinstance(thing, Road):
     #         r: Road = thing
 
     #     elif isinstance(thing, Settlement): # TODO
     #         s: Settlement = thing
-        
+
     #     else:
     #         raise TypeError(f"Argument of wrong type, got {type(thing)}, but expected Union[Road, Settlement]")
-    
+
     def moveRobber(self, position: HexPoint):
         '''
         moves the robber from the last recorded postion
@@ -92,7 +92,7 @@ class GameMap(JsonSerializable):
             if oldTile is None:
                 raise RuntimeError("This shouldn't happen")
             oldTile.robberDeparts()
-        
+
         newTile.robberArrives()
 
         self.__robberPosition = position
@@ -151,12 +151,12 @@ class GameMap(JsonSerializable):
                 if (p, point) in self.__lineFeatures and self.__lineFeatures[(p, point)].owner == elem.owner:
                     foundOwnedRoad = True
                     break
-            
+
             if not foundOwnedRoad:
                 raise ActionError("Settlements must be connected to an owned road")
-        
+
         adjacentTiles: Tuple[HexPoint, HexPoint, HexPoint] = elem.position.getNeighboringTiles()
-        
+
         foundOne = False
         for hp in adjacentTiles:
             t = self.getTile(hp)
@@ -165,7 +165,7 @@ class GameMap(JsonSerializable):
                 t.addSettlement(elem)
 
             pass # self.g
-        
+
         if not foundOne:
             # not next to any tiles, so in the ocean
             raise ActionError("Settlement not placed on map")
@@ -205,24 +205,30 @@ class GameMap(JsonSerializable):
                     break
             if foundOwnedConnection:
                 break
-        
+
         if not foundOwnedConnection:
             raise ActionError("Roads must be connected to an owned road or settlement")
 
         foundOne_1 = False
-        for hp in elem.point1.getNeighbors():
+        for hp in elem.point1.getNeighboringTiles():
             t = self.getTile(hp)
             if t is not None:
                 foundOne_1 = True
                 break
-        
+
         foundOne_2 = False
-        for hp in elem.point2.getNeighbors():
+        for hp in elem.point2.getNeighboringTiles():
             t = self.getTile(hp)
             if t is not None:
                 foundOne_2 = True
                 break
         
+        print(elem.point1, elem.point2)
+
+        print(elem.point1.getNeighboringTiles(), elem.point2.getNeighboringTiles())
+        
+        print(foundOne_1, foundOne_2)
+
         if not (foundOne_1 and foundOne_2):
             # not next to any tiles, so in the ocean
             raise ActionError("Road not placed on map")
