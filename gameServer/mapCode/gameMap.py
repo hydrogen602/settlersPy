@@ -222,12 +222,6 @@ class GameMap(JsonSerializable):
             if t is not None:
                 foundOne_2 = True
                 break
-        
-        print(elem.point1, elem.point2)
-
-        print(elem.point1.getNeighboringTiles(), elem.point2.getNeighboringTiles())
-        
-        print(foundOne_1, foundOne_2)
 
         if not (foundOne_1 and foundOne_2):
             # not next to any tiles, so in the ocean
