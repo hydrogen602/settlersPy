@@ -13,6 +13,15 @@ if TYPE_CHECKING:
 
 class Settlement(Placeable, Purchaseable, Ownable, JsonSerializable):
 
+    _cost: Dict[Resource, int] = {
+        Resource.Brick: 1,
+        Resource.Lumber: 1,
+        Resource.Sheepie: 1,
+        Resource.Wheat: 1
+    }
+
+    _isPointFeature = True
+
     def __init__(self, pos: Optional[HexPoint] = None, **kwargs) -> None:
         self._pos: Optional[HexPoint] = pos
 
@@ -22,13 +31,6 @@ class Settlement(Placeable, Purchaseable, Ownable, JsonSerializable):
 
         super().__init__(isPlaced=hasLocation, **kwargs)
 
-        self.setupPurchase(Settlement, {
-            Resource.Brick: 1,
-            Resource.Lumber: 1,
-            Resource.Sheepie: 1,
-            Resource.Wheat: 1
-        }, isPointFeature=True)
-    
     def __str__(self):
         if self._isPlaced:
             return f"Settlement({self._pos})"
@@ -36,6 +38,9 @@ class Settlement(Placeable, Purchaseable, Ownable, JsonSerializable):
             return f"Settlement()"
     
     def place(self, position: HexPoint, turn: Turn):
+        '''
+        raises ActionError
+        '''
         if self._isPlaced:
             raise AlreadySetupException("This settlement has already been placed")
 
@@ -53,6 +58,9 @@ class Settlement(Placeable, Purchaseable, Ownable, JsonSerializable):
 
     def harvestResource(self, biome: Biome):
         self._owner.giveResource(biome.primaryResource)
+    
+    def isCity(self) -> bool:
+        return False
 
     def toJsonSerializable(self) -> Dict[str, object]:
         return {
@@ -63,16 +71,18 @@ class Settlement(Placeable, Purchaseable, Ownable, JsonSerializable):
 
 class City(Settlement):
 
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
+    _cost = {
+        Resource.Ore: 3,
+        Resource.Wheat: 2
+    }
 
-        self.setupPurchase(City, {
-            Resource.Ore: 3,
-            Resource.Wheat: 2
-        }, isPointFeature=True)
+    _isPointFeature = True
 
     def harvestResource(self, biome: Biome):
         self._owner.giveResource(biome.primaryResource, count=2)
+
+    def isCity(self) -> bool:
+        return True
     
     def __str__(self):
         if self._isPlaced:

@@ -8,3 +8,5 @@ web/libraries/*
 .mypy_cache/
 .pytest_cache/
 **.pyc
+
+.metals/metals.lock.db

@@ -56,6 +56,9 @@ class HexPoint(JsonSerializable):
             return True
         return self.row != other.row or self.col != other.col
     
+    def __hash__(self):
+        return hash(self.getAsTuple())
+    
     def __str__(self):
         return f"HexPoint({self.__row}, {self.__col})"
     
@@ -89,7 +92,6 @@ class HexPoint(JsonSerializable):
         '''
         first = HexPoint(row=self.row + 1, col=self.col)
         second = HexPoint(row=self.row - 1, col=self.col)
-
 
         if abs(self.col % 2) == abs(self.row % 2):
             # right

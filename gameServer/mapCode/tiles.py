@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-from typing import List, TYPE_CHECKING
+from typing import Set, TYPE_CHECKING
 import random
 
 if TYPE_CHECKING:
     from .pointMapFeatures import Settlement
 
 from ..extraCode.location import Biome, HexPoint
-
-
+from ..playerCode.turn import Turn
 
 
 class Tile:
@@ -35,7 +34,7 @@ class Tile:
 
         self.__diceValue: int = dieValue 
 
-        self.__settlementList: List[Settlement] = []
+        self.__settlementList: Set[HexPoint] = set()
     
     def __str__(self):
         return f'Tile({self._position}, {self._biome.name},  {self.__diceValue})'
@@ -73,7 +72,7 @@ class Tile:
         so that when the die are rolled the tiles
         know who to give resources to.
         '''
-        self.__settlementList.append(settlement)
+        self.__settlementList.add(settlement.position)
 
     def robberArrives(self):
         self.__isBlockedByRobber = True
@@ -84,7 +83,7 @@ class Tile:
     def isRobberHere(self) -> bool:
         return self.__isBlockedByRobber
 
-    def diceRolled(self, valueRolled: int):
+    def diceRolled(self, valueRolled: int, turn: Turn):
         '''
         Call this method on all tiles when the die
         are rolled for giving resources.
@@ -99,5 +98,11 @@ class Tile:
             return
 
         if valueRolled == self.__diceValue:
-            for s in self.__settlementList:
-                s.harvestResource(self._biome)
+            for hp in self.__settlementList:
+                settlementRef = turn.gameMap.getPointFeature(hp)
+
+                if not settlementRef:
+                    raise ValueError("Invalid state: Tile has point which contains no point feature")
+                
+                settlementRef.harvestResource(self._biome)
+                

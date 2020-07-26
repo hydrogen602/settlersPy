@@ -6,9 +6,9 @@ import json
 if TYPE_CHECKING:
     from ..playerCode.player import Player
     from ..playerCode.turn import Turn
-    
+
 from .tiles import Tile
-from .pointMapFeatures import Settlement
+from .pointMapFeatures import Settlement, City
 from .lineMapFeatures import Road
 from ..extraCode import HexPoint, JsonSerializable, ActionError, customJsonEncoder
 
@@ -18,24 +18,24 @@ class GameMap(JsonSerializable):
         self.__tiles: Dict[Tuple[int, int], Tile] = {}
         for t in tiles:
             self.__tiles[t.position.getAsTuple()] = t
-        
+
         self.__pointFeatures: Dict[Tuple[int, int], Settlement] = {}
         self.__lineFeatures: Dict[Tuple[Tuple[int, int], Tuple[int, int]], Road] = {}
 
         self.__robberPosition: Optional[HexPoint] = None
-    
+
     @property
     def tiles(self) -> List[Tile]:
         return list(self.__tiles.values())
-    
+
     @property
     def pointFeatures(self) -> List[Settlement]:
         return list(self.__pointFeatures.values())
-    
+
     @property
     def lineFeatures(self) -> List[Road]:
         return list(self.__lineFeatures.values())
-    
+
     def generateHexagonalArea(self, size: int, startPoint: HexPoint = HexPoint(0, 0)):
         nP: float = (size - 1) / 2
         nP2: float = (size - 2) / 2
@@ -59,17 +59,17 @@ class GameMap(JsonSerializable):
                         HexPoint(2*i - 1, 2*j + 1) + startPoint
                     )
                 )
-    
+
     # def isLegalPosition(self, thing: Union[Road, Settlement]):
     #     if isinstance(thing, Road):
     #         r: Road = thing
 
     #     elif isinstance(thing, Settlement): # TODO
     #         s: Settlement = thing
-        
+
     #     else:
     #         raise TypeError(f"Argument of wrong type, got {type(thing)}, but expected Union[Road, Settlement]")
-    
+
     def moveRobber(self, position: HexPoint):
         '''
         moves the robber from the last recorded postion
@@ -92,7 +92,7 @@ class GameMap(JsonSerializable):
             if oldTile is None:
                 raise RuntimeError("This shouldn't happen")
             oldTile.robberDeparts()
-        
+
         newTile.robberArrives()
 
         self.__robberPosition = position
@@ -119,6 +119,13 @@ class GameMap(JsonSerializable):
             #raise KeyError(f'No tile found at postion {key}')
         return self.__tiles[position.getAsTuple()]
     
+    def getPointFeature(self, position: HexPoint) -> Optional[Settlement]:
+        '''
+        Fetches a settlement or city from the map given the postion.
+        Returns `None` if nothing is found at the position
+        '''
+        return self.__pointFeatures.get(position.getAsTuple(), None)
+    
     def __contains__(self, position: HexPoint) -> bool:
         '''
         For checking if a tile exists at some point
@@ -131,8 +138,20 @@ class GameMap(JsonSerializable):
         if elem.owner != turn.currentPlayer:
             raise ActionError("Things may only be placed on your turn")
 
-        if point in self.__pointFeatures:
-            raise ActionError("A settlement exists here already")
+        pointFeatureHereAlready: Optional[Settlement] = self.__pointFeatures.get(point, None)
+
+        if elem.isCity():
+            # city goes on settlement
+            if not pointFeatureHereAlready:
+                raise ActionError("A City must be placed on a settlement")
+            
+            if pointFeatureHereAlready.isCity():
+                raise ActionError("Can't place one city on another")
+
+        else:
+            # settlement goes on nothing
+            if pointFeatureHereAlready:
+                raise ActionError("A settlement exists here already")
 
         # check neighbors -> there must be none
         neighbors: List[Tuple[int, int]] = [p.getAsTuple() for p in elem.position.getNeighbors()]
@@ -151,12 +170,12 @@ class GameMap(JsonSerializable):
                 if (p, point) in self.__lineFeatures and self.__lineFeatures[(p, point)].owner == elem.owner:
                     foundOwnedRoad = True
                     break
-            
+
             if not foundOwnedRoad:
                 raise ActionError("Settlements must be connected to an owned road")
-        
+
         adjacentTiles: Tuple[HexPoint, HexPoint, HexPoint] = elem.position.getNeighboringTiles()
-        
+
         foundOne = False
         for hp in adjacentTiles:
             t = self.getTile(hp)
@@ -165,10 +184,12 @@ class GameMap(JsonSerializable):
                 t.addSettlement(elem)
 
             pass # self.g
-        
+
         if not foundOne:
             # not next to any tiles, so in the ocean
             raise ActionError("Settlement not placed on map")
+
+        # delete old point feature if city
 
         self.__pointFeatures[point] = elem
     
@@ -205,9 +226,27 @@ class GameMap(JsonSerializable):
                     break
             if foundOwnedConnection:
                 break
-        
+
         if not foundOwnedConnection:
             raise ActionError("Roads must be connected to an owned road or settlement")
+
+        foundOne_1 = False
+        for hp in elem.point1.getNeighboringTiles():
+            t = self.getTile(hp)
+            if t is not None:
+                foundOne_1 = True
+                break
+
+        foundOne_2 = False
+        for hp in elem.point2.getNeighboringTiles():
+            t = self.getTile(hp)
+            if t is not None:
+                foundOne_2 = True
+                break
+
+        if not (foundOne_1 and foundOne_2):
+            # not next to any tiles, so in the ocean
+            raise ActionError("Road not placed on map")
 
         self.__lineFeatures[(p1, p2)] = elem
     

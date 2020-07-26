@@ -9,6 +9,13 @@ from ..playerCode.turn import Turn
 
 class Road(Placeable, Purchaseable, Ownable, JsonSerializable):
 
+    _cost = {
+        Resource.Lumber: 1,
+        Resource.Brick: 1
+    }
+
+    _isLineFeature = True
+
     def __init__(self, point1: HexPoint = None, point2: HexPoint = None, **kwargs) -> None:
         '''
         If both point1 and point2 are None, then it assumes that this is an unplaced Road.
@@ -29,11 +36,6 @@ class Road(Placeable, Purchaseable, Ownable, JsonSerializable):
             raise ArgumentMissingError('__init__', 'point1')
         
         super().__init__(isPlaced=hasLocation, **kwargs)
-
-        self.setupPurchase(Road, {
-            Resource.Lumber: 1,
-            Resource.Brick: 1
-        }, isLineFeature=True)
 
     def __str__(self):
         if self._isPlaced:

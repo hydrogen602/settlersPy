@@ -19,7 +19,8 @@ class Inventory(JsonSerializable):
         
         # for debug
         # self.addResource(Resource.Brick, 1)
-        # self.addResource(Resource.Lumber, 1)
+        # self.addResource(Resource.Ore, 3)
+        # self.addResource(Resource.Wheat, 2)
     
     def getCount(self, resourceType: Resource) -> int:
         if not isinstance(resourceType, Resource):
@@ -91,6 +92,9 @@ class ExpandedInventory(Inventory):
         return self.__ownedLineFeatures
     
     def placePointFeature(self, index: int, point: HexPoint, turn: Turn):
+        '''
+        raises ActionError
+        '''
         if len(self.__ownedPointFeatures) == 0:
             raise ActionError("You have no settlements or cities to place")
         if index < 0 or index >= len(self.__ownedPointFeatures):
