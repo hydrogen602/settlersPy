@@ -19,8 +19,8 @@ class Inventory(JsonSerializable):
         
         # for debug
         # self.addResource(Resource.Brick, 1)
-        self.addResource(Resource.Ore, 3)
-        self.addResource(Resource.Wheat, 2)
+        # self.addResource(Resource.Ore, 3)
+        # self.addResource(Resource.Wheat, 2)
     
     def getCount(self, resourceType: Resource) -> int:
         if not isinstance(resourceType, Resource):
