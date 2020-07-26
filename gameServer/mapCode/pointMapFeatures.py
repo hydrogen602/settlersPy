@@ -38,6 +38,9 @@ class Settlement(Placeable, Purchaseable, Ownable, JsonSerializable):
             return f"Settlement()"
     
     def place(self, position: HexPoint, turn: Turn):
+        '''
+        raises ActionError
+        '''
         if self._isPlaced:
             raise AlreadySetupException("This settlement has already been placed")
 
@@ -55,6 +58,9 @@ class Settlement(Placeable, Purchaseable, Ownable, JsonSerializable):
 
     def harvestResource(self, biome: Biome):
         self._owner.giveResource(biome.primaryResource)
+    
+    def isCity(self) -> bool:
+        return False
 
     def toJsonSerializable(self) -> Dict[str, object]:
         return {
@@ -74,6 +80,9 @@ class City(Settlement):
 
     def harvestResource(self, biome: Biome):
         self._owner.giveResource(biome.primaryResource, count=2)
+
+    def isCity(self) -> bool:
+        return True
     
     def __str__(self):
         if self._isPlaced:

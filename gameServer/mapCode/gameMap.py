@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from ..playerCode.turn import Turn
 
 from .tiles import Tile
-from .pointMapFeatures import Settlement
+from .pointMapFeatures import Settlement, City
 from .lineMapFeatures import Road
 from ..extraCode import HexPoint, JsonSerializable, ActionError, customJsonEncoder
 
@@ -119,6 +119,13 @@ class GameMap(JsonSerializable):
             #raise KeyError(f'No tile found at postion {key}')
         return self.__tiles[position.getAsTuple()]
     
+    def getPointFeature(self, position: HexPoint) -> Optional[Settlement]:
+        '''
+        Fetches a settlement or city from the map given the postion.
+        Returns `None` if nothing is found at the position
+        '''
+        return self.__pointFeatures.get(position.getAsTuple(), None)
+    
     def __contains__(self, position: HexPoint) -> bool:
         '''
         For checking if a tile exists at some point
@@ -131,8 +138,20 @@ class GameMap(JsonSerializable):
         if elem.owner != turn.currentPlayer:
             raise ActionError("Things may only be placed on your turn")
 
-        if point in self.__pointFeatures:
-            raise ActionError("A settlement exists here already")
+        pointFeatureHereAlready: Optional[Settlement] = self.__pointFeatures.get(point, None)
+
+        if elem.isCity():
+            # city goes on settlement
+            if not pointFeatureHereAlready:
+                raise ActionError("A City must be placed on a settlement")
+            
+            if pointFeatureHereAlready.isCity():
+                raise ActionError("Can't place one city on another")
+
+        else:
+            # settlement goes on nothing
+            if pointFeatureHereAlready:
+                raise ActionError("A settlement exists here already")
 
         # check neighbors -> there must be none
         neighbors: List[Tuple[int, int]] = [p.getAsTuple() for p in elem.position.getNeighbors()]
@@ -169,6 +188,8 @@ class GameMap(JsonSerializable):
         if not foundOne:
             # not next to any tiles, so in the ocean
             raise ActionError("Settlement not placed on map")
+
+        # delete old point feature if city
 
         self.__pointFeatures[point] = elem
     

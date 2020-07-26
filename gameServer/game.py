@@ -48,18 +48,19 @@ class Game(JsonSerializable):
         turn, like making a `Turn` instance or giving them a settlement and
         road in the first two turns
         '''
-        dieVal: Optional[int] = None
-        if self.__roundNum >= 2:
+        dieVal: Optional[int] = roll2Die() if self.__roundNum >= 2 else None
+        
+        self.__currentTurn = Turn(self.__gameMap, self.__roundNum, currentPlayer, dieVal)
+
+        if dieVal: # self.__roundNum >= 2:
             # give resources!
-            dieVal = roll2Die()
             if dieVal == 7:
-                currentPlayer.playerMustMoveRobber()
+                pass # TODO: Robber logics
+                # currentPlayer.playerMustMoveRobber()
                 # TODO: if inv count > 7, then half has to be removed
             else:
                 for t in self.__gameMap.tiles:
-                    t.diceRolled(dieVal)
-
-        self.__currentTurn = Turn(self.__gameMap, self.__roundNum, currentPlayer, dieVal)
+                    t.diceRolled(dieVal, self.__currentTurn)
 
         if self.__roundNum < 2:
             currentPlayer.inventory.addPointFeature(Settlement(owner=currentPlayer))

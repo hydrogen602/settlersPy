@@ -112,11 +112,11 @@ class Purchaseable:
             p.takeResource(resource, qty)
 
         if cls._isLineFeature:
-            p.inventory.addLineFeature(cls())
+            p.inventory.addLineFeature(cls(owner=p))
             return
 
         if cls._isPointFeature:
-            p.inventory.addPointFeature(cls())
+            p.inventory.addPointFeature(cls(owner=p))
             return
         
         raise RuntimeError("This shouldn't happen")

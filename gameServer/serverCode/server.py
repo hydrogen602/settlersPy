@@ -81,6 +81,9 @@ class Server:
         self.server.broadcastToSome(extraCode.getAsJson(p.inventory), [token])
     
     def callback(self, obj: dict, client: ServerProtocol):
+        '''
+        Handles messages from players
+        '''
         token = client.token
         if token is None:
             print(f'Error, toke is None???? client={client} obj={obj}')
@@ -154,6 +157,8 @@ class Server:
 
                     elif request.content == 'city':
                         mapCode.City.purchase(thisPlayer)
+                    
+                    self.__updateClientInventory(token)
 
             except extraCode.ActionError as e:
                 s = ' '.join(e.args)

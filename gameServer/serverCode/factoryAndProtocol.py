@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Tuple, List, Optional, Union, Callable, Dict
 import json
 from urllib.parse import urlparse, parse_qs
@@ -18,6 +20,8 @@ class ServerProtocol(WebSocketServerProtocol):
 
     Sending a message of 'history' returns all previously send messages
     '''
+
+    factory: ServerFactory
 
     @property
     def token(self) -> Optional[str]:
@@ -58,7 +62,7 @@ class ServerProtocol(WebSocketServerProtocol):
             clientTypeRequest = clientTypeRequest[1:]
 
         # tell the factory to remember the connection
-        self.__token = self.factory.register(self, clientTypeRequest) # pylint: disable=no-member
+        self.__token = self.factory.register(self, clientTypeRequest)
 
         log.msg('WebSocket connection open')
         self.__isOpen = True
@@ -68,7 +72,7 @@ class ServerProtocol(WebSocketServerProtocol):
         self.__isOpen = False
 
         # tell the factory that this connection is dead
-        self.factory.unregister(self) # pylint: disable=no-member
+        self.factory.unregister(self)
 
     def onMessage(self, msg, isBinary):
         msg = msg.decode()
@@ -76,11 +80,11 @@ class ServerProtocol(WebSocketServerProtocol):
         if msg.lower() == 'hi':
             self.sendMessage(b"Hello")
 
-            msg = json.dumps({'token': self.factory.getToken(self)}) # pylint: disable=no-member
+            msg = json.dumps({'token': self.factory.getToken(self)})
             self.sendMessage(msg.encode())
 
         elif msg == 'history':
-            self.factory.sendHistory(self) # pylint: disable=no-member
+            self.factory.sendHistory(self)
 
         else:
             try:
@@ -90,7 +94,7 @@ class ServerProtocol(WebSocketServerProtocol):
 
                 log.msg("Got json msg:", obj)
 
-                self.factory.onMessage(obj, self) # pylint: disable=no-member
+                self.factory.onMessage(obj, self)
                 #m = Message(mechanics.PlayerManager.instance.getPlayer(self.token), obj, self.factory)
 
                 #self.factory.callbackHandler(m, self)   
