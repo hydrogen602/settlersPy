@@ -10,3 +10,4 @@ web/libraries/*
 **.pyc
 
 .metals/metals.lock.db
+data/
