@@ -61,7 +61,8 @@ class Tile:
         return {
             'biome': self._biome.name,
             'diceValue': self.__diceValue,
-            'location': self._position
+            'location': self._position,
+            'isDisabledByRobber': self.__isBlockedByRobber
         }
 
     def addSettlement(self, settlement: Settlement):

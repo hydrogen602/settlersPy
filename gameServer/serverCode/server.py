@@ -23,7 +23,7 @@ from .. import extraCode
 from .. import mapCode
 from .. import game
 from .factoryAndProtocol import ServerFactory, ServerProtocol
-from .jsonParser import JsonParserType
+from .jsonParser import JsonParserType, ParseFailure
 
 
 class Server:
@@ -44,7 +44,7 @@ class Server:
         '''
 
         tmpGameMap = mapCode.GameMap()
-        tmpGameMap.generateHexagonalArea(2)
+        tmpGameMap.generateHexagonalArea(3)
 
         self.g: game.Game = game.Game(tmpGameMap)
 
@@ -140,6 +140,14 @@ class Server:
 
                         self.g.currentTurn.currentPlayer.inventory.placeLineFeature(index, hp1, hp2, self.g.currentTurn)
                         self.server.updateAll()
+                    
+                    elif request.content == 'placeRobber':
+                        point, = request.requireArgs(1) # pylint: disable=unbalanced-tuple-unpacking
+                        hp: extraCode.HexPoint = extraCode.HexPoint.fromJson(point)
+
+                        self.g.currentTurn.currentPlayer.moveRobber(hp, self.g.currentTurn)
+                        self.server.updateAll()
+
 
                 elif request.type_ == 'update':
                     if request.content == 'inventory':
@@ -165,6 +173,10 @@ class Server:
 
                 json_msg = { 'type': 'error', 'content': 'ERROR: ' + s }
                 self.server.broadcastToSome(json.dumps(json_msg), [token])
+            
+            except ParseFailure as e:
+                # Malformed JSON message (Correct JSON syntax but not how the program expected it)
+                print(f'ParseFailure: {e} while attempting to parse {obj}')
 
     def run(self):
         '''

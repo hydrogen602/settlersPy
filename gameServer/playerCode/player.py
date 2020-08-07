@@ -61,6 +61,9 @@ class Player:
     
     @property
     def canMoveRobber(self) -> bool:
+        '''
+        Whether the player may and must move the robber
+        '''
         return self.__canMoveRobber
     
     def moveRobber(self, point: HexPoint, turn: Turn):
