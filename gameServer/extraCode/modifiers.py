@@ -112,10 +112,14 @@ class Purchaseable:
             p.takeResource(resource, qty)
 
         if cls._isLineFeature:
+            if not issubclass(cls, Ownable):
+                raise TypeError(f'Line Features should be owned by someone, class "{cls.__qualname__}" is not Ownable though"')
             p.inventory.addLineFeature(cls(owner=p))
             return
 
         if cls._isPointFeature:
+            if not issubclass(cls, Ownable):
+                raise TypeError(f'Point Features should be owned by someone, class "{cls.__qualname__}" is not Ownable though"')
             p.inventory.addPointFeature(cls(owner=p))
             return
         

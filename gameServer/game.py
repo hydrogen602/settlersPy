@@ -37,7 +37,7 @@ class Game(JsonSerializable):
             raise NotSetupException("Game hasn't started yet")
 
         return self.__currentTurn
-    
+
     @property
     def gameMap(self) -> GameMap:
         return self.__gameMap
@@ -75,13 +75,13 @@ class Game(JsonSerializable):
         self.__playerTurnOrderIterator = self.__playerManager.getPlayerTurnOrderIterator()
 
         self.__newTurn(next(self.__playerTurnOrderIterator))
-        
-    
+
+
     def addPlayer(self, p: Player):
         if self.__gameStarted:
             raise AlreadySetupException("Game already started")
         self.__playerManager.addPlayer(p)
-    
+
     def nextTurn(self):
         '''
         throws `NotSetupException` and `ActionError` 
@@ -98,9 +98,9 @@ class Game(JsonSerializable):
             self.__playerTurnOrderIterator = self.__playerManager.getPlayerTurnOrderIterator()
 
             nextPlayer = next(self.__playerTurnOrderIterator)
-        
+
         self.__newTurn(nextPlayer)
-    
+
     def toJsonSerializable(self):
         '''
         Format:
