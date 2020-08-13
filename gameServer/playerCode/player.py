@@ -27,7 +27,7 @@ class Player:
 
         token = token_urlsafe(16)
         while token in Player.__usedTokens:
-            token = token_urlsafe(16)
+            token = token_urlsafe(16) # unique token
 
         Player.__usedTokens.add(token)
 
@@ -140,15 +140,14 @@ class Player:
     
     def __eq__(self, other: object) -> bool:
         '''
-        Equality is only determined by the token,
-        which should be unique. Thus, two players
-        with the same name will still return False
-        when checked for equality.
+        As there should never be two Player instances representing
+        the same player, equality here is determined whether they
+        are the same instance.
         If `other` is of type other than
         `PlayerID`, the result is always False
         '''
         if isinstance(other, Player):
-            return other.token == self.token
+            return other.token is self.token
         else:
             return False
     
