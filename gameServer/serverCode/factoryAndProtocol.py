@@ -5,7 +5,7 @@ import json
 from urllib.parse import urlparse, parse_qs
 
 from autobahn.twisted.websocket import WebSocketServerProtocol, WebSocketServerFactory # type: ignore
-from autobahn.websocket.protocol import ConnectingRequest, ConnectionDeny
+from autobahn.websocket.protocol import ConnectingRequest, ConnectionDeny # type: ignore
 from twisted.python import log # type: ignore
 from twisted.internet import reactor # type: ignore
 

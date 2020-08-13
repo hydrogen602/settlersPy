@@ -133,7 +133,23 @@ class Player:
     
     def hasResource(self, resource: Resource, minimum: int) -> bool:
         return self.__inventory.hasResource(resource, minimum)
+
+    def giveResources(self, resources: Dict[Resource, int]):
+        for resource, count in resources.items():
+            self.__inventory.addResource(resource, count)
     
+    def takeResources(self, resources: Dict[Resource, int]):
+        for resource, count in resources.items():
+            self.__inventory.removeResource(resource, count)
+    
+    def requireResources(self, resources: Dict[Resource, int]):
+        '''
+        throws ActionError
+        '''
+        for resource, count in resources.items():
+            if not self.__inventory.hasResource(resource, count):
+                raise ActionError(f"Missing resource: {resource.name}")
+
     @property
     def color(self) -> str:
         return self.__color

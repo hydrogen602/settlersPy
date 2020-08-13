@@ -111,6 +111,8 @@ class Server:
             try:
                 request = JsonParserType(obj)
 
+                hp: extraCode.HexPoint
+
                 if request.type_ == 'action':
                     if request.content == 'nextTurn':
                         self.g.nextTurn()
@@ -119,7 +121,7 @@ class Server:
 
                     elif request.content == 'placeSettlement':
                         point, indexTmp = request.requireArgs(2) # pylint: disable=unbalanced-tuple-unpacking
-                        hp: extraCode.HexPoint = extraCode.HexPoint.fromJson(point)
+                        hp = extraCode.HexPoint.fromJson(point)
                         index: int = int(indexTmp)
 
                         if len(self.g.currentTurn.currentPlayer.inventory.ownedPointFeatures) == 0:
@@ -143,7 +145,7 @@ class Server:
                     
                     elif request.content == 'placeRobber':
                         point, = request.requireArgs(1) # pylint: disable=unbalanced-tuple-unpacking
-                        hp: extraCode.HexPoint = extraCode.HexPoint.fromJson(point)
+                        hp = extraCode.HexPoint.fromJson(point)
 
                         self.g.currentTurn.currentPlayer.moveRobber(hp, self.g.currentTurn)
                         self.server.updateAll()
@@ -165,7 +167,7 @@ class Server:
 
                     elif request.content == 'city':
                         mapCode.City.purchase(thisPlayer)
-                    
+                                        
                     self.__updateClientInventory(token)
 
             except extraCode.ActionError as e:
