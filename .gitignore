@@ -11,3 +11,5 @@ web/libraries/*
 
 .metals/metals.lock.db
 data/
+
+runPID
