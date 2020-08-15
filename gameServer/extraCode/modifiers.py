@@ -103,13 +103,9 @@ class Purchaseable:
 
         if cls._cost is None:
             raise RuntimeError('This should have been caught in \'__init_subclass__\'')
-        
-        for resource, qty in cls._cost.items():
-            if not p.hasResource(resource, qty):
-                raise ActionError(f"Missing resource: {resource.name}")
-        
-        for resource, qty in cls._cost.items():
-            p.takeResource(resource, qty)
+
+        p.requireResources(cls._cost) # raises ActionError
+        p.takeResources(cls._cost)
 
         if cls._isLineFeature:
             if not issubclass(cls, Ownable):

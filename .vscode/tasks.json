@@ -11,6 +11,14 @@
                 "runner.py"
             ],
             "problemMatcher": [],
+        },
+        {
+            "label": "Run MyPy",
+            "type": "process",
+            "command": "mypy",
+            "args": [
+                "gameServer"
+            ],
         }
     ]
 }
