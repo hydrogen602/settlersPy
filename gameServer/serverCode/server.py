@@ -99,11 +99,15 @@ class Server:
 
             webdir = File(config["staticPath"])
             self.web = Site(webdir)
+            print('Launching with static server on port:', config['staticPort'])
+            print('WebSockets on:', port)
 
         if STATIC_SERVE and USE_SSL:
-            reactor.listenSSL(port, self.web, self.contextFactory) # pylint: disable=no-member
+            portWeb = int(config['staticPort'])
+            reactor.listenSSL(portWeb, self.web, self.contextFactory) # pylint: disable=no-member
         elif STATIC_SERVE:
-            reactor.listenTCP(port, self.web) # pylint: disable=no-member
+            portWeb = int(config['staticPort'])
+            reactor.listenTCP(portWeb, self.web) # pylint: disable=no-member
         else:
             # setup listening server
             reactor.listenTCP(port, self.server) # pylint: disable=no-member

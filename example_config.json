@@ -2,6 +2,7 @@
     "cert": "server.crt",
     "key": "server.pem",
     "staticPath": "../settlersUI",
+    "staticPort": "8080",
     "USE_SSL": true,
     "STATIC_SERVER": true
 }
