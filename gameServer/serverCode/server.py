@@ -77,6 +77,7 @@ class Server:
 
         self.contextFactory: Optional[ssl.DefaultOpenSSLContextFactory] = None
         if USE_SSL:
+            protocol = 'wss'
             self.contextFactory = ssl.DefaultOpenSSLContextFactory(config['key'], config['cert'])
 
         # Setup server factory
