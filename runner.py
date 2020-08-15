@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import gameServer.serverCode.server as server
 
 if __name__ == "__main__":

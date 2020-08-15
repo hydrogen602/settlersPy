@@ -13,11 +13,10 @@ Required 3rd-party libraries:
 import sys
 import json
 import secrets
-import ssl
 from typing import Callable, Tuple, Union, List, Optional
 
 from twisted.python import log, logfile # type: ignore
-from twisted.internet import reactor # type: ignore
+from twisted.internet import reactor, ssl # type: ignore
 from twisted.web.server import Site # type: ignore
 from twisted.web.static import File # type: ignore
 from autobahn.twisted.websocket import listenWS
@@ -80,8 +79,7 @@ class Server:
         if USE_SSL:
             
 
-            self.contextFactory = ssl.DefaultOpenSSLContextFactory(config['key'], config['cert']) # pylint: disable=no-member
-            protocol = 'wss'
+            self.contextFactory = ssl.DefaultOpenSSLContextFactory(config['key'], config['cert'])
 
         # Setup server factory
         self.server = ServerFactory(
