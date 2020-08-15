@@ -12,14 +12,13 @@ Required 3rd-party libraries:
 '''
 import sys
 import json
-import secrets
 from typing import Callable, Tuple, Union, List, Optional
 
 from twisted.python import log, logfile # type: ignore
 from twisted.internet import reactor, ssl # type: ignore
 from twisted.web.server import Site # type: ignore
 from twisted.web.static import File # type: ignore
-from autobahn.twisted.websocket import listenWS
+from autobahn.twisted.websocket import listenWS # type: ignore
 
 from .. import playerCode
 from .. import extraCode
