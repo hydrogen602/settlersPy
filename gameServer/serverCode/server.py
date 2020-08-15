@@ -75,10 +75,8 @@ class Server:
 
         protocol = 'ws'
 
-        self.contextFactory = None
+        self.contextFactory: Optional[ssl.DefaultOpenSSLContextFactory] = None
         if USE_SSL:
-            
-
             self.contextFactory = ssl.DefaultOpenSSLContextFactory(config['key'], config['cert'])
 
         # Setup server factory
@@ -93,9 +91,13 @@ class Server:
 
         self.web = None
         if STATIC_SERVE:
+            if USE_SSL:
+                assert self.contextFactory is not None
+
             listenWS(self.server, self.contextFactory)
 
-            webdir = File(config["staticPath"])
+            webdir: File = File(config["staticPath"])
+
             self.web = Site(webdir)
             print('Launching with static server on port:', config['staticPort'])
             print('WebSockets on:', port)
