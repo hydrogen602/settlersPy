@@ -1,0 +1,7 @@
+{
+    "cert": "server.crt",
+    "key": "server.pem",
+    "staticPath": "../settlersUI",
+    "USE_SSL": true,
+    "STATIC_SERVER": true
+}

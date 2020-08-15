@@ -13,10 +13,14 @@ Required 3rd-party libraries:
 import sys
 import json
 import secrets
+import ssl
 from typing import Callable, Tuple, Union, List, Optional
 
 from twisted.python import log, logfile # type: ignore
 from twisted.internet import reactor # type: ignore
+from twisted.web.server import Site # type: ignore
+from twisted.web.static import File # type: ignore
+from autobahn.twisted.websocket import listenWS
 
 from .. import playerCode
 from .. import extraCode
@@ -24,6 +28,23 @@ from .. import mapCode
 from .. import game
 from .factoryAndProtocol import ServerFactory, ServerProtocol
 from .jsonParser import JsonParserType, ParseFailure
+
+data = None
+try:
+    f = open('config.json')
+    data = f.read()
+    f.close()
+except FileNotFoundError as e:
+    print('Could not find config file:', e)
+    raise
+
+config = json.loads(data)
+
+USE_SSL = config['USE_SSL']
+STATIC_SERVE = config['STATIC_SERVER']
+
+assert isinstance(USE_SSL, bool)
+assert isinstance(STATIC_SERVE, bool)
 
 
 class Server:
@@ -53,9 +74,18 @@ class Server:
 
         self.file = open('gameMsgLog.log', 'w')
 
+        protocol = 'ws'
+
+        self.contextFactory = None
+        if USE_SSL:
+            
+
+            self.contextFactory = ssl.DefaultOpenSSLContextFactory(config['key'], config['cert']) # pylint: disable=no-member
+            protocol = 'wss'
+
         # Setup server factory
         self.server = ServerFactory(
-            u'ws://{}:{}'.format(ip, port), 
+            u'{}://{}:{}'.format(protocol, ip, port), 
             self.file, 
             g=self.g,
             serverCallback=self.callback
@@ -63,8 +93,18 @@ class Server:
 
         self.server.protocol = ServerProtocol
 
-        # setup listening server
-        reactor.listenTCP(port, self.server) # pylint: disable=no-member
+        self.web = None
+        if STATIC_SERVE:
+            listenWS(self.server, self.contextFactory)
+
+            webdir = File(config["staticPath"])
+            self.web = Site(webdir)
+
+        if STATIC_SERVE and USE_SSL:
+            reactor.listenSSL(port, self.web, self.contextFactory) # pylint: disable=no-member
+        else:
+            # setup listening server
+            reactor.listenTCP(port, self.server) # pylint: disable=no-member
     
     def __updateClientInventory(self, token: Optional[str] = None):
         if token is None:

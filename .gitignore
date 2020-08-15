@@ -13,3 +13,4 @@ web/libraries/*
 data/
 
 runPID
+config.json
